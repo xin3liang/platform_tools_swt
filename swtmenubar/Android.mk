@@ -16,12 +16,12 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES := $(call all-java-files-under, src)
-LOCAL_JAVA_RESOURCE_DIRS := src
+LOCAL_SRC_FILES := $(call all-java-files-under, src/main/java)
+LOCAL_JAVA_RESOURCE_DIRS := src/main/java
 
 ifeq ($(HOST_OS),darwin)
-LOCAL_SRC_FILES += $(call all-java-files-under, src-$(HOST_OS))
-LOCAL_JAVA_RESOURCE_DIRS += src-$(HOST_OS)
+LOCAL_SRC_FILES += $(call all-java-files-under, src/main-$(HOST_OS)/java)
+LOCAL_JAVA_RESOURCE_DIRS += src/main-$(HOST_OS)/java
 endif
 
 LOCAL_MODULE := swtmenubar

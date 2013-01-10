@@ -1,0 +1,29 @@
+version = project.ext.baseVersion
+group = 'com.android.tools.sdk'
+archivesBaseName = 'sdkuilib'
+
+dependencies {
+    compile project(':swtmenubar')
+    compile "com.android.tools.sdk:sdklib:$version"
+
+    compile 'org.apache.commons:commons-compress:1.0'
+    compile 'org.apache.httpcomponents:httpclient:4.1.1'
+    compile 'org.apache.httpcomponents:httpmime:4.1'
+
+    def prebuiltsToolsDir = "$rootProject.ext.androidRootDir/prebuilts/tools"
+    compile files(
+            "$prebuiltsToolsDir/common/eclipse/org.eclipse.jface_3.6.2.M20110210-1200.jar",
+            "$prebuiltsToolsDir/common/eclipse/org.eclipse.equinox.common_3.6.0.v20100503.jar",
+            "$prebuiltsToolsDir/common/eclipse/org.eclipse.core.commands_3.6.0.I20100512-1500.jar")
+
+    // FIXME configure the host arch for swt
+    compile files("$prebuiltsToolsDir/linux-x86/swt/swt.jar")
+
+    testCompile 'junit:junit:3.8.1'
+}
+
+sourceSets {
+    main.resources.srcDir 'src/main/java'
+    test.resources.srcDir 'src/test/java'
+}
+

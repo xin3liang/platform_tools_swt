@@ -1,0 +1,9 @@
+include "sdkuilib"
+include "swtmenubar"
+
+// dependencies for sdkuilib from tools/base
+//[ "common", "dvlib", "sdklib", "layoutlib_api" ].each { devName ->
+//    include devName
+//    project(":$devName").projectDir = new File("../base/$devName")
+//}
+

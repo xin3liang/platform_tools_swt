@@ -1,0 +1,67 @@
+// ext.androidHostOut is shared by all tools/{base,build,swt} gradle projects/
+ext.androidHostOut = java.lang.System.getenv("ANDROID_HOST_OUT")
+ext.androidHostOut = file(ext.androidHostOut != null ?
+                              ext.androidHostOut :
+                              "$rootDir/../../out/host/common")
+ext.androidRootDir = file(new File(ext.androidHostOut, "../../../"))
+// rootProject.buildDir is specific to this gradle build.
+buildDir = new File(ext.androidHostOut, "tools/swt/build")
+
+subprojects {
+    // Change buildDir first so that all plugins pick up the new value.
+    project.buildDir = project.file("$project.parent.buildDir/../$project.name")
+
+    apply plugin: 'java'
+    apply plugin: 'maven'
+
+    repositories {
+        mavenCentral()
+        maven { url = uri("$rootProject.ext.androidHostOut/repo") }
+    }
+
+    project.ext.baseVersion = '22.0-SNAPSHOT'
+
+    // set all java compilation to use UTF-8 encoding.
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
+    // add javadoc/source jar tasks as artifacts
+    artifacts {
+        archives jar
+    }
+
+    task publishLocal(type: Upload) {
+        configuration = configurations.archives
+        repositories {
+            mavenDeployer {
+                repository(url: uri("$rootProject.ext.androidHostOut/repo"))
+            }
+        }
+    }
+}
+
+// delay evaluation of this project before all subprojects have been evaluated.
+subprojects.each { subproject -> evaluationDependsOn(subproject.name) }
+
+def testTasks = subprojects.collect { it.tasks.withType(Test) }.flatten()
+
+task aggregateResults(type: Copy) {
+    from { testTasks*.testResultsDir }
+    into { file("$buildDir/results") }
+}
+aggregateResults.dependsOn testTasks
+
+task makeAggregateReport(dependsOn: aggregateResults) {
+    def report = new org.gradle.api.internal.tasks.testing.junit.report.DefaultTestReport(
+                        testReportDir:  file("$buildDir/reports/tests"),
+                        testResultsDir: file("$buildDir/results"))
+    report.generateReport()
+}
+
+task check {
+    //nothing
+}
+
+check.dependsOn makeAggregateReport
+

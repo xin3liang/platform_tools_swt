@@ -569,6 +569,10 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
             case SORT_SOURCE:
                 button = mCheckSortSource;
                 break;
+            case RELOAD:
+            case SHOW_ADDON_SITES:
+                // No checkmark to update
+                break;
             }
 
             if (button != null && !button.isDisposed()) {

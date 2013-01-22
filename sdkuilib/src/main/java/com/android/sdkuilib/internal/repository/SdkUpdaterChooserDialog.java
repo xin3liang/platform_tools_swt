@@ -17,21 +17,24 @@
 package com.android.sdkuilib.internal.repository;
 
 import com.android.SdkConstants;
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.internal.repository.archives.Archive;
 import com.android.sdklib.internal.repository.packages.FullRevision;
 import com.android.sdklib.internal.repository.packages.IAndroidVersionProvider;
 import com.android.sdklib.internal.repository.packages.Package;
+import com.android.sdklib.internal.repository.packages.Package.License;
 import com.android.sdklib.internal.repository.sources.SdkSource;
 import com.android.sdkuilib.internal.repository.icons.ImageFactory;
 import com.android.sdkuilib.ui.GridDialog;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -54,11 +57,16 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
 
 
 /**
@@ -68,19 +76,20 @@ final class SdkUpdaterChooserDialog extends GridDialog {
 
     /** Last dialog size for this session. */
     private static Point sLastSize;
-    private boolean mLicenseAcceptAll;
+    /** Precomputed flag indicating whether the "accept license" radio is checked. */
+    private boolean mAcceptSameAllLicense;
     private boolean mInternalLicenseRadioUpdate;
 
     // UI fields
     private SashForm mSashForm;
     private Composite mPackageRootComposite;
-    private TableViewer mTableViewPackage;
-    private Table mTablePackage;
-    private TableColumn mTableColum;
+    private TreeViewer mTreeViewPackage;
+    private Tree mTreePackage;
+    private TreeColumn mTreeColum;
     private StyledText mPackageText;
     private Button mLicenseRadioAccept;
     private Button mLicenseRadioReject;
-    private Button mLicenseRadioAcceptAll;
+    private Button mLicenseRadioAcceptLicense;
     private Group mPackageTextGroup;
     private final UpdaterData mUpdaterData;
     private Group mTableGroup;
@@ -93,7 +102,7 @@ final class SdkUpdaterChooserDialog extends GridDialog {
      * is currently done using a simple linear search, which is fine since we only have a very
      * limited number of archives to deal with (e.g. < 10 now). We might want to revisit
      * this later if it becomes an issue. Right now just do the simple thing.
-     *<p/>
+     * <p/>
      * Typically we could add a map Archive=>ArchiveInfo later.
      */
     private final Collection<ArchiveInfo> mArchives;
@@ -102,6 +111,7 @@ final class SdkUpdaterChooserDialog extends GridDialog {
 
     /**
      * Create the dialog.
+     *
      * @param parentShell The shell to use, typically updaterData.getWindowShell()
      * @param updaterData The updater data
      * @param archives The archives to be installed
@@ -123,8 +133,8 @@ final class SdkUpdaterChooserDialog extends GridDialog {
      * Returns the results, i.e. the list of selected new archives to install.
      * This is similar to the {@link ArchiveInfo} list instance given to the constructor
      * except only accepted archives are present.
-     *
-     * An empty list is returned if cancel was choosen.
+     * <p/>
+     * An empty list is returned if cancel was chosen.
      */
     public ArrayList<ArchiveInfo> getResult() {
         ArrayList<ArchiveInfo> ais = new ArrayList<ArchiveInfo>();
@@ -157,12 +167,12 @@ final class SdkUpdaterChooserDialog extends GridDialog {
         mTableGroup.setText("Packages");
         mTableGroup.setLayout(new GridLayout(1, false/*makeColumnsEqual*/));
 
-        mTableViewPackage = new TableViewer(mTableGroup, SWT.BORDER | SWT.V_SCROLL | SWT.SINGLE);
-        mTablePackage = mTableViewPackage.getTable();
-        mTablePackage.setHeaderVisible(false);
-        mTablePackage.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        mTreeViewPackage = new TreeViewer(mTableGroup, SWT.BORDER | SWT.V_SCROLL | SWT.SINGLE);
+        mTreePackage = mTreeViewPackage.getTree();
+        mTreePackage.setHeaderVisible(false);
+        mTreePackage.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
-        mTablePackage.addSelectionListener(new SelectionAdapter() {
+        mTreePackage.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 onPackageSelected();  //$hide$
@@ -173,12 +183,12 @@ final class SdkUpdaterChooserDialog extends GridDialog {
             }
         });
 
-        mTableColum = new TableColumn(mTablePackage, SWT.NONE);
-        mTableColum.setWidth(100);
-        mTableColum.setText("Packages");
-
+        mTreeColum = new TreeColumn(mTreePackage, SWT.NONE);
+        mTreeColum.setWidth(100);
+        mTreeColum.setText("Packages");
 
         // Right part of Sash form
+
         mPackageRootComposite = new Composite(mSashForm, SWT.NONE);
         mPackageRootComposite.setLayout(new GridLayout(4, false/*makeColumnsEqual*/));
         mPackageRootComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -233,9 +243,9 @@ final class SdkUpdaterChooserDialog extends GridDialog {
         });
 
 
-        mLicenseRadioAcceptAll = new Button(mPackageRootComposite, SWT.RADIO);
-        mLicenseRadioAcceptAll.setText("Accept All");
-        mLicenseRadioAcceptAll.addSelectionListener(new SelectionAdapter() {
+        mLicenseRadioAcceptLicense = new Button(mPackageRootComposite, SWT.RADIO);
+        mLicenseRadioAcceptLicense.setText("Accept License");
+        mLicenseRadioAcceptLicense.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 onLicenseRadioSelected();
@@ -309,20 +319,23 @@ final class SdkUpdaterChooserDialog extends GridDialog {
         for (ArchiveInfo ai : mArchives) {
             Archive a = ai.getNewArchive();
             if (a != null) {
-                String license = a.getParentPackage().getLicense();
-                ai.setAccepted(license == null || license.trim().length() == 0);
+                License license = a.getParentPackage().getLicense();
+                boolean hasLicense = license != null &&
+                                     license.getLicense() != null &&
+                                     license.getLicense().length() > 0;
+                ai.setAccepted(!hasLicense);
             }
         }
 
         // Fill the list with the replacement packages
-        mTableViewPackage.setLabelProvider(new NewArchivesLabelProvider());
-        mTableViewPackage.setContentProvider(new NewArchivesContentProvider());
-        mTableViewPackage.setInput(mArchives);
+        mTreeViewPackage.setLabelProvider(new NewArchivesLabelProvider());
+        mTreeViewPackage.setContentProvider(new NewArchivesContentProvider());
+        mTreeViewPackage.setInput(createTreeInput(mArchives));
+        mTreeViewPackage.expandAll();
 
         adjustColumnsWidth();
 
         // select first item
-        mTablePackage.select(0);
         onPackageSelected();
     }
 
@@ -332,7 +345,7 @@ final class SdkUpdaterChooserDialog extends GridDialog {
     private void setWindowImage() {
         String imageName = "android_icon_16.png"; //$NON-NLS-1$
         if (SdkConstants.currentPlatform() == SdkConstants.PLATFORM_DARWIN) {
-            imageName = "android_icon_128.png"; //$NON-NLS-1$
+            imageName = "android_icon_128.png";   //$NON-NLS-1$
         }
 
         if (mUpdaterData != null) {
@@ -354,11 +367,11 @@ final class SdkUpdaterChooserDialog extends GridDialog {
         ControlAdapter resizer = new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {
-                Rectangle r = mTablePackage.getClientArea();
-                mTableColum.setWidth(r.width);
+                Rectangle r = mTreePackage.getClientArea();
+                mTreeColum.setWidth(r.width);
             }
         };
-        mTablePackage.addControlListener(resizer);
+        mTreePackage.addControlListener(resizer);
         resizer.controlResized(null);
     }
 
@@ -393,22 +406,70 @@ final class SdkUpdaterChooserDialog extends GridDialog {
      * Callback invoked when a package item is selected in the list.
      */
     private void onPackageSelected() {
-        ArchiveInfo ai = getSelectedArchive();
-        displayInformation(ai);
+        Object item = getSelectedItem();
+
+        // Update mAcceptSameAllLicense : true if all items under the same license are accepted.
+        ArchiveInfo ai = null;
+        List<ArchiveInfo> list = null;
+        if (item instanceof ArchiveInfo) {
+            ai = (ArchiveInfo) item;
+
+            Object p =
+                ((NewArchivesContentProvider) mTreeViewPackage.getContentProvider()).getParent(ai);
+            if (p instanceof LicenseEntry) {
+                list = ((LicenseEntry) p).getArchives();
+            }
+            displayPackageInformation(ai);
+
+        } else if (item instanceof LicenseEntry) {
+            LicenseEntry entry = (LicenseEntry) item;
+            list = entry.getArchives();
+            displayLicenseInformation(entry);
+
+        } else {
+            // Fallback, should not happen.
+            displayEmptyInformation();
+        }
+
+        // the "Accept License" radio is selected if there's a license with >= 0 items
+        // and they are all in "accepted" state.
+        mAcceptSameAllLicense = list != null && list.size() > 0;
+        if (mAcceptSameAllLicense) {
+            assert list != null;
+            License lic0 = getLicense(list.get(0));
+            for (ArchiveInfo ai2 : list) {
+                License lic2 = getLicense(ai2);
+                if (ai2.isAccepted() && (lic0 == lic2 || lic0.equals(lic2))) {
+                    continue;
+                } else {
+                    mAcceptSameAllLicense = false;
+                    break;
+                }
+            }
+        }
+
         displayMissingDependency(ai);
         updateLicenceRadios(ai);
     }
 
-    /** Returns the currently selected {@link ArchiveInfo} or null. */
-    private ArchiveInfo getSelectedArchive() {
-        ISelection sel = mTableViewPackage.getSelection();
+    /** Returns the currently selected tree item.
+     * @return Either {@link ArchiveInfo} or {@link LicenseEntry} or null. */
+    private Object getSelectedItem() {
+        ISelection sel = mTreeViewPackage.getSelection();
         if (sel instanceof IStructuredSelection) {
             Object elem = ((IStructuredSelection) sel).getFirstElement();
-            if (elem instanceof ArchiveInfo) {
-                return (ArchiveInfo) elem;
+            if (elem instanceof ArchiveInfo || elem instanceof LicenseEntry) {
+                return elem;
             }
         }
         return null;
+    }
+
+    /**
+     * Information displayed when nothing valid is selected.
+     */
+    private void displayEmptyInformation() {
+        mPackageText.setText("Please select a package or a license.");
     }
 
     /**
@@ -420,19 +481,16 @@ final class SdkUpdaterChooserDialog extends GridDialog {
      * if we had a need for it, though. This would require changes to {@link ArchiveInfo} and
      * {@link SdkUpdaterLogic}.
      */
-    private void displayInformation(ArchiveInfo ai) {
-        if (ai == null) {
-            mPackageText.setText("Please select a package.");
+    private void displayPackageInformation(ArchiveInfo ai) {
+        Archive aNew = ai   == null ? null : ai.getNewArchive();
+        Package pNew = aNew == null ? null : aNew.getParentPackage();
+
+        if (pNew == null) {
+            displayEmptyInformation();
             return;
         }
-
-        Archive aNew = ai.getNewArchive();
-        if (aNew == null) {
-            // Only missing archives have a null archive, so we shouldn't be here.
-            return;
-        }
-
-        Package pNew = aNew.getParentPackage();
+        assert ai   != null;                        // make Eclipse null detector happy
+        assert aNew != null;
 
         mPackageText.setText("");                   //$NON-NLS-1$
 
@@ -495,16 +553,59 @@ final class SdkUpdaterChooserDialog extends GridDialog {
         addSectionTitle("Archive Description\n");
         addText(aNew.getLongDescription(), "\n\n");                             //$NON-NLS-1$
 
-        String license = pNew.getLicense();
+        License license = pNew.getLicense();
         if (license != null) {
-            addSectionTitle("License\n");
-            addText(license.trim(), "\n\n");                                       //$NON-NLS-1$
+            String text = license.getLicense();
+            if (text != null) {
+                addSectionTitle("License\n");
+                addText(text.trim(), "\n\n");                                   //$NON-NLS-1$
+            }
         }
 
         addSectionTitle("Site\n");
         SdkSource source = pNew.getParentSource();
         if (source != null) {
             addText(source.getShortDescription());
+        }
+    }
+
+    /**
+     * Updates the description for a license entry.
+     */
+    private void displayLicenseInformation(LicenseEntry entry) {
+        List<ArchiveInfo> archives = entry == null ? null : entry.getArchives();
+        if (archives == null) {
+            // There should not be a license entry without any package in it.
+            displayEmptyInformation();
+            return;
+        }
+        assert entry != null;
+
+        mPackageText.setText("");                   //$NON-NLS-1$
+
+        License license = null;
+        addSectionTitle("Packages\n");
+        for (ArchiveInfo ai : entry.getArchives()) {
+            Archive aNew = ai.getNewArchive();
+            if (aNew != null) {
+                Package pNew = aNew.getParentPackage();
+                if (pNew != null) {
+                    if (license == null) {
+                        license = pNew.getLicense();
+                    } else {
+                        assert license.equals(pNew.getLicense()); // all items have the same license
+                    }
+                    addText("- ", pNew.getShortDescription(), "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+                }
+            }
+        }
+
+        if (license != null) {
+            String text = license.getLicense();
+            if (text != null) {
+                addSectionTitle("\nLicense\n");
+                addText(text.trim(), "\n\n");                                   //$NON-NLS-1$
+            }
         }
     }
 
@@ -613,20 +714,12 @@ final class SdkUpdaterChooserDialog extends GridDialog {
 
         boolean oneAccepted = false;
 
-        if (mLicenseAcceptAll) {
-            mLicenseRadioAcceptAll.setSelection(true);
-            mLicenseRadioAccept.setEnabled(true);
-            mLicenseRadioReject.setEnabled(true);
-            mLicenseRadioAccept.setSelection(false);
-            mLicenseRadioReject.setSelection(false);
-        } else {
-            mLicenseRadioAcceptAll.setSelection(false);
-            oneAccepted = ai != null && ai.isAccepted();
-            mLicenseRadioAccept.setEnabled(ai != null);
-            mLicenseRadioReject.setEnabled(ai != null);
-            mLicenseRadioAccept.setSelection(oneAccepted);
-            mLicenseRadioReject.setSelection(ai != null && ai.isRejected());
-        }
+        mLicenseRadioAcceptLicense.setSelection(mAcceptSameAllLicense);
+        oneAccepted = ai != null && ai.isAccepted();
+        mLicenseRadioAccept.setEnabled(ai != null);
+        mLicenseRadioReject.setEnabled(ai != null);
+        mLicenseRadioAccept.setSelection(oneAccepted);
+        mLicenseRadioReject.setSelection(ai != null && ai.isRejected());
 
         // The install button is enabled if there's at least one package accepted.
         // If the current one isn't, look for another one.
@@ -649,7 +742,7 @@ final class SdkUpdaterChooserDialog extends GridDialog {
      * Callback invoked when one of the radio license buttons is selected.
      *
      * - accept/refuse: toggle, update item checkbox
-     * - accept all: set accept-all, check all items
+     * - accept all: set accept-all, check all items with the *same* license
      */
     private void onLicenseRadioSelected() {
         if (mInternalLicenseRadioUpdate) {
@@ -657,32 +750,41 @@ final class SdkUpdaterChooserDialog extends GridDialog {
         }
         mInternalLicenseRadioUpdate = true;
 
-        ArchiveInfo ai = getSelectedArchive();
-
-        if (ai == null) {
-            // Should never happen.
-            return;
-        }
-
+        Object item = getSelectedItem();
+        ArchiveInfo ai = (item instanceof ArchiveInfo) ? (ArchiveInfo) item : null;
         boolean needUpdate = true;
 
-        if (!mLicenseAcceptAll && mLicenseRadioAcceptAll.getSelection()) {
+        if (!mAcceptSameAllLicense && mLicenseRadioAcceptLicense.getSelection()) {
             // Accept all has been switched on. Mark all packages as accepted
-            mLicenseAcceptAll = true;
-            for(ArchiveInfo ai2 : mArchives) {
-                ai2.setAccepted(true);
-                ai2.setRejected(false);
+
+            List<ArchiveInfo> list = null;
+            if (item instanceof LicenseEntry) {
+                list = ((LicenseEntry) item).getArchives();
+            } else if (ai != null) {
+                Object p = ((NewArchivesContentProvider) mTreeViewPackage.getContentProvider())
+                                                                         .getParent(ai);
+                if (p instanceof LicenseEntry) {
+                    list = ((LicenseEntry) p).getArchives();
+                }
             }
 
-        } else if (mLicenseRadioAccept.getSelection()) {
+            if (list != null && list.size() > 0) {
+                mAcceptSameAllLicense = true;
+                for(ArchiveInfo ai2 : list) {
+                    ai2.setAccepted(true);
+                    ai2.setRejected(false);
+                }
+            }
+
+        } else if (ai != null && mLicenseRadioAccept.getSelection()) {
             // Accept only this one
-            mLicenseAcceptAll = false;
+            mAcceptSameAllLicense = false;
             ai.setAccepted(true);
             ai.setRejected(false);
 
-        } else if (mLicenseRadioReject.getSelection()) {
+        } else if (ai != null && mLicenseRadioReject.getSelection()) {
             // Reject only this one
-            mLicenseAcceptAll = false;
+            mAcceptSameAllLicense = false;
             ai.setAccepted(false);
             ai.setRejected(true);
 
@@ -693,10 +795,13 @@ final class SdkUpdaterChooserDialog extends GridDialog {
         mInternalLicenseRadioUpdate = false;
 
         if (needUpdate) {
-            if (mLicenseAcceptAll) {
-                mTableViewPackage.refresh();
+            if (mAcceptSameAllLicense) {
+                mTreeViewPackage.refresh();
             } else {
-               mTableViewPackage.refresh(ai);
+               mTreeViewPackage.refresh(ai);
+               mTreeViewPackage.refresh(
+                       ((NewArchivesContentProvider) mTreeViewPackage.getContentProvider()).
+                       getParent(ai));
             }
             displayMissingDependency(ai);
             updateLicenceRadios(ai);
@@ -707,73 +812,312 @@ final class SdkUpdaterChooserDialog extends GridDialog {
      * Callback invoked when a package item is double-clicked in the list.
      */
     private void onPackageDoubleClick() {
-        ArchiveInfo ai = getSelectedArchive();
+        Object item = getSelectedItem();
 
-        if (ai == null) {
-            // Should never happen.
-            return;
+        if (item instanceof ArchiveInfo) {
+            ArchiveInfo ai = (ArchiveInfo) item;
+            boolean wasAccepted = ai.isAccepted();
+            ai.setAccepted(!wasAccepted);
+            ai.setRejected(wasAccepted);
+
+            // update state
+            mAcceptSameAllLicense = false;
+            mTreeViewPackage.refresh(ai);
+            // refresh parent since its icon might have changed.
+            mTreeViewPackage.refresh(
+                    ((NewArchivesContentProvider) mTreeViewPackage.getContentProvider()).
+                    getParent(ai));
+
+            displayMissingDependency(ai);
+            updateLicenceRadios(ai);
+
+        } else if (item instanceof LicenseEntry) {
+            mTreeViewPackage.setExpandedState(item, !mTreeViewPackage.getExpandedState(item));
         }
-
-        boolean wasAccepted = ai.isAccepted();
-        ai.setAccepted(!wasAccepted);
-        ai.setRejected(wasAccepted);
-
-        // update state
-        mLicenseAcceptAll = false;
-        mTableViewPackage.refresh(ai);
-        displayMissingDependency(ai);
-        updateLicenceRadios(ai);
     }
 
+    /**
+     * Provides the labels for the tree view.
+     * Root branches are {@link LicenseEntry} elements.
+     * Leave nodes are {@link ArchiveInfo} which all have the same license.
+     */
     private class NewArchivesLabelProvider extends LabelProvider {
         @Override
         public Image getImage(Object element) {
-            assert element instanceof ArchiveInfo;
-            ArchiveInfo ai = (ArchiveInfo) element;
+            if (element instanceof ArchiveInfo) {
+                // Archive icon: accepted (green), rejected (red), not set yet (question mark)
+                ArchiveInfo ai = (ArchiveInfo) element;
 
-            ImageFactory imgFactory = mUpdaterData.getImageFactory();
-            if (imgFactory != null) {
-                if (ai.isAccepted()) {
-                    return imgFactory.getImageByName("accept_icon16.png");
-                } else if (ai.isRejected()) {
-                    return imgFactory.getImageByName("reject_icon16.png");
+                ImageFactory imgFactory = mUpdaterData.getImageFactory();
+                if (imgFactory != null) {
+                    if (ai.isAccepted()) {
+                        return imgFactory.getImageByName("accept_icon16.png");
+                    } else if (ai.isRejected()) {
+                        return imgFactory.getImageByName("reject_icon16.png");
+                    }
+                    return imgFactory.getImageByName("unknown_icon16.png");
                 }
-                return imgFactory.getImageByName("unknown_icon16.png");
+                return super.getImage(element);
+
+            } else if (element instanceof LicenseEntry) {
+                // License icon: green if all below are accepted, red if all rejected, otherwise
+                // no icon.
+                ImageFactory imgFactory = mUpdaterData.getImageFactory();
+                if (imgFactory != null) {
+                    boolean allAccepted = true;
+                    boolean allRejected = true;
+                    for (ArchiveInfo ai : ((LicenseEntry) element).getArchives()) {
+                        allAccepted = allAccepted && ai.isAccepted();
+                        allRejected = allRejected && ai.isRejected();
+                    }
+                    if (allAccepted && !allRejected) {
+                        return imgFactory.getImageByName("accept_icon16.png");
+                    } else if (!allAccepted && allRejected) {
+                        return imgFactory.getImageByName("reject_icon16.png");
+                    }
+                }
             }
-            return super.getImage(element);
+
+            return null;
         }
 
         @Override
         public String getText(Object element) {
-            assert element instanceof ArchiveInfo;
-            ArchiveInfo ai = (ArchiveInfo) element;
+            if (element instanceof LicenseEntry) {
+                return ((LicenseEntry) element).getLicenseRef();
 
-            String desc = ai.getShortDescription();
+            } else if (element instanceof ArchiveInfo) {
+                ArchiveInfo ai = (ArchiveInfo) element;
 
-            if (ai.isDependencyFor()) {
-                desc += " [*]";
+                String desc = ai.getShortDescription();
+
+                if (ai.isDependencyFor()) {
+                    desc += " [*]";
+                }
+
+                return desc;
+
             }
 
-            return desc;
+            assert element instanceof String || element instanceof ArchiveInfo;
+            return null;
         }
     }
 
-    private class NewArchivesContentProvider implements IStructuredContentProvider {
+    /**
+     * Provides the content for the tree view.
+     * Root branches are {@link LicenseEntry} elements.
+     * Leave nodes are {@link ArchiveInfo} which all have the same license.
+     */
+    private class NewArchivesContentProvider implements ITreeContentProvider {
+        private List<LicenseEntry> mInput;
 
         @Override
         public void dispose() {
             // pass
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            // Ignore. The input is always mArchives
+            // Input should be the result from createTreeInput.
+            if (newInput instanceof List<?> &&
+                    ((List<?>) newInput).size() > 0 &&
+                    ((List<?>) newInput).get(0) instanceof LicenseEntry) {
+                mInput = (List<LicenseEntry>) newInput;
+            } else {
+                mInput = null;
+            }
         }
 
         @Override
-        public Object[] getElements(Object inputElement) {
-            return mArchives.toArray();
+        public boolean hasChildren(Object parent) {
+            if (parent instanceof List<?>) {
+                // This is the root of the tree.
+                return true;
+
+            } else if (parent instanceof LicenseEntry) {
+                return ((LicenseEntry) parent).getArchives().size() > 0;
+            }
+
+            return false;
         }
+
+        @Override
+        public Object[] getElements(Object parent) {
+            return getChildren(parent);
+        }
+
+        @Override
+        public Object[] getChildren(Object parent) {
+            if (parent instanceof List<?>) {
+                return ((List<?>) parent).toArray();
+
+            } else if (parent instanceof LicenseEntry) {
+                return ((LicenseEntry) parent).getArchives().toArray();
+            }
+
+            return new Object[0];
+        }
+
+        @Override
+        public Object getParent(Object child) {
+            if (child instanceof LicenseEntry) {
+                return ((LicenseEntry) child).getRoot();
+
+            } else if (child instanceof ArchiveInfo && mInput != null) {
+                for (LicenseEntry entry : mInput) {
+                    if (entry.getArchives().contains(child)) {
+                        return entry;
+                    }
+                }
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * Represents a branch in the view tree: an entry where all the sub-archive info
+     * share the same license. Contains a link to the share root list for convenience.
+     */
+    private static class LicenseEntry {
+        private final List<LicenseEntry> mRoot;
+        private final String mLicenseRef;
+        private final List<ArchiveInfo> mArchives;
+
+        public LicenseEntry(
+                @NonNull List<LicenseEntry> root,
+                @NonNull String licenseRef,
+                @NonNull List<ArchiveInfo> archives) {
+            mRoot = root;
+            mLicenseRef = licenseRef;
+            mArchives = archives;
+        }
+
+        @NonNull
+        public List<LicenseEntry> getRoot() {
+            return mRoot;
+        }
+
+        @NonNull
+        public String getLicenseRef() {
+            return mLicenseRef;
+        }
+
+        @NonNull
+        public List<ArchiveInfo> getArchives() {
+            return mArchives;
+        }
+    }
+
+    /**
+     * Creates the tree structure based on the given archives.
+     * The current structure is to have a branch per license type,
+     * with all the archives sharing the same license under it.
+     * Elements with no license are left at the root.
+     *
+     * @param archives The non-null collection of archive info to display. Ideally non-empty.
+     * @return A list of {@link LicenseEntry}, each containing a list of {@link ArchiveInfo}.
+     */
+    @NonNull
+    private List<LicenseEntry> createTreeInput(@NonNull Collection<ArchiveInfo> archives) {
+        // Build an ordered map with all the licenses, ordered by license ref name.
+        final String noLicense = "No license";      //NLS
+
+        Comparator<String> comp = new Comparator<String>() {
+            @Override
+            public int compare(String s1, String s2) {
+                boolean first1 = noLicense.equals(s1);
+                boolean first2 = noLicense.equals(s2);
+                if (first1 && first2) {
+                    return 0;
+                } else if (first1) {
+                    return -1;
+                } else if (first2) {
+                    return 1;
+                }
+                return s1.compareTo(s2);
+            }
+        };
+
+        Map<String, List<ArchiveInfo>> map = new TreeMap<String, List<ArchiveInfo>>(comp);
+
+        for (ArchiveInfo info : archives) {
+            String ref = noLicense;
+            License license = getLicense(info);
+            if (license != null && license.getLicenseRef() != null) {
+                ref = prettyLicenseRef(license.getLicenseRef());
+            }
+
+            List<ArchiveInfo> list = map.get(ref);
+            if (list == null) {
+                map.put(ref, list = new ArrayList<ArchiveInfo>());
+            }
+            list.add(info);
+        }
+
+        // Transform result into a list
+        List<LicenseEntry> licensesList = new ArrayList<LicenseEntry>();
+        for (Map.Entry<String, List<ArchiveInfo>> entry : map.entrySet()) {
+            licensesList.add(new LicenseEntry(licensesList, entry.getKey(), entry.getValue()));
+        }
+
+        return licensesList;
+    }
+
+    /**
+     * Helper method to retrieve the {@link License} for a given {@link ArchiveInfo}.
+     *
+     * @param ai The archive info. Can be null.
+     * @return The license for the package owning the archive. Can be null.
+     */
+    @Nullable
+    private License getLicense(@Nullable ArchiveInfo ai) {
+        if (ai != null) {
+            Archive aNew = ai.getNewArchive();
+            if (aNew != null) {
+                Package pNew = aNew.getParentPackage();
+                if (pNew != null) {
+                    return pNew.getLicense();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Reformats the licenseRef to be more human-readable.
+     * It's an XML ref and in practice it looks like [oem-]android-[type]-license.
+     * If it's not a format we can deal with, leave it alone.
+     */
+    private String prettyLicenseRef(String ref) {
+        // capitalize every word
+        StringBuilder sb = new StringBuilder();
+        boolean capitalize = true;
+        for (char c : ref.toCharArray()) {
+            if (c >= 'a' && c <= 'z') {
+                if (capitalize) {
+                    c = (char) (c + 'A' - 'a');
+                    capitalize = false;
+                }
+            } else {
+                if (c == '-') {
+                    c = ' ';
+                }
+                capitalize = true;
+            }
+            sb.append(c);
+        }
+
+        ref = sb.toString();
+
+        // A few acronyms should stay upper-case
+        for (String w : new String[] { "Sdk", "Mips", "Arm" }) {
+            ref = ref.replaceAll(w, w.toUpperCase(Locale.US));
+        }
+
+        return ref;
     }
 
     // End of hiding from SWT Designer

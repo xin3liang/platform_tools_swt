@@ -23,6 +23,7 @@ import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdkuilib.internal.repository.SettingsController;
 import com.android.sdkuilib.ui.GridDialog;
 import com.android.utils.ILogger;
+import com.android.utils.SdkUtils;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.window.Window;
@@ -48,7 +49,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -383,7 +386,16 @@ final class AvdStartDialog extends GridDialog {
         }
 
         int dpi = Integer.parseInt(dpiStr);
-        float size = Float.parseFloat(sizeStr);
+
+        // The size number is formatted using String.format (locale formatting)
+        float size;
+        try {
+            size = (float) SdkUtils.parseLocalizedDouble(sizeStr);
+        } catch (ParseException e) {
+            setScale(0);
+            return;
+        }
+
         /*
          * We are trying to emulate the following device:
          * resolution: 'mSize1'x'mSize2'
@@ -411,7 +423,7 @@ final class AvdStartDialog extends GridDialog {
         if (scale == 0.f) {
             mScaleField.setText("default");  //$NON-NLS-1$
         } else {
-            mScaleField.setText(String.format("%.2f", scale));  //$NON-NLS-1$
+            mScaleField.setText(String.format(Locale.getDefault(), "%.2f", scale));  //$NON-NLS-1$
         }
     }
 
@@ -453,7 +465,7 @@ final class AvdStartDialog extends GridDialog {
                 if (d != null) {
                     double screenSize =
                         d.getDefaultHardware().getScreen().getDiagonalLength();
-                    return String.format("%.1f", screenSize);
+                    return String.format(Locale.getDefault(), "%.1f", screenSize);
                 }
             }
         }

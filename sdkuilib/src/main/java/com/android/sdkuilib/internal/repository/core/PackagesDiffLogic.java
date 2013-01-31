@@ -29,9 +29,10 @@ import com.android.sdklib.internal.repository.packages.PlatformToolPackage;
 import com.android.sdklib.internal.repository.packages.SystemImagePackage;
 import com.android.sdklib.internal.repository.packages.ToolPackage;
 import com.android.sdklib.internal.repository.sources.SdkSource;
+import com.android.sdklib.internal.repository.updater.PkgItem;
+import com.android.sdklib.internal.repository.updater.PkgItem.PkgState;
 import com.android.sdklib.util.SparseArray;
 import com.android.sdkuilib.internal.repository.SwtUpdaterData;
-import com.android.sdkuilib.internal.repository.core.PkgItem.PkgState;
 import com.android.sdkuilib.internal.repository.ui.PackagesPageIcons;
 
 import java.util.ArrayList;

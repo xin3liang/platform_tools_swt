@@ -17,11 +17,11 @@
 package com.android.sdkuilib.internal.repository.ui;
 
 import com.android.sdklib.internal.repository.DownloadCache;
+import com.android.sdklib.internal.repository.MockDownloadCache;
 import com.android.sdklib.internal.repository.DownloadCache.Strategy;
+import com.android.sdklib.internal.repository.updater.PackageLoader;
 import com.android.sdklib.util.SparseIntArray;
-import com.android.sdkuilib.internal.repository.MockDownloadCache;
 import com.android.sdkuilib.internal.repository.SwtUpdaterData;
-import com.android.sdkuilib.internal.repository.core.PackageLoader;
 import com.android.sdkuilib.internal.repository.core.PkgCategory;
 import com.android.sdkuilib.internal.repository.core.PkgContentProvider;
 

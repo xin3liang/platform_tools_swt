@@ -18,8 +18,8 @@ package com.android.sdkuilib.internal.repository.ui;
 
 import com.android.sdklib.SdkManager;
 import com.android.sdklib.SdkManagerTestCase;
+import com.android.sdklib.internal.repository.MockDownloadCache;
 import com.android.sdklib.repository.SdkRepoConstants;
-import com.android.sdkuilib.internal.repository.MockDownloadCache;
 import com.android.sdkuilib.internal.repository.MockSwtUpdaterData;
 
 import java.util.Arrays;

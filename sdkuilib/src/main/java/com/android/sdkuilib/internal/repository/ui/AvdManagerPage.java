@@ -21,10 +21,10 @@ import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.devices.DeviceManager.DevicesChangedListener;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
+import com.android.sdklib.repository.ISdkChangeListener;
 import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.widgets.AvdSelector;
 import com.android.sdkuilib.internal.widgets.AvdSelector.DisplayMode;
-import com.android.sdkuilib.repository.ISdkChangeListener;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;

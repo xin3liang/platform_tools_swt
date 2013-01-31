@@ -91,7 +91,7 @@ final class SdkUpdaterChooserDialog extends GridDialog {
     private Button mLicenseRadioReject;
     private Button mLicenseRadioAcceptLicense;
     private Group mPackageTextGroup;
-    private final UpdaterData mUpdaterData;
+    private final SwtUpdaterData mSwtUpdaterData;
     private Group mTableGroup;
     private Label mErrorLabel;
 
@@ -113,14 +113,14 @@ final class SdkUpdaterChooserDialog extends GridDialog {
      * Create the dialog.
      *
      * @param parentShell The shell to use, typically updaterData.getWindowShell()
-     * @param updaterData The updater data
+     * @param swtUpdaterData The updater data
      * @param archives The archives to be installed
      */
     public SdkUpdaterChooserDialog(Shell parentShell,
-            UpdaterData updaterData,
+            SwtUpdaterData swtUpdaterData,
             Collection<ArchiveInfo> archives) {
         super(parentShell, 3, false/*makeColumnsEqual*/);
-        mUpdaterData = updaterData;
+        mSwtUpdaterData = swtUpdaterData;
         mArchives = archives;
     }
 
@@ -348,8 +348,8 @@ final class SdkUpdaterChooserDialog extends GridDialog {
             imageName = "android_icon_128.png";   //$NON-NLS-1$
         }
 
-        if (mUpdaterData != null) {
-            ImageFactory imgFactory = mUpdaterData.getImageFactory();
+        if (mSwtUpdaterData != null) {
+            ImageFactory imgFactory = mSwtUpdaterData.getImageFactory();
             if (imgFactory != null) {
                 getShell().setImage(imgFactory.getImageByName(imageName));
             }
@@ -848,7 +848,7 @@ final class SdkUpdaterChooserDialog extends GridDialog {
                 // Archive icon: accepted (green), rejected (red), not set yet (question mark)
                 ArchiveInfo ai = (ArchiveInfo) element;
 
-                ImageFactory imgFactory = mUpdaterData.getImageFactory();
+                ImageFactory imgFactory = mSwtUpdaterData.getImageFactory();
                 if (imgFactory != null) {
                     if (ai.isAccepted()) {
                         return imgFactory.getImageByName("accept_icon16.png");
@@ -862,7 +862,7 @@ final class SdkUpdaterChooserDialog extends GridDialog {
             } else if (element instanceof LicenseEntry) {
                 // License icon: green if all below are accepted, red if all rejected, otherwise
                 // no icon.
-                ImageFactory imgFactory = mUpdaterData.getImageFactory();
+                ImageFactory imgFactory = mSwtUpdaterData.getImageFactory();
                 if (imgFactory != null) {
                     boolean allAccepted = true;
                     boolean allRejected = true;

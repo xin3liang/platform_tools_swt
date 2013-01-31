@@ -24,7 +24,7 @@ import com.android.sdklib.internal.repository.sources.SdkSources;
 import com.android.sdklib.internal.repository.sources.SdkSysImgSource;
 import com.android.sdklib.repository.SdkSysImgConstants;
 import com.android.sdkuilib.internal.repository.UpdaterBaseDialog;
-import com.android.sdkuilib.internal.repository.UpdaterData;
+import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.ui.GridDataBuilder;
 import com.android.sdkuilib.ui.GridLayoutBuilder;
 
@@ -91,7 +91,7 @@ public class AddonSitesDialog extends UpdaterBaseDialog {
      * @param parent The parent's shell
      * @wbp.parser.entryPoint
      */
-    public AddonSitesDialog(Shell parent, UpdaterData updaterData) {
+    public AddonSitesDialog(Shell parent, SwtUpdaterData updaterData) {
         super(parent, updaterData, "Add-on Sites");
         mSources = updaterData.getSources();
         assert mSources != null;

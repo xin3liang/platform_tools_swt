@@ -68,10 +68,10 @@ public class SettingsDialog extends UpdaterBaseDialog implements ISettingsPage {
         }
     };
 
-    public SettingsDialog(Shell parentShell, UpdaterData updaterData) {
-        super(parentShell, updaterData, "Settings" /*title*/);
-        assert updaterData != null;
-        mSettingsController = updaterData.getSettingsController();
+    public SettingsDialog(Shell parentShell, SwtUpdaterData swtUpdaterData) {
+        super(parentShell, swtUpdaterData, "Settings" /*title*/);
+        assert swtUpdaterData != null;
+        mSettingsController = swtUpdaterData.getSettingsController();
     }
 
     @Override

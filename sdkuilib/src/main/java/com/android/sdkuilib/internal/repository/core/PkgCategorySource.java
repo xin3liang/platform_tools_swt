@@ -18,7 +18,7 @@ package com.android.sdkuilib.internal.repository.core;
 
 import com.android.sdklib.internal.repository.sources.SdkRepoSource;
 import com.android.sdklib.internal.repository.sources.SdkSource;
-import com.android.sdkuilib.internal.repository.UpdaterData;
+import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.ui.PackagesPageIcons;
 
 
@@ -37,12 +37,13 @@ public class PkgCategorySource extends PkgCategory {
      * This uses {@link SdkSource#toString()} to get the source's description.
      * Note that if the name of the source isn't known, the description will use its URL.
      */
-    public PkgCategorySource(SdkSource source, UpdaterData updaterData) {
+    public PkgCategorySource(SdkSource source, SwtUpdaterData swtUpdaterData) {
         super(
             source, // the source is the key and it can be null
             source == UNKNOWN_SOURCE ? "Local Packages" : source.toString(),
             source == UNKNOWN_SOURCE ?
-                updaterData.getImageFactory().getImageByName(PackagesPageIcons.ICON_PKG_INSTALLED) :
+                swtUpdaterData.getImageFactory()
+                              .getImageByName(PackagesPageIcons.ICON_PKG_INSTALLED) :
                 source);
         mSource = source;
     }

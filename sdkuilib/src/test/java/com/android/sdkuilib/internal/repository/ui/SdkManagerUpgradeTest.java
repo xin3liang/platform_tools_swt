@@ -20,7 +20,7 @@ import com.android.sdklib.SdkManager;
 import com.android.sdklib.SdkManagerTestCase;
 import com.android.sdklib.repository.SdkRepoConstants;
 import com.android.sdkuilib.internal.repository.MockDownloadCache;
-import com.android.sdkuilib.internal.repository.MockUpdaterData;
+import com.android.sdkuilib.internal.repository.MockSwtUpdaterData;
 
 import java.util.Arrays;
 
@@ -42,7 +42,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
     public void testPackagesPage1() throws Exception {
         SdkManager sdkman = getSdkManager();
 
-        MockUpdaterData updaterData = new MockUpdaterData(sdkman);
+        MockSwtUpdaterData updaterData = new MockSwtUpdaterData(sdkman);
         MockDownloadCache cache = (MockDownloadCache) updaterData.getDownloadCache();
         updaterData.setupDefaultSources();
 

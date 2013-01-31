@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Properties;
 
 /** A mock UpdaterData that simply records what would have been installed. */
-public class MockUpdaterData extends UpdaterData {
+public class MockSwtUpdaterData extends SwtUpdaterData {
 
     public final static String SDK_PATH = "/tmp/SDK";
 
@@ -56,16 +56,16 @@ public class MockUpdaterData extends UpdaterData {
         };
     };
 
-    /** Creates a {@link MockUpdaterData} using a {@link MockEmptySdkManager}. */
-    public MockUpdaterData() {
+    /** Creates a {@link MockSwtUpdaterData} using a {@link MockEmptySdkManager}. */
+    public MockSwtUpdaterData() {
         super(SDK_PATH, new MockLog());
 
         setTaskFactory(new MockTaskFactory());
         setImageFactory(new NullImageFactory());
     }
 
-    /** Creates a {@link MockUpdaterData} using the given {@link SdkManager}. */
-    public MockUpdaterData(SdkManager sdkManager) {
+    /** Creates a {@link MockSwtUpdaterData} using the given {@link SdkManager}. */
+    public MockSwtUpdaterData(SdkManager sdkManager) {
         super(sdkManager.getLocation(), new MockLog());
         setSdkManager(sdkManager);
         setTaskFactory(new MockTaskFactory());

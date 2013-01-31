@@ -39,9 +39,9 @@ import java.util.Properties;
 
 public class AboutDialog extends UpdaterBaseDialog {
 
-    public AboutDialog(Shell parentShell, UpdaterData updaterData) {
-        super(parentShell, updaterData, "About" /*title*/);
-        assert updaterData != null;
+    public AboutDialog(Shell parentShell, SwtUpdaterData swtUpdaterData) {
+        super(parentShell, swtUpdaterData, "About" /*title*/);
+        assert swtUpdaterData != null;
     }
 
     @Override
@@ -54,7 +54,8 @@ public class AboutDialog extends UpdaterBaseDialog {
         GridLayoutBuilder.create(shell).columns(3);
 
         Label logo = new Label(shell, SWT.NONE);
-        ImageFactory imgf = getUpdaterData() == null ? null : getUpdaterData().getImageFactory();
+        ImageFactory imgf = getSwtUpdaterData() == null ? null
+                                                        : getSwtUpdaterData().getImageFactory();
         Image image = imgf == null ? null : imgf.getImageByName("sdkman_logo_128.png");
         if (image != null) logo.setImage(image);
 
@@ -92,7 +93,7 @@ public class AboutDialog extends UpdaterBaseDialog {
     private String getRevision() {
         Properties p = new Properties();
         try{
-            File sourceProp = FileOp.append(getUpdaterData().getOsSdkRoot(),
+            File sourceProp = FileOp.append(getSwtUpdaterData().getOsSdkRoot(),
                     SdkConstants.FD_TOOLS,
                     SdkConstants.FN_SOURCE_PROP);
             FileInputStream fis = null;

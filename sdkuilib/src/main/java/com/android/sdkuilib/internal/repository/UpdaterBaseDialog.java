@@ -37,17 +37,17 @@ import org.eclipse.swt.widgets.Shell;
  */
 public abstract class UpdaterBaseDialog extends SwtBaseDialog {
 
-    private final UpdaterData mUpdaterData;
+    private final SwtUpdaterData mSwtUpdaterData;
 
-    protected UpdaterBaseDialog(Shell parentShell, UpdaterData updaterData, String title) {
+    protected UpdaterBaseDialog(Shell parentShell, SwtUpdaterData swtUpdaterData, String title) {
         super(parentShell,
               SWT.APPLICATION_MODAL,
               String.format("%1$s - %2$s", SdkUpdaterWindowImpl2.APP_NAME, title)); //$NON-NLS-1$
-        mUpdaterData = updaterData;
+        mSwtUpdaterData = swtUpdaterData;
     }
 
-    public UpdaterData getUpdaterData() {
-        return mUpdaterData;
+    public SwtUpdaterData getSwtUpdaterData() {
+        return mSwtUpdaterData;
     }
 
     /**
@@ -96,8 +96,8 @@ public abstract class UpdaterBaseDialog extends SwtBaseDialog {
             imageName = "android_icon_128.png"; //$NON-NLS-1$
         }
 
-        if (mUpdaterData != null) {
-            ImageFactory imgFactory = mUpdaterData.getImageFactory();
+        if (mSwtUpdaterData != null) {
+            ImageFactory imgFactory = mSwtUpdaterData.getImageFactory();
             if (imgFactory != null) {
                 shell.setImage(imgFactory.getImageByName(imageName));
             }

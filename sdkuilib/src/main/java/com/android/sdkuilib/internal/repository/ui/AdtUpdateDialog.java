@@ -25,7 +25,7 @@ import com.android.sdklib.internal.repository.packages.PlatformToolPackage;
 import com.android.sdklib.internal.repository.packages.ToolPackage;
 import com.android.sdklib.internal.repository.sources.SdkSource;
 import com.android.sdkuilib.internal.repository.SettingsController;
-import com.android.sdkuilib.internal.repository.UpdaterData;
+import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.core.PackageLoader;
 import com.android.sdkuilib.internal.repository.core.SdkLogAdapter;
 import com.android.sdkuilib.internal.repository.core.PackageLoader.IAutoInstallTask;
@@ -72,7 +72,7 @@ public class AdtUpdateDialog extends SwtBaseDialog {
     public static final int USE_MAX_REMOTE_API_LEVEL = 0;
 
     private static final String APP_NAME = "Android SDK Manager";
-    private final UpdaterData mUpdaterData;
+    private final SwtUpdaterData mUpdaterData;
 
     private Boolean mResultCode = Boolean.FALSE;
     private Map<Package, File> mResultPaths = null;
@@ -97,7 +97,7 @@ public class AdtUpdateDialog extends SwtBaseDialog {
             ILogger sdkLog,
             String osSdkRoot) {
         super(parentShell, SWT.NONE, APP_NAME);
-        mUpdaterData = new UpdaterData(osSdkRoot, sdkLog);
+        mUpdaterData = new SwtUpdaterData(osSdkRoot, sdkLog);
     }
 
     /**
@@ -362,7 +362,7 @@ public class AdtUpdateDialog extends SwtBaseDialog {
 
             @Override
             int installFlags() {
-                return UpdaterData.TOOLS_MSG_UPDATED_FROM_ADT;
+                return SwtUpdaterData.TOOLS_MSG_UPDATED_FROM_ADT;
             }
         };
     }
@@ -381,7 +381,7 @@ public class AdtUpdateDialog extends SwtBaseDialog {
 
             @Override
             int installFlags() {
-                return UpdaterData.TOOLS_MSG_UPDATED_FROM_ADT;
+                return SwtUpdaterData.TOOLS_MSG_UPDATED_FROM_ADT;
             }
         };
     }
@@ -420,7 +420,7 @@ public class AdtUpdateDialog extends SwtBaseDialog {
 
             @Override
             int installFlags() {
-                return UpdaterData.TOOLS_MSG_UPDATED_FROM_ADT;
+                return SwtUpdaterData.TOOLS_MSG_UPDATED_FROM_ADT;
             }
         };
     }
@@ -479,7 +479,7 @@ public class AdtUpdateDialog extends SwtBaseDialog {
 
             @Override
             int installFlags() {
-                return UpdaterData.NO_TOOLS_MSG;
+                return SwtUpdaterData.NO_TOOLS_MSG;
             }
         };
     }

@@ -21,7 +21,7 @@ import com.android.sdklib.internal.repository.ITaskMonitor;
 import com.android.sdklib.internal.repository.archives.Archive;
 import com.android.sdklib.internal.repository.archives.ArchiveInstaller;
 import com.android.sdklib.internal.repository.packages.Package;
-import com.android.sdkuilib.internal.repository.UpdaterData;
+import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.core.PkgCategory;
 import com.android.sdkuilib.internal.repository.core.PkgCategoryApi;
 import com.android.sdkuilib.internal.repository.core.PkgContentProvider;
@@ -136,10 +136,10 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
     public PackagesPage(
             Composite parent,
             int swtStyle,
-            UpdaterData updaterData,
+            SwtUpdaterData swtUpdaterData,
             SdkInvocationContext context) {
         super(parent, swtStyle);
-        mImpl = new PackagesPageImpl(updaterData) {
+        mImpl = new PackagesPageImpl(swtUpdaterData) {
             @Override
             protected boolean isUiDisposed() {
                 return mGroupPackages == null || mGroupPackages.isDisposed();
@@ -443,8 +443,8 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
     }
 
     private Image getImage(String filename) {
-        if (mImpl.mUpdaterData != null) {
-            ImageFactory imgFactory = mImpl.mUpdaterData.getImageFactory();
+        if (mImpl.mSwtUpdaterData != null) {
+            ImageFactory imgFactory = mImpl.mSwtUpdaterData.getImageFactory();
             if (imgFactory != null) {
                 return imgFactory.getImageByName(filename);
             }
@@ -471,7 +471,7 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
                     mImpl.fullReload();
                     break;
                 case SHOW_ADDON_SITES:
-                    AddonSitesDialog d = new AddonSitesDialog(getShell(), mImpl.mUpdaterData);
+                    AddonSitesDialog d = new AddonSitesDialog(getShell(), mImpl.mSwtUpdaterData);
                     if (d.open()) {
                         mImpl.loadPackages();
                     }
@@ -588,8 +588,8 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
     private void postCreate() {
         mImpl.postCreate();
 
-        if (mImpl.mUpdaterData != null) {
-            mTextSdkOsPath.setText(mImpl.mUpdaterData.getOsSdkRoot());
+        if (mImpl.mSwtUpdaterData != null) {
+            mTextSdkOsPath.setText(mImpl.mSwtUpdaterData.getOsSdkRoot());
         }
 
         ((PkgContentProvider) mTreeViewer.getContentProvider()).setDisplayArchives(
@@ -612,7 +612,7 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
     }
 
     private void loadPackages(boolean useLocalCache, boolean overrideExisting) {
-        if (mImpl.mUpdaterData == null) {
+        if (mImpl.mSwtUpdaterData == null) {
             return;
         }
 
@@ -718,7 +718,7 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
         if (mTreeViewer != null && !mTreeViewer.getTree().isDisposed()) {
 
             boolean enablePreviews =
-                mImpl.mUpdaterData.getSettingsController().getSettings().getEnablePreviews();
+                mImpl.mSwtUpdaterData.getSettingsController().getSettings().getEnablePreviews();
 
             mTreeViewer.setExpandedState(elem, true);
             nextCategory: for (Object pkg :
@@ -1025,17 +1025,17 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
         ArrayList<Archive> archives = new ArrayList<Archive>();
         getArchivesForInstall(archives);
 
-        if (mImpl.mUpdaterData != null) {
+        if (mImpl.mSwtUpdaterData != null) {
             boolean needsRefresh = false;
             try {
                 beginOperationPending();
 
-                List<Archive> installed = mImpl.mUpdaterData.updateOrInstallAll_WithGUI(
+                List<Archive> installed = mImpl.mSwtUpdaterData.updateOrInstallAll_WithGUI(
                     archives,
                     mCheckFilterObsolete.getSelection() /* includeObsoletes */,
                     mContext == SdkInvocationContext.IDE ?
-                            UpdaterData.TOOLS_MSG_UPDATED_FROM_ADT :
-                                UpdaterData.TOOLS_MSG_UPDATED_FROM_SDKMAN);
+                            SwtUpdaterData.TOOLS_MSG_UPDATED_FROM_ADT :
+                                SwtUpdaterData.TOOLS_MSG_UPDATED_FROM_SDKMAN);
                 needsRefresh = installed != null && !installed.isEmpty();
             } finally {
                 endOperationPending();
@@ -1154,7 +1154,7 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
                 try {
                     beginOperationPending();
 
-                    mImpl.mUpdaterData.getTaskFactory().start("Delete Package", new ITask() {
+                    mImpl.mSwtUpdaterData.getTaskFactory().start("Delete Package", new ITask() {
                         @Override
                         public void run(ITaskMonitor monitor) {
                             monitor.setProgressMax(archives.size() + 1);

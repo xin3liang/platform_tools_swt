@@ -21,7 +21,7 @@ import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.devices.DeviceManager.DevicesChangedListener;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
-import com.android.sdkuilib.internal.repository.UpdaterData;
+import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.widgets.AvdSelector;
 import com.android.sdkuilib.internal.widgets.AvdSelector.DisplayMode;
 import com.android.sdkuilib.repository.ISdkChangeListener;
@@ -48,21 +48,21 @@ public class AvdManagerPage extends Composite
 
     private AvdSelector mAvdSelector;
 
-    private final UpdaterData mUpdaterData;
+    private final SwtUpdaterData mSwtUpdaterData;
     private final DeviceManager mDeviceManager;
     /**
      * Create the composite.
      * @param parent The parent of the composite.
-     * @param updaterData An instance of {@link UpdaterData}.
+     * @param swtUpdaterData An instance of {@link SwtUpdaterData}.
      */
     public AvdManagerPage(Composite parent,
             int swtStyle,
-            UpdaterData updaterData,
+            SwtUpdaterData swtUpdaterData,
             DeviceManager deviceManager) {
         super(parent, swtStyle);
 
-        mUpdaterData = updaterData;
-        mUpdaterData.addListeners(this);
+        mSwtUpdaterData = swtUpdaterData;
+        mSwtUpdaterData.addListeners(this);
 
         mDeviceManager = deviceManager;
         mDeviceManager.registerListener(this);
@@ -78,10 +78,10 @@ public class AvdManagerPage extends Composite
         label.setLayoutData(new GridData());
 
         try {
-            if (mUpdaterData != null && mUpdaterData.getAvdManager() != null) {
+            if (mSwtUpdaterData != null && mSwtUpdaterData.getAvdManager() != null) {
                 label.setText(String.format(
                         "List of existing Android Virtual Devices located at %s",
-                        mUpdaterData.getAvdManager().getBaseAvdFolder()));
+                        mSwtUpdaterData.getAvdManager().getBaseAvdFolder()));
             } else {
                 label.setText("Error: cannot find the AVD folder location.\r\n Please set the 'ANDROID_SDK_HOME' env variable.");
             }
@@ -90,11 +90,11 @@ public class AvdManagerPage extends Composite
         }
 
         mAvdSelector = new AvdSelector(parent,
-                mUpdaterData.getOsSdkRoot(),
-                mUpdaterData.getAvdManager(),
+                mSwtUpdaterData.getOsSdkRoot(),
+                mSwtUpdaterData.getAvdManager(),
                 DisplayMode.MANAGER,
-                mUpdaterData.getSdkLog());
-        mAvdSelector.setSettingsController(mUpdaterData.getSettingsController());
+                mSwtUpdaterData.getSdkLog());
+        mAvdSelector.setSettingsController(mSwtUpdaterData.getSettingsController());
     }
 
     @Override
@@ -104,7 +104,7 @@ public class AvdManagerPage extends Composite
 
     @Override
     public void dispose() {
-        mUpdaterData.removeListener(this);
+        mSwtUpdaterData.removeListener(this);
         mDeviceManager.unregisterListener(this);
         super.dispose();
     }
@@ -120,7 +120,7 @@ public class AvdManagerPage extends Composite
 
             // Reloading the AVDs created new objects, so the reference to avdInfo
             // will never be selected. Instead reselect it based on its unique name.
-            AvdManager am = mUpdaterData.getAvdManager();
+            AvdManager am = mSwtUpdaterData.getAvdManager();
             avdInfo = am.getAvd(avdInfo.getName(), false /*validAvdOnly*/);
         }
         mAvdSelector.setSelection(avdInfo);

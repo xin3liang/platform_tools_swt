@@ -35,10 +35,10 @@ import com.android.sdklib.mock.MockLog;
 import com.android.sdkuilib.internal.repository.icons.ImageFactory;
 import com.android.utils.ILogger;
 import com.android.utils.NullLogger;
+import com.google.common.collect.Lists;
 
 import org.eclipse.swt.graphics.Image;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -47,10 +47,8 @@ public class MockSwtUpdaterData extends SwtUpdaterData {
 
     public final static String SDK_PATH = "/tmp/SDK";
 
-    private final List<ArchiveReplacement> mInstalled = new ArrayList<ArchiveReplacement>();
-
     private DownloadCache mMockDownloadCache = new MockDownloadCache();
-
+    private final List<ArchiveReplacement> mInstalled = Lists.newArrayList();
     private final SdkSources mMockSdkSources = new SdkSources() {
         @Override
         public void loadUserAddons(ILogger log) {
@@ -150,7 +148,7 @@ public class MockSwtUpdaterData extends SwtUpdaterData {
 
     public static SettingsController createSettingsController(ILogger sdkLog) {
         Properties props = new Properties();
-        Settings settings = new Settings(props) {}; // this constructor is protected
+        Settings settings = new Settings(props) {};   // this constructor is protected
         MockSettingsController controller = new MockSettingsController(sdkLog, settings);
         controller.setProperties(props);
         return controller;

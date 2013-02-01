@@ -19,6 +19,7 @@ package com.android.sdkuilib.internal.repository.ui;
 import com.android.sdklib.SdkManager;
 import com.android.sdklib.SdkManagerTestCase;
 import com.android.sdklib.internal.repository.MockDownloadCache;
+import com.android.sdklib.internal.repository.updater.ISettingsPage;
 import com.android.sdklib.repository.SdkRepoConstants;
 import com.android.sdkuilib.internal.repository.MockSwtUpdaterData;
 
@@ -55,12 +56,17 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
         // the fake locally-installed SDK.
         String actual = pageImpl.getMockTreeDisplay();
         assertEquals(
-                "[]    Tools                   |  |   |          \n" +
-                " L_[] Android SDK Tools       |  | 0 | Installed\n" +
-                "[]    Android 0.0 (API 0)     |  |   |          \n" +
-                " L_[] SDK Platform            |  | 1 | Installed\n" +
-                " L_[] Sources for Android SDK |  | 0 | Installed\n" +
-                "[]    Extras                  |  |   |          ",
+                "[]    Tools                      |  |            |          \n" +
+                " L_[] Android SDK Tools          |  |      1.0.1 | Installed\n" +
+                " L_[] Android SDK Platform-tools |  |     17.1.2 | Installed\n" +
+                " L_[] Android SDK Build-tools    |  |      3.0.1 | Installed\n" +
+                " L_[] Android SDK Build-tools    |  |          3 | Installed\n" +
+                "[]    Tools (Preview Channel)    |  |            |          \n" +
+                " L_[] Android SDK Build-tools    |  | 12.3.4 rc5 | Installed\n" +
+                "[]    Android 0.0 (API 0)        |  |            |          \n" +
+                " L_[] SDK Platform               |  |          1 | Installed\n" +
+                " L_[] Sources for Android SDK    |  |          0 | Installed\n" +
+                "[]    Extras                     |  |            |          ",
                 actual);
 
         assertEquals(
@@ -68,29 +74,37 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 Arrays.toString(cache.getDirectHits()));
         assertEquals(
                 "[<https://dl-ssl.google.com/android/repository/addons_list-1.xml : 1>, " +
-                "<https://dl-ssl.google.com/android/repository/addons_list-2.xml : 1>, " +
-                "<https://dl-ssl.google.com/android/repository/repository-5.xml : 2>, " +
-                "<https://dl-ssl.google.com/android/repository/repository-6.xml : 2>, " +
-                "<https://dl-ssl.google.com/android/repository/repository-7.xml : 2>, " +
-                "<https://dl-ssl.google.com/android/repository/repository.xml : 2>]",
+                 "<https://dl-ssl.google.com/android/repository/addons_list-2.xml : 1>, " +
+                 "<https://dl-ssl.google.com/android/repository/repository-5.xml : 2>, " +
+                 "<https://dl-ssl.google.com/android/repository/repository-6.xml : 2>, " +
+                 "<https://dl-ssl.google.com/android/repository/repository-7.xml : 2>, " +
+                 "<https://dl-ssl.google.com/android/repository/repository-8.xml : 2>, " +
+                 "<https://dl-ssl.google.com/android/repository/repository.xml : 2>]",
                 Arrays.toString(cache.getCachedHits()));
 
 
-        // Now prepare a tools update on the server and reload
+        // Now prepare a tools update on the server and reload, with previews disabled.
         setupToolsXml1(cache);
         cache.clearDirectHits();
         cache.clearCachedHits();
+        updaterData.overrideSetting(ISettingsPage.KEY_ENABLE_PREVIEWS, false);
         pageImpl.fullReload();
 
         actual = pageImpl.getMockTreeDisplay();
         assertEquals(
-                "[]    Tools                      |  |    |                              \n" +
-                " L_[] Android SDK Tools          |  |  0 | Update available: rev. 20.0.3\n" +
-                " L_[] Android SDK Platform-tools |  | 14 | Not installed                \n" +
-                "[]    Android 0.0 (API 0)        |  |    |                              \n" +
-                " L_[] SDK Platform               |  |  1 | Installed                    \n" +
-                " L_[] Sources for Android SDK    |  |  0 | Installed                    \n" +
-                "[]    Extras                     |  |    |                              ",
+                "[]    Tools                      |  |            |                              \n" +
+                " L_[] Android SDK Tools          |  |      1.0.1 | Update available: rev. 20.0.3\n" +
+                " L_[] Android SDK Platform-tools |  |     17.1.2 | Update available: rev. 18    \n" +
+                " L_[] Android SDK Build-tools    |  |         18 | Not installed                \n" +
+                " L_[] Android SDK Build-tools    |  |      3.0.1 | Installed                    \n" +
+                " L_[] Android SDK Build-tools    |  |          3 | Installed                    \n" +
+                "[]    Tools (Preview Channel)    |  |            |                              \n" +
+                // Note: locally installed previews are always shown, even when enable previews is false.
+                " L_[] Android SDK Build-tools    |  | 12.3.4 rc5 | Installed                    \n" +
+                "[]    Android 0.0 (API 0)        |  |            |                              \n" +
+                " L_[] SDK Platform               |  |          1 | Installed                    \n" +
+                " L_[] Sources for Android SDK    |  |          0 | Installed                    \n" +
+                "[]    Extras                     |  |            |                              ",
                 actual);
 
         assertEquals(
@@ -98,9 +112,10 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 Arrays.toString(cache.getDirectHits()));
         assertEquals(
                 "[<https://dl-ssl.google.com/android/repository/repository-5.xml : 1>, " +
-                "<https://dl-ssl.google.com/android/repository/repository-6.xml : 1>, " +
-                "<https://dl-ssl.google.com/android/repository/repository-7.xml : 1>, " +
-                "<https://dl-ssl.google.com/android/repository/repository.xml : 1>]",
+                 "<https://dl-ssl.google.com/android/repository/repository-6.xml : 1>, " +
+                 "<https://dl-ssl.google.com/android/repository/repository-7.xml : 1>, " +
+                 "<https://dl-ssl.google.com/android/repository/repository-8.xml : 1>, " +
+                 "<https://dl-ssl.google.com/android/repository/repository.xml : 1>]",
                 Arrays.toString(cache.getCachedHits()));
 
 
@@ -115,13 +130,18 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
 
         actual = pageImpl.getMockTreeDisplay();
         assertEquals(
-                "[]    Tools                      |  |    |                              \n" +
-                " L_[] Android SDK Tools          |  |  0 | Update available: rev. 20.0.3\n" +
-                " L_[] Android SDK Platform-tools |  | 14 | Not installed                \n" +
-                "[]    Android 0.0 (API 0)        |  |    |                              \n" +
-                " L_[] SDK Platform               |  |  1 | Installed                    \n" +
-                " L_[] Sources for Android SDK    |  |  0 | Installed                    \n" +
-                "[]    Extras                     |  |    |                              ",
+                "[]    Tools                      |  |            |                              \n" +
+                " L_[] Android SDK Tools          |  |      1.0.1 | Update available: rev. 20.0.3\n" +
+                " L_[] Android SDK Platform-tools |  |     17.1.2 | Update available: rev. 18    \n" +
+                " L_[] Android SDK Build-tools    |  |         18 | Not installed                \n" +
+                " L_[] Android SDK Build-tools    |  |      3.0.1 | Installed                    \n" +
+                " L_[] Android SDK Build-tools    |  |          3 | Installed                    \n" +
+                "[]    Tools (Preview Channel)    |  |            |                              \n" +
+                " L_[] Android SDK Build-tools    |  | 12.3.4 rc5 | Installed                    \n" +
+                "[]    Android 0.0 (API 0)        |  |            |                              \n" +
+                " L_[] SDK Platform               |  |          1 | Installed                    \n" +
+                " L_[] Sources for Android SDK    |  |          0 | Installed                    \n" +
+                "[]    Extras                     |  |            |                              ",
                 actual);
 
         assertEquals(
@@ -131,6 +151,44 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 "[<https://dl-ssl.google.com/android/repository/repository-5.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository-6.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository-7.xml : 1>, " +
+                "<https://dl-ssl.google.com/android/repository/repository-8.xml : 1>, " +
+                "<https://dl-ssl.google.com/android/repository/repository.xml : 1>]",
+                Arrays.toString(cache.getCachedHits()));
+
+
+        // Now simulate a reload but this time enable previews.
+
+        cache.clearDirectHits();
+        cache.clearCachedHits();
+        pageImpl = new MockPackagesPageImpl(updaterData);
+        pageImpl.postCreate();
+        updaterData.overrideSetting(ISettingsPage.KEY_ENABLE_PREVIEWS, true);
+        pageImpl.performFirstLoad();
+
+        actual = pageImpl.getMockTreeDisplay();
+        assertEquals(
+                "[]    Tools                      |  |            |                                   \n" +
+                " L_[] Android SDK Tools          |  |      1.0.1 | Update available: rev. 20.0.3     \n" +
+                " L_[] Android SDK Platform-tools |  |     17.1.2 | Update available: rev. 18         \n" +
+                " L_[] Android SDK Build-tools    |  |         18 | Not installed                     \n" +
+                " L_[] Android SDK Build-tools    |  |      3.0.1 | Installed                         \n" +
+                " L_[] Android SDK Build-tools    |  |          3 | Installed                         \n" +
+                "[]    Tools (Preview Channel)    |  |            |                                   \n" +
+                " L_[] Android SDK Build-tools    |  | 12.3.4 rc5 | Update available: rev. 12.3.4 rc15\n" +
+                "[]    Android 0.0 (API 0)        |  |            |                                   \n" +
+                " L_[] SDK Platform               |  |          1 | Installed                         \n" +
+                " L_[] Sources for Android SDK    |  |          0 | Installed                         \n" +
+                "[]    Extras                     |  |            |                                   ",
+                actual);
+
+        assertEquals(
+                "[]",  // there are no direct downloads till we try to install.
+                Arrays.toString(cache.getDirectHits()));
+        assertEquals(
+                "[<https://dl-ssl.google.com/android/repository/repository-5.xml : 1>, " +
+                "<https://dl-ssl.google.com/android/repository/repository-6.xml : 1>, " +
+                "<https://dl-ssl.google.com/android/repository/repository-7.xml : 1>, " +
+                "<https://dl-ssl.google.com/android/repository/repository-8.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository.xml : 1>]",
                 Arrays.toString(cache.getCachedHits()));
     }
@@ -138,28 +196,78 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
     private void setupToolsXml1(MockDownloadCache cache) throws Exception {
         String repoXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<sdk:sdk-repository xmlns:sdk=\"http://schemas.android.com/sdk/android/repository/7\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+            "<sdk:sdk-repository xmlns:sdk=\"http://schemas.android.com/sdk/android/repository/8\" " +
+            "                    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
             "<sdk:license id=\"android-sdk-license\" type=\"text\">Blah blah blah.</sdk:license>\n" +
             "\n" +
-            "<sdk:platform-tool>\n" +
+            "<sdk:build-tool>\n" +
             "    <sdk:revision>\n" +
-            "        <sdk:major>14</sdk:major>\n" +
+            "        <sdk:major>18</sdk:major>\n" +
             "    </sdk:revision>\n" +
             "    <sdk:archives>\n" +
             "        <sdk:archive arch=\"any\" os=\"windows\">\n" +
             "            <sdk:size>11159472</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">6028258d8f2fba14d8b40c3cf507afa0289aaa13</sdk:checksum>\n" +
-            "            <sdk:url>platform-tools_r14-windows.zip</sdk:url>\n" +
+            "            <sdk:url>platform-tools_r18-windows.zip</sdk:url>\n" +
             "        </sdk:archive>\n" +
             "        <sdk:archive arch=\"any\" os=\"linux\">\n" +
             "            <sdk:size>10985068</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">6e2bc329c9485eb383172cbc2cde8b0c0cd1843f</sdk:checksum>\n" +
-            "            <sdk:url>platform-tools_r14-linux.zip</sdk:url>\n" +
+            "            <sdk:url>platform-tools_r18-linux.zip</sdk:url>\n" +
             "        </sdk:archive>\n" +
             "        <sdk:archive arch=\"any\" os=\"macosx\">\n" +
             "            <sdk:size>11342461</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">4a015090c6a209fc33972acdbc65745e0b3c08b9</sdk:checksum>\n" +
-            "            <sdk:url>platform-tools_r14-macosx.zip</sdk:url>\n" +
+            "            <sdk:url>platform-tools_r18-macosx.zip</sdk:url>\n" +
+            "        </sdk:archive>\n" +
+            "    </sdk:archives>\n" +
+            "</sdk:build-tool>\n" +
+            "\n" +
+            "<sdk:build-tool>\n" +
+            "    <sdk:revision>\n" +
+            "        <sdk:major>12</sdk:major>\n" +
+            "        <sdk:minor>3</sdk:minor>\n" +
+            "        <sdk:micro>4</sdk:micro>\n" +
+            "        <sdk:preview>15</sdk:preview>\n" +
+            "    </sdk:revision>\n" +
+            "    <sdk:archives>\n" +
+            "        <sdk:archive arch=\"any\" os=\"windows\">\n" +
+            "            <sdk:size>11159472</sdk:size>\n" +
+            "            <sdk:checksum type=\"sha1\">6028258d8f2fba14d8b40c3cf507afa0289aaa13</sdk:checksum>\n" +
+            "            <sdk:url>platform-tools_r18-windows.zip</sdk:url>\n" +
+            "        </sdk:archive>\n" +
+            "        <sdk:archive arch=\"any\" os=\"linux\">\n" +
+            "            <sdk:size>10985068</sdk:size>\n" +
+            "            <sdk:checksum type=\"sha1\">6e2bc329c9485eb383172cbc2cde8b0c0cd1843f</sdk:checksum>\n" +
+            "            <sdk:url>platform-tools_r18-linux.zip</sdk:url>\n" +
+            "        </sdk:archive>\n" +
+            "        <sdk:archive arch=\"any\" os=\"macosx\">\n" +
+            "            <sdk:size>11342461</sdk:size>\n" +
+            "            <sdk:checksum type=\"sha1\">4a015090c6a209fc33972acdbc65745e0b3c08b9</sdk:checksum>\n" +
+            "            <sdk:url>platform-tools_r18-macosx.zip</sdk:url>\n" +
+            "        </sdk:archive>\n" +
+            "    </sdk:archives>\n" +
+            "</sdk:build-tool>\n" +
+            "\n" +
+            "<sdk:platform-tool>\n" +
+            "    <sdk:revision>\n" +
+            "        <sdk:major>18</sdk:major>\n" +
+            "    </sdk:revision>\n" +
+            "    <sdk:archives>\n" +
+            "        <sdk:archive arch=\"any\" os=\"windows\">\n" +
+            "            <sdk:size>11159472</sdk:size>\n" +
+            "            <sdk:checksum type=\"sha1\">6028258d8f2fba14d8b40c3cf507afa0289aaa13</sdk:checksum>\n" +
+            "            <sdk:url>platform-tools_r18-windows.zip</sdk:url>\n" +
+            "        </sdk:archive>\n" +
+            "        <sdk:archive arch=\"any\" os=\"linux\">\n" +
+            "            <sdk:size>10985068</sdk:size>\n" +
+            "            <sdk:checksum type=\"sha1\">6e2bc329c9485eb383172cbc2cde8b0c0cd1843f</sdk:checksum>\n" +
+            "            <sdk:url>platform-tools_r18-linux.zip</sdk:url>\n" +
+            "        </sdk:archive>\n" +
+            "        <sdk:archive arch=\"any\" os=\"macosx\">\n" +
+            "            <sdk:size>11342461</sdk:size>\n" +
+            "            <sdk:checksum type=\"sha1\">4a015090c6a209fc33972acdbc65745e0b3c08b9</sdk:checksum>\n" +
+            "            <sdk:url>platform-tools_r18-macosx.zip</sdk:url>\n" +
             "        </sdk:archive>\n" +
             "    </sdk:archives>\n" +
             "</sdk:platform-tool>\n" +
@@ -171,7 +279,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
             "        <sdk:micro>3</sdk:micro>\n" +
             "    </sdk:revision>\n" +
             "    <sdk:min-platform-tools-rev>\n" +
-            "        <sdk:major>12</sdk:major>\n" +
+            "        <sdk:major>18</sdk:major>\n" +
             "    </sdk:min-platform-tools-rev>\n" +
             "    <sdk:archives>\n" +
             "        <sdk:archive arch=\"any\" os=\"windows\">\n" +

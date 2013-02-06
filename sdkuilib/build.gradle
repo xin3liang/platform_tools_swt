@@ -18,6 +18,7 @@ dependencies {
     // FIXME configure the host arch for swt
     compile files("$prebuiltsToolsDir/linux-x86/swt/swt.jar")
 
+    testCompile "com.android.tools.sdk:sdklib-test:$version"
     testCompile 'junit:junit:3.8.1'
 }
 

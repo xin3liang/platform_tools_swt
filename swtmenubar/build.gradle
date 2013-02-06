@@ -1,4 +1,3 @@
-version = project.ext.baseVersion
 group = 'com.android.tools.sdk'
 archivesBaseName = 'swtmenubar'
 
@@ -20,4 +19,3 @@ sourceSets {
     // Also add the MacOS specific sources for SWT Cocoa
     main.java.srcDir 'src/main-darwin/java'
 }
-

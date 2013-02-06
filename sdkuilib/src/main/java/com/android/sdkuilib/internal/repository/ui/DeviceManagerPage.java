@@ -24,7 +24,7 @@ import com.android.sdklib.devices.Screen;
 import com.android.sdklib.devices.Storage;
 import com.android.sdklib.devices.Storage.Unit;
 import com.android.sdklib.internal.avd.AvdInfo;
-import com.android.sdkuilib.internal.repository.UpdaterData;
+import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.icons.ImageFactory;
 import com.android.sdkuilib.internal.widgets.AvdCreationDialog;
 import com.android.sdkuilib.internal.widgets.AvdSelector;
@@ -94,7 +94,7 @@ public class DeviceManagerPage extends Composite
         public void onAvdCreated(AvdInfo createdAvdInfo);
     }
 
-    private final UpdaterData mUpdaterData;
+    private final SwtUpdaterData mSwtUpdaterData;
     private final DeviceManager mDeviceManager;
     private Table mTable;
     private Button mNewButton;
@@ -113,16 +113,16 @@ public class DeviceManagerPage extends Composite
     /**
      * Create the composite.
      * @param parent The parent of the composite.
-     * @param updaterData An instance of {@link UpdaterData}.
+     * @param swtUpdaterData An instance of {@link SwtUpdaterData}.
      */
     public DeviceManagerPage(Composite parent,
             int swtStyle,
-            UpdaterData updaterData,
+            SwtUpdaterData swtUpdaterData,
             DeviceManager deviceManager) {
         super(parent, swtStyle);
 
-        mUpdaterData = updaterData;
-        mUpdaterData.addListeners(this);
+        mSwtUpdaterData = swtUpdaterData;
+        mSwtUpdaterData.addListeners(this);
 
         mDeviceManager = deviceManager;
         mDeviceManager.registerListener(this);
@@ -301,7 +301,7 @@ public class DeviceManagerPage extends Composite
 
     @Override
     public void dispose() {
-        mUpdaterData.removeListener(this);
+        mSwtUpdaterData.removeListener(this);
         mDeviceManager.unregisterListener(this);
         super.dispose();
     }
@@ -488,7 +488,7 @@ public class DeviceManagerPage extends Composite
 
         // Generate a list of the AVD names using these devices
         Map<Device, List<String>> device2avdMap = new HashMap<Device, List<String>>();
-        for (AvdInfo avd : mUpdaterData.getAvdManager().getAllAvds()) {
+        for (AvdInfo avd : mSwtUpdaterData.getAvdManager().getAllAvds()) {
             String n = avd.getDeviceName();
             String m = avd.getDeviceManufacturer();
             if (n == null || m == null || n.isEmpty() || m.isEmpty()) {
@@ -653,7 +653,7 @@ public class DeviceManagerPage extends Composite
         DeviceCreationDialog dlg = new DeviceCreationDialog(
                 getShell(),
                 mDeviceManager,
-                mUpdaterData.getImageFactory(),
+                mSwtUpdaterData.getImageFactory(),
                 null /*device*/);
         if (dlg.open() == Window.OK) {
             onRefresh();
@@ -673,7 +673,7 @@ public class DeviceManagerPage extends Composite
         DeviceCreationDialog dlg = new DeviceCreationDialog(
                 getShell(),
                 mDeviceManager,
-                mUpdaterData.getImageFactory(),
+                mSwtUpdaterData.getImageFactory(),
                 ci.mDevice);
         if (dlg.open() == Window.OK) {
             onRefresh();
@@ -719,9 +719,9 @@ public class DeviceManagerPage extends Composite
         }
 
         final AvdCreationDialog dlg = new AvdCreationDialog(mTable.getShell(),
-                mUpdaterData.getAvdManager(),
+                mSwtUpdaterData.getAvdManager(),
                 mImageFactory,
-                mUpdaterData.getSdkLog(),
+                mSwtUpdaterData.getSdkLog(),
                 null);
         dlg.selectInitialDevice(ci.mDevice);
 

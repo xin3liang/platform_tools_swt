@@ -23,7 +23,7 @@ import com.android.sdklib.internal.repository.IDescription;
 import com.android.sdklib.internal.repository.archives.Archive;
 import com.android.sdklib.internal.repository.packages.Package;
 import com.android.sdklib.internal.repository.sources.SdkSource;
-import com.android.sdkuilib.internal.repository.UpdaterData;
+import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.core.PackageLoader;
 import com.android.sdkuilib.internal.repository.core.PackageLoader.ISourceLoadedCallback;
 import com.android.sdkuilib.internal.repository.core.PackagesDiffLogic;
@@ -54,7 +54,7 @@ import java.util.List;
  */
 abstract class PackagesPageImpl {
 
-    final UpdaterData mUpdaterData;
+    final SwtUpdaterData mSwtUpdaterData;
     final PackagesDiffLogic mDiffLogic;
 
     private ICheckboxTreeViewer mITreeViewer;
@@ -63,9 +63,9 @@ abstract class PackagesPageImpl {
     private ITreeViewerColumn   mIColumnRevision;
     private ITreeViewerColumn   mIColumnStatus;
 
-    PackagesPageImpl(UpdaterData updaterData) {
-        mUpdaterData = updaterData;
-        mDiffLogic = new PackagesDiffLogic(updaterData);
+    PackagesPageImpl(SwtUpdaterData swtUpdaterData) {
+        mSwtUpdaterData = swtUpdaterData;
+        mDiffLogic = new PackagesDiffLogic(swtUpdaterData);
     }
 
     /**
@@ -142,7 +142,7 @@ abstract class PackagesPageImpl {
      */
     void fullReload() {
         // Clear all source information, forcing them to be refreshed.
-        mUpdaterData.getSources().clearAllPackages();
+        mSwtUpdaterData.getSources().clearAllPackages();
         // Clear and reload all local data too.
         localReload();
     }
@@ -157,8 +157,8 @@ abstract class PackagesPageImpl {
      */
     void localReload() {
         // Clear all source caches, otherwise loading will use the cached data
-        mUpdaterData.getLocalSdkParser().clearPackages();
-        mUpdaterData.getSdkManager().reloadSdk(mUpdaterData.getSdkLog());
+        mSwtUpdaterData.getLocalSdkParser().clearPackages();
+        mSwtUpdaterData.getSdkManager().reloadSdk(mSwtUpdaterData.getSdkLog());
         loadPackages();
     }
 
@@ -186,7 +186,7 @@ abstract class PackagesPageImpl {
      * Derived implementations must call this to do the actual work after setting up the UI.
      */
     void loadPackagesImpl(final boolean useLocalCache, final boolean overrideExisting) {
-        if (mUpdaterData == null) {
+        if (mSwtUpdaterData == null) {
             return;
         }
 
@@ -260,15 +260,15 @@ abstract class PackagesPageImpl {
      * extra network access. That's {@code useLocalCache} being true.
      * <p/>
      * Leter it does a second pass with {@code useLocalCache} set to false
-     * and actually uses the download cache specified in {@link UpdaterData}.
+     * and actually uses the download cache specified in {@link SwtUpdaterData}.
      *
      * This is extracted so that we can control this cache via unit tests.
      */
     protected PackageLoader getPackageLoader(boolean useLocalCache) {
         if (useLocalCache) {
-            return new PackageLoader(mUpdaterData, new DownloadCache(Strategy.ONLY_CACHE));
+            return new PackageLoader(mSwtUpdaterData, new DownloadCache(Strategy.ONLY_CACHE));
         } else {
-            return mUpdaterData.getPackageLoader();
+            return mSwtUpdaterData.getPackageLoader();
         }
     }
 
@@ -447,7 +447,7 @@ abstract class PackagesPageImpl {
 
         @Override
         public Image getImage(Object element) {
-            ImageFactory imgFactory = mUpdaterData.getImageFactory();
+            ImageFactory imgFactory = mSwtUpdaterData.getImageFactory();
 
             if (imgFactory != null) {
                 if (mColumn == mIColumnName) {

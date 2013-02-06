@@ -30,7 +30,7 @@ import com.android.sdklib.internal.repository.packages.SystemImagePackage;
 import com.android.sdklib.internal.repository.packages.ToolPackage;
 import com.android.sdklib.internal.repository.sources.SdkSource;
 import com.android.sdklib.util.SparseArray;
-import com.android.sdkuilib.internal.repository.UpdaterData;
+import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.core.PkgItem.PkgState;
 import com.android.sdkuilib.internal.repository.ui.PackagesPageIcons;
 
@@ -49,11 +49,11 @@ import java.util.Set;
  * so that we can test it using head-less unit tests.
  */
 public class PackagesDiffLogic {
-    private final UpdaterData mUpdaterData;
+    private final SwtUpdaterData mUpdaterData;
     private boolean mFirstLoadComplete = true;
 
-    public PackagesDiffLogic(UpdaterData updaterData) {
-        mUpdaterData = updaterData;
+    public PackagesDiffLogic(SwtUpdaterData swtUpdaterData) {
+        mUpdaterData = swtUpdaterData;
     }
 
     /**

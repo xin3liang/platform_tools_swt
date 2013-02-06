@@ -32,7 +32,7 @@ import com.android.sdklib.internal.repository.sources.SdkRepoSource;
 import com.android.sdklib.internal.repository.sources.SdkSource;
 import com.android.sdklib.repository.PkgProps;
 import com.android.sdkuilib.internal.repository.ISettingsPage;
-import com.android.sdkuilib.internal.repository.MockUpdaterData;
+import com.android.sdkuilib.internal.repository.MockSwtUpdaterData;
 import com.android.sdkuilib.internal.repository.core.PackagesDiffLogic;
 import com.android.sdkuilib.internal.repository.core.PkgCategory;
 import com.android.sdkuilib.internal.repository.core.PkgItem;
@@ -44,13 +44,13 @@ import junit.framework.TestCase;
 public class PackagesDiffLogicTest extends TestCase {
 
     private PackagesDiffLogic m;
-    private MockUpdaterData u;
+    private MockSwtUpdaterData u;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
-        u = new MockUpdaterData();
+        u = new MockSwtUpdaterData();
         m = new PackagesDiffLogic(u);
     }
 

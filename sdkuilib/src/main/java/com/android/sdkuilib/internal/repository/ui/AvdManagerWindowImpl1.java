@@ -25,7 +25,7 @@ import com.android.sdkuilib.internal.repository.AboutDialog;
 import com.android.sdkuilib.internal.repository.MenuBarWrapper;
 import com.android.sdkuilib.internal.repository.SettingsController;
 import com.android.sdkuilib.internal.repository.SettingsDialog;
-import com.android.sdkuilib.internal.repository.UpdaterData;
+import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.icons.ImageFactory;
 import com.android.sdkuilib.internal.repository.ui.DeviceManagerPage.IAvdCreatedListener;
 import com.android.sdkuilib.repository.AvdManagerWindow.AvdInvocationContext;
@@ -63,7 +63,7 @@ public class AvdManagerWindowImpl1 {
     private final Shell mParentShell;
     private final AvdInvocationContext mContext;
     /** Internal data shared between the window and its pages. */
-    private final UpdaterData mUpdaterData;
+    private final SwtUpdaterData mSwtUpdaterData;
     /** True if this window created the UpdaterData, in which case it needs to dispose it. */
     private final boolean mOwnUpdaterData;
     private final DeviceManager mDeviceManager;
@@ -92,7 +92,7 @@ public class AvdManagerWindowImpl1 {
             AvdInvocationContext context) {
         mParentShell = parentShell;
         mContext = context;
-        mUpdaterData = new UpdaterData(osSdkRoot, sdkLog);
+        mSwtUpdaterData = new SwtUpdaterData(osSdkRoot, sdkLog);
         mOwnUpdaterData = true;
         mDeviceManager = DeviceManager.createInstance(osSdkRoot, sdkLog);
     }
@@ -101,23 +101,23 @@ public class AvdManagerWindowImpl1 {
      * Creates a new window. Caller must call open(), which will block.
      * <p/>
      * This is to be used when the window is opened from {@link SdkUpdaterWindowImpl2}
-     * to share the same {@link UpdaterData} structure.
+     * to share the same {@link SwtUpdaterData} structure.
      *
      * @param parentShell Parent shell.
-     * @param updaterData The parent's updater data.
+     * @param swtUpdaterData The parent's updater data.
      * @param context The {@link AvdInvocationContext} to change the behavior depending on who's
      *  opening the SDK Manager.
      */
     public AvdManagerWindowImpl1(
             Shell parentShell,
-            UpdaterData updaterData,
+            SwtUpdaterData swtUpdaterData,
             AvdInvocationContext context) {
         mParentShell = parentShell;
         mContext = context;
-        mUpdaterData = updaterData;
+        mSwtUpdaterData = swtUpdaterData;
         mOwnUpdaterData = false;
-        mDeviceManager = DeviceManager.createInstance(mUpdaterData.getOsSdkRoot(),
-                                                      mUpdaterData.getSdkLog());
+        mDeviceManager = DeviceManager.createInstance(mSwtUpdaterData.getOsSdkRoot(),
+                                                      mSwtUpdaterData.getSdkLog());
     }
 
     /**
@@ -199,7 +199,7 @@ public class AvdManagerWindowImpl1 {
         avdTabItem.setControl(root);
         GridLayoutBuilder.create(root).columns(1);
 
-        mAvdPage = new AvdManagerPage(root, SWT.NONE, mUpdaterData, mDeviceManager);
+        mAvdPage = new AvdManagerPage(root, SWT.NONE, mSwtUpdaterData, mDeviceManager);
         GridDataBuilder.create(mAvdPage).fill().grab();
     }
 
@@ -209,7 +209,7 @@ public class AvdManagerWindowImpl1 {
         GridLayoutBuilder.create(root).columns(1);
 
         DeviceManagerPage devicePage =
-            new DeviceManagerPage(root, SWT.NONE, mUpdaterData, mDeviceManager);
+            new DeviceManagerPage(root, SWT.NONE, mSwtUpdaterData, mDeviceManager);
         GridDataBuilder.create(devicePage).fill().grab();
 
         devicePage.setAvdCreatedListener(new IAvdCreatedListener() {
@@ -255,25 +255,25 @@ public class AvdManagerWindowImpl1 {
                 new MenuBarWrapper(APP_NAME_MAC_MENU, menuTools) {
                     @Override
                     public void onPreferencesMenuSelected() {
-                        SettingsDialog sd = new SettingsDialog(mShell, mUpdaterData);
+                        SettingsDialog sd = new SettingsDialog(mShell, mSwtUpdaterData);
                         sd.open();
                     }
 
                     @Override
                     public void onAboutMenuSelected() {
-                        AboutDialog ad = new AboutDialog(mShell, mUpdaterData);
+                        AboutDialog ad = new AboutDialog(mShell, mSwtUpdaterData);
                         ad.open();
                     }
 
                     @Override
                     public void printError(String format, Object... args) {
-                        if (mUpdaterData != null) {
-                            mUpdaterData.getSdkLog().error(null, format, args);
+                        if (mSwtUpdaterData != null) {
+                            mSwtUpdaterData.getSdkLog().error(null, format, args);
                         }
                     }
                 };
             } catch (Throwable e) {
-                mUpdaterData.getSdkLog().error(e, "Failed to setup menu bar");
+                mSwtUpdaterData.getSdkLog().error(e, "Failed to setup menu bar");
                 e.printStackTrace();
             }
         }
@@ -290,7 +290,7 @@ public class AvdManagerWindowImpl1 {
      * Adds a new listener to be notified when a change is made to the content of the SDK.
      */
     public void addListener(ISdkChangeListener listener) {
-        mUpdaterData.addListeners(listener);
+        mSwtUpdaterData.addListeners(listener);
     }
 
     /**
@@ -298,7 +298,7 @@ public class AvdManagerWindowImpl1 {
      * the SDK.
      */
     public void removeListener(ISdkChangeListener listener) {
-        mUpdaterData.removeListener(listener);
+        mSwtUpdaterData.removeListener(listener);
     }
 
     // --- Internals & UI Callbacks -----------
@@ -307,9 +307,9 @@ public class AvdManagerWindowImpl1 {
      * Called before the UI is created.
      */
     private void preCreateContent() {
-        mUpdaterData.setWindowShell(mShell);
+        mSwtUpdaterData.setWindowShell(mShell);
         // We need the UI factory to create the UI
-        mUpdaterData.setImageFactory(new ImageFactory(mShell.getDisplay()));
+        mSwtUpdaterData.setImageFactory(new ImageFactory(mShell.getDisplay()));
         // Note: we can't create the TaskFactory yet because we need the UI
         // to be created first, so this is done in postCreateContent().
     }
@@ -326,11 +326,11 @@ public class AvdManagerWindowImpl1 {
         setupSources();
         initializeSettings();
 
-        if (mUpdaterData.checkIfInitFailed()) {
+        if (mSwtUpdaterData.checkIfInitFailed()) {
             return false;
         }
 
-        mUpdaterData.broadcastOnSdkLoaded();
+        mSwtUpdaterData.broadcastOnSdkLoaded();
 
         return true;
     }
@@ -346,8 +346,8 @@ public class AvdManagerWindowImpl1 {
             imageName = "android_icon_128.png";
         }
 
-        if (mUpdaterData != null) {
-            ImageFactory imgFactory = mUpdaterData.getImageFactory();
+        if (mSwtUpdaterData != null) {
+            ImageFactory imgFactory = mSwtUpdaterData.getImageFactory();
             if (imgFactory != null) {
                 shell.setImage(imgFactory.getImageByName(imageName));
             }
@@ -358,15 +358,15 @@ public class AvdManagerWindowImpl1 {
      * Called by the main loop when the window has been disposed.
      */
     private void dispose() {
-        mUpdaterData.getSources().saveUserAddons(mUpdaterData.getSdkLog());
+        mSwtUpdaterData.getSources().saveUserAddons(mSwtUpdaterData.getSdkLog());
     }
 
     /**
      * Callback called when the window shell is disposed.
      */
     private void onAndroidSdkUpdaterDispose() {
-        if (mOwnUpdaterData && mUpdaterData != null) {
-            ImageFactory imgFactory = mUpdaterData.getImageFactory();
+        if (mOwnUpdaterData && mSwtUpdaterData != null) {
+            ImageFactory imgFactory = mSwtUpdaterData.getImageFactory();
             if (imgFactory != null) {
                 imgFactory.dispose();
             }
@@ -377,7 +377,7 @@ public class AvdManagerWindowImpl1 {
      * Used to initialize the sources.
      */
     private void setupSources() {
-        mUpdaterData.setupDefaultSources();
+        mSwtUpdaterData.setupDefaultSources();
     }
 
     /**
@@ -387,25 +387,25 @@ public class AvdManagerWindowImpl1 {
      * and use it to load and apply these settings.
      */
     private void initializeSettings() {
-        mSettingsController = mUpdaterData.getSettingsController();
+        mSettingsController = mSwtUpdaterData.getSettingsController();
         mSettingsController.loadSettings();
         mSettingsController.applySettings();
     }
 
     private void onSdkManager() {
-        ITaskFactory oldFactory = mUpdaterData.getTaskFactory();
+        ITaskFactory oldFactory = mSwtUpdaterData.getTaskFactory();
 
         try {
             SdkUpdaterWindowImpl2 win = new SdkUpdaterWindowImpl2(
                     mShell,
-                    mUpdaterData,
+                    mSwtUpdaterData,
                     SdkUpdaterWindow.SdkInvocationContext.AVD_MANAGER);
 
             win.open();
         } catch (Exception e) {
-            mUpdaterData.getSdkLog().error(e, "SDK Manager window error");
+            mSwtUpdaterData.getSdkLog().error(e, "SDK Manager window error");
         } finally {
-            mUpdaterData.setTaskFactory(oldFactory);
+            mSwtUpdaterData.setTaskFactory(oldFactory);
         }
     }
 }

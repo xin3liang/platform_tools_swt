@@ -30,10 +30,7 @@ import com.android.sdklib.internal.repository.packages.MockToolPackage;
 import com.android.sdklib.internal.repository.packages.Package;
 import com.android.sdklib.internal.repository.sources.SdkSource;
 import com.android.sdklib.internal.repository.sources.SdkSources;
-import com.android.sdkuilib.internal.repository.icons.ImageFactory;
 import com.android.utils.ILogger;
-
-import org.eclipse.swt.widgets.Shell;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,11 +45,6 @@ public class SdkUpdaterLogicTest extends TestCase {
 
         @Override
         public AvdManager getAvdManager() {
-            return null;
-        }
-
-        @Override
-        public ImageFactory getImageFactory() {
             return null;
         }
 
@@ -78,11 +70,6 @@ public class SdkUpdaterLogicTest extends TestCase {
 
         @Override
         public ITaskFactory getTaskFactory() {
-            return null;
-        }
-
-        @Override
-        public Shell getWindowShell() {
             return null;
         }
 

@@ -17,6 +17,7 @@
 package com.android.sdkuilib.internal.repository;
 
 import com.android.SdkConstants;
+import com.android.annotations.NonNull;
 import com.android.annotations.VisibleForTesting;
 import com.android.annotations.VisibleForTesting.Visibility;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
@@ -45,13 +46,9 @@ import com.android.sdklib.util.LineUtil;
 import com.android.sdklib.util.SparseIntArray;
 import com.android.sdkuilib.internal.repository.SettingsController.OnChangedListener;
 import com.android.sdkuilib.internal.repository.core.PackageLoader;
-import com.android.sdkuilib.internal.repository.icons.ImageFactory;
 import com.android.sdkuilib.internal.repository.ui.SdkUpdaterWindowImpl2;
 import com.android.sdkuilib.repository.ISdkChangeListener;
 import com.android.utils.ILogger;
-
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Shell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -87,7 +84,7 @@ public class UpdaterData implements IUpdaterData {
     private final ArrayList<ISdkChangeListener> mListeners = new ArrayList<ISdkChangeListener>();
     private final ILogger mSdkLog;
     private ITaskFactory mTaskFactory;
-    private Shell mWindowShell;
+
     private SdkManager mSdkManager;
     private AvdManager mAvdManager;
     /**
@@ -100,12 +97,6 @@ public class UpdaterData implements IUpdaterData {
      * Lazily created in {@link #getDownloadCache()}.
      */
     private DownloadCache mDownloadCache;
-    /**
-     * The current {@link ImageFactory}.
-     * Set via {@link #setImageFactory(ImageFactory)} by the window implementation.
-     * It is null when invoked using the command-line interface.
-     */
-    private ImageFactory mImageFactory;
     private AndroidLocationException mAvdManagerInitError;
 
     /**
@@ -117,7 +108,6 @@ public class UpdaterData implements IUpdaterData {
     public UpdaterData(String osSdkRoot, ILogger sdkLog) {
         mOsSdkRoot = osSdkRoot;
         mSdkLog = sdkLog;
-
 
         mSettingsController = initSettingsController();
         initSdk();
@@ -162,15 +152,6 @@ public class UpdaterData implements IUpdaterData {
         return mSdkLog;
     }
 
-    public void setImageFactory(ImageFactory imageFactory) {
-        mImageFactory = imageFactory;
-    }
-
-    @Override
-    public ImageFactory getImageFactory() {
-        return mImageFactory;
-    }
-
     @Override
     public SdkManager getSdkManager() {
         return mSdkManager;
@@ -196,15 +177,6 @@ public class UpdaterData implements IUpdaterData {
     /** Removes a listener ({@link ISdkChangeListener}) that is notified when the SDK is reloaded. */
     public void removeListener(ISdkChangeListener listener) {
         mListeners.remove(listener);
-    }
-
-    public void setWindowShell(Shell windowShell) {
-        mWindowShell = windowShell;
-    }
-
-    @Override
-    public Shell getWindowShell() {
-        return mWindowShell;
     }
 
     public PackageLoader getPackageLoader() {
@@ -238,21 +210,28 @@ public class UpdaterData implements IUpdaterData {
                 "a valid path such as \"%s\".",
                 example);
 
-            // We may not have any UI. Only display a dialog if there's a window shell available.
-            if (mWindowShell != null && !mWindowShell.isDisposed()) {
-                MessageDialog.openError(mWindowShell,
-                    "Android Virtual Devices Manager",
-                    error);
-            } else {
-                mSdkLog.error(null /* Throwable */, "%s", error);  //$NON-NLS-1$
-            }
+            displayInitError(error);
 
             return true;
         }
         return false;
     }
 
+    protected void displayInitError(String error) {
+        mSdkLog.error(null /* Throwable */, "%s", error);  //$NON-NLS-1$
+    }
+
     // -----
+
+    /**
+     * Runs a runnable on the UI thread.
+     * The base implementation just runs the runnable right away.
+     *
+     * @param r Non-null runnable.
+     */
+    protected void runOnUiThread(@NonNull Runnable r) {
+        r.run();
+    }
 
     /**
      * Initializes the {@link SdkManager} and the {@link AvdManager}.
@@ -641,39 +620,17 @@ public class UpdaterData implements IUpdaterData {
      * <p/>
      * If the "ask before restart" setting is set (the default), prompt the user whether
      * now is a good time to restart ADB.
-     *
-     * @param monitor
      */
-    private void askForAdbRestart(ITaskMonitor monitor) {
-        final boolean[] canRestart = new boolean[] { true };
-
-        if (getWindowShell() != null &&
-                getSettingsController().getSettings().getAskBeforeAdbRestart()) {
-            // need to ask for permission first
-            final Shell shell = getWindowShell();
-            if (shell != null && !shell.isDisposed()) {
-                shell.getDisplay().syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!shell.isDisposed()) {
-                            canRestart[0] = MessageDialog.openQuestion(shell,
-                                    "ADB Restart",
-                                    "A package that depends on ADB has been updated. \n" +
-                                    "Do you want to restart ADB now?");
-                        }
-                    }
-                });
-            }
-        }
-
-        if (canRestart[0]) {
+    protected void askForAdbRestart(ITaskMonitor monitor) {
+        // Restart ADB if we don't need to ask.
+        if (!getSettingsController().getSettings().getAskBeforeAdbRestart()) {
             AdbWrapper adb = new AdbWrapper(getOsSdkRoot(), monitor);
             adb.stopAdb();
             adb.startAdb();
         }
     }
 
-    private void notifyToolsNeedsToBeRestarted(int flags) {
+    protected void notifyToolsNeedsToBeRestarted(int flags) {
 
         String msg = null;
         if ((flags & TOOLS_MSG_UPDATED_FROM_ADT) != 0) {
@@ -690,84 +647,7 @@ public class UpdaterData implements IUpdaterData {
             "plug-in needs to be updated.";
         }
 
-        final String msg2 = msg;
-
-        final Shell shell = getWindowShell();
-        if (msg2 != null && shell != null && !shell.isDisposed()) {
-            shell.getDisplay().syncExec(new Runnable() {
-                @Override
-                public void run() {
-                    if (!shell.isDisposed()) {
-                        MessageDialog.openInformation(shell,
-                                "Android Tools Updated",
-                                msg2);
-                    }
-                }
-            });
-        }
-    }
-
-
-    /**
-     * Tries to update all the *existing* local packages.
-     * This version *requires* to be run with a GUI.
-     * <p/>
-     * There are two modes of operation:
-     * <ul>
-     * <li>If selectedArchives is null, refreshes all sources, compares the available remote
-     * packages with the current local ones and suggest updates to be done to the user (including
-     * new platforms that the users doesn't have yet).
-     * <li>If selectedArchives is not null, this represents a list of archives/packages that
-     * the user wants to install or update, so just process these.
-     * </ul>
-     *
-     * @param selectedArchives The list of remote archives to consider for the update.
-     *  This can be null, in which case a list of remote archive is fetched from all
-     *  available sources.
-     * @param includeObsoletes True if obsolete packages should be used when resolving what
-     *  to update.
-     * @param flags Optional flags for the installer, such as {@link #NO_TOOLS_MSG}.
-     * @return A list of archives that have been installed. Can be null if nothing was done.
-     */
-    public List<Archive> updateOrInstallAll_WithGUI(
-            Collection<Archive> selectedArchives,
-            boolean includeObsoletes,
-            int flags) {
-
-        // Note: we no longer call refreshSources(true) here. This will be done
-        // automatically by computeUpdates() iif it needs to access sources to
-        // resolve missing dependencies.
-
-        SdkUpdaterLogic ul = new SdkUpdaterLogic(this);
-        List<ArchiveInfo> archives = ul.computeUpdates(
-                selectedArchives,
-                getSources(),
-                getLocalSdkParser().getPackages(),
-                includeObsoletes);
-
-        if (selectedArchives == null) {
-            getPackageLoader().loadRemoteAddonsList(new NullTaskMonitor(getSdkLog()));
-            ul.addNewPlatforms(
-                    archives,
-                    getSources(),
-                    getLocalSdkParser().getPackages(),
-                    includeObsoletes);
-        }
-
-        // TODO if selectedArchives is null and archives.len==0, find if there are
-        // any new platform we can suggest to install instead.
-
-        Collections.sort(archives);
-
-        SdkUpdaterChooserDialog dialog =
-            new SdkUpdaterChooserDialog(getWindowShell(), this, archives);
-        dialog.open();
-
-        ArrayList<ArchiveInfo> result = dialog.getResult();
-        if (result != null && result.size() > 0) {
-            return installArchives(result, flags);
-        }
-        return null;
+        mSdkLog.info("%s", msg);  //$NON-NLS-1$
     }
 
     /**
@@ -846,6 +726,58 @@ public class UpdaterData implements IUpdaterData {
                 }
             }
         }
+    }
+
+    /**
+     * Tries to update all the *existing* local packages.
+     * This version *requires* to be run with a GUI.
+     * <p/>
+     * There are two modes of operation:
+     * <ul>
+     * <li>If selectedArchives is null, refreshes all sources, compares the available remote
+     * packages with the current local ones and suggest updates to be done to the user (including
+     * new platforms that the users doesn't have yet).
+     * <li>If selectedArchives is not null, this represents a list of archives/packages that
+     * the user wants to install or update, so just process these.
+     * </ul>
+     *
+     * @param selectedArchives The list of remote archives to consider for the update.
+     *  This can be null, in which case a list of remote archive is fetched from all
+     *  available sources.
+     * @param includeObsoletes True if obsolete packages should be used when resolving what
+     *  to update.
+     * @param flags Optional flags for the installer, such as {@link #NO_TOOLS_MSG}.
+     * @return A list of archives that have been installed. Can be null if nothing was done.
+     */
+    public List<Archive> updateOrInstallAll_WithGUI(
+            Collection<Archive> selectedArchives,
+            boolean includeObsoletes,
+            int flags) {
+        // FIXME revisit this logic. This is just an transitional implementation
+        // while I refactor the way the sdk manager works internally.
+
+        SdkUpdaterLogic ul = new SdkUpdaterLogic(this);
+        List<ArchiveInfo> archives = ul.computeUpdates(
+                selectedArchives,
+                getSources(),
+                getLocalSdkParser().getPackages(),
+                includeObsoletes);
+
+        if (selectedArchives == null) {
+            getPackageLoader().loadRemoteAddonsList(new NullTaskMonitor(getSdkLog()));
+            ul.addNewPlatforms(
+                    archives,
+                    getSources(),
+                    getLocalSdkParser().getPackages(),
+                    includeObsoletes);
+        }
+
+        Collections.sort(archives);
+
+        if (archives.size() > 0) {
+            return installArchives(archives, flags);
+        }
+        return null;
     }
 
     /**
@@ -1068,8 +1000,8 @@ public class UpdaterData implements IUpdaterData {
      * This can be called from any thread.
      */
     public void broadcastOnSdkLoaded() {
-        if (mWindowShell != null && !mWindowShell.isDisposed() && mListeners.size() > 0) {
-            mWindowShell.getDisplay().syncExec(new Runnable() {
+        if (mListeners.size() > 0) {
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     for (ISdkChangeListener listener : mListeners) {
@@ -1089,8 +1021,8 @@ public class UpdaterData implements IUpdaterData {
      * This can be called from any thread.
      */
     private void broadcastOnSdkReload() {
-        if (mWindowShell != null && !mWindowShell.isDisposed() && mListeners.size() > 0) {
-            mWindowShell.getDisplay().syncExec(new Runnable() {
+        if (mListeners.size() > 0) {
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     for (ISdkChangeListener listener : mListeners) {
@@ -1110,8 +1042,8 @@ public class UpdaterData implements IUpdaterData {
      * This can be called from any thread.
      */
     private void broadcastPreInstallHook() {
-        if (mWindowShell != null && !mWindowShell.isDisposed() && mListeners.size() > 0) {
-            mWindowShell.getDisplay().syncExec(new Runnable() {
+        if (mListeners.size() > 0) {
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     for (ISdkChangeListener listener : mListeners) {
@@ -1131,8 +1063,8 @@ public class UpdaterData implements IUpdaterData {
      * This can be called from any thread.
      */
     private void broadcastPostInstallHook() {
-        if (mWindowShell != null && !mWindowShell.isDisposed() && mListeners.size() > 0) {
-            mWindowShell.getDisplay().syncExec(new Runnable() {
+        if (mListeners.size() > 0) {
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     for (ISdkChangeListener listener : mListeners) {
@@ -1155,5 +1087,4 @@ public class UpdaterData implements IUpdaterData {
     protected ArchiveInstaller createArchiveInstaler() {
         return new ArchiveInstaller();
     }
-
 }

@@ -26,12 +26,12 @@ import junit.framework.TestCase;
 
 public class UpdaterDataTest extends TestCase {
 
-    private MockUpdaterData m;
+    private MockSwtUpdaterData m;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        m = new MockUpdaterData();
+        m = new MockSwtUpdaterData();
         assertEquals("[]", Arrays.toString(m.getInstalled()));
     }
 

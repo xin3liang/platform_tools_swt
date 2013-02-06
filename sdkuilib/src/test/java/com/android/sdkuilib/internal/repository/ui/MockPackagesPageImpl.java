@@ -20,7 +20,7 @@ import com.android.sdklib.internal.repository.DownloadCache;
 import com.android.sdklib.internal.repository.DownloadCache.Strategy;
 import com.android.sdklib.util.SparseIntArray;
 import com.android.sdkuilib.internal.repository.MockDownloadCache;
-import com.android.sdkuilib.internal.repository.UpdaterData;
+import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.core.PackageLoader;
 import com.android.sdkuilib.internal.repository.core.PkgCategory;
 import com.android.sdkuilib.internal.repository.core.PkgContentProvider;
@@ -33,8 +33,8 @@ import java.util.List;
 
 public class MockPackagesPageImpl extends PackagesPageImpl {
 
-    public MockPackagesPageImpl(UpdaterData updaterData) {
-        super(updaterData);
+    public MockPackagesPageImpl(SwtUpdaterData swtUpdaterData) {
+        super(swtUpdaterData);
     }
 
     /** UI is never disposed in the unit test. */
@@ -91,18 +91,18 @@ public class MockPackagesPageImpl extends PackagesPageImpl {
 
     /**
      * In this mock version, we use the default {@link PackageLoader} which will
-     * use the {@link DownloadCache} from the {@link UpdaterData}. This should be
+     * use the {@link DownloadCache} from the {@link SwtUpdaterData}. This should be
      * the mock download cache, in which case we change the strategy at run-time
      * to set it to only-cache on the first manager update.
      */
     @Override
     protected PackageLoader getPackageLoader(boolean useLocalCache) {
-        DownloadCache dc = mUpdaterData.getDownloadCache();
+        DownloadCache dc = mSwtUpdaterData.getDownloadCache();
         assert dc instanceof MockDownloadCache;
         if (dc instanceof MockDownloadCache) {
             ((MockDownloadCache) dc).overrideStrategy(useLocalCache ? Strategy.ONLY_CACHE : null);
         }
-        return mUpdaterData.getPackageLoader();
+        return mSwtUpdaterData.getPackageLoader();
     }
 
     /**

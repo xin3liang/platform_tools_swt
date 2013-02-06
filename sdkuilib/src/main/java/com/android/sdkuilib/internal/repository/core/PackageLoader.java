@@ -16,6 +16,7 @@
 
 package com.android.sdkuilib.internal.repository.core;
 
+import com.android.annotations.NonNull;
 import com.android.sdklib.internal.repository.AddonsListFetcher;
 import com.android.sdklib.internal.repository.AddonsListFetcher.Site;
 import com.android.sdklib.internal.repository.DownloadCache;
@@ -32,10 +33,8 @@ import com.android.sdklib.internal.repository.sources.SdkSources;
 import com.android.sdklib.internal.repository.sources.SdkSysImgSource;
 import com.android.sdklib.repository.SdkAddonsListConstants;
 import com.android.sdklib.repository.SdkRepoConstants;
+import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.UpdaterData;
-
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -54,7 +53,7 @@ public class PackageLoader {
 
     /**
      * The {@link DownloadCache} override. Can be null, in which case the one from
-     * {@link UpdaterData} is used instead.
+     * {@link SwtUpdaterData} is used instead.
      * @see #getDownloadCache()
      */
     private final DownloadCache mOverrideCache;
@@ -91,7 +90,7 @@ public class PackageLoader {
          * <p/>
          * <em>Important</em>: This method is called from a sub-thread, so clients which
          * try to access any UI widgets must wrap their calls into
-         * {@link Display#syncExec(Runnable)} or {@link Display#asyncExec(Runnable)}.
+         * {@code Display.syncExec(Runnable)} or {@code Display.asyncExec(Runnable)}.
          *
          * @param packages All the packages loaded from the source. Never null.
          * @return True if the load operation should continue, false if it should stop.
@@ -130,8 +129,8 @@ public class PackageLoader {
          * The method should return true if this is a package that should be installed.
          * <p/>
          * <em>Important</em>: This method is called from a sub-thread, so clients who try
-         * to access any UI widgets must wrap their calls into {@link Display#syncExec(Runnable)}
-         * or {@link Display#asyncExec(Runnable)}.
+         * to access any UI widgets must wrap their calls into {@code Display.syncExec(Runnable)}
+         * or {@code Display.asyncExec(Runnable)}.
          */
         public boolean acceptPackage(Package pkg);
 
@@ -141,8 +140,8 @@ public class PackageLoader {
          * be called with a 'true' success and the actual install paths.
          * <p/>
          * <em>Important</em>: This method is called from a sub-thread, so clients who try
-         * to access any UI widgets must wrap their calls into {@link Display#syncExec(Runnable)}
-         * or {@link Display#asyncExec(Runnable)}.
+         * to access any UI widgets must wrap their calls into {@code Display.syncExec(Runnable)}
+         * or {@code Display.asyncExec(Runnable)}.
          */
         public void setResult(boolean success, Map<Package, File> installPaths);
 
@@ -153,10 +152,10 @@ public class PackageLoader {
     }
 
     /**
-     * Creates a new PackageManager associated with the given {@link UpdaterData}
-     * and using the {@link UpdaterData}'s default {@link DownloadCache}.
+     * Creates a new PackageManager associated with the given {@link SwtUpdaterData}
+     * and using the {@link SwtUpdaterData}'s default {@link DownloadCache}.
      *
-     * @param updaterData The {@link UpdaterData}. Must not be null.
+     * @param updaterData The {@link SwtUpdaterData}. Must not be null.
      */
     public PackageLoader(UpdaterData updaterData) {
         mUpdaterData = updaterData;
@@ -164,16 +163,30 @@ public class PackageLoader {
     }
 
     /**
-     * Creates a new PackageManager associated with the given {@link UpdaterData}
+     * Creates a new PackageManager associated with the given {@link SwtUpdaterData}
      * but using the specified {@link DownloadCache} instead of the one from
-     * {@link UpdaterData}.
+     * {@link SwtUpdaterData}.
      *
-     * @param updaterData The {@link UpdaterData}. Must not be null.
-     * @param cache The {@link DownloadCache} to use instead of the one from {@link UpdaterData}.
+     * @param updaterData The {@link SwtUpdaterData}. Must not be null.
+     * @param cache The {@link DownloadCache} to use instead of the one from {@link SwtUpdaterData}.
      */
     public PackageLoader(UpdaterData updaterData, DownloadCache cache) {
         mUpdaterData = updaterData;
         mOverrideCache = cache;
+    }
+
+    public UpdaterData getUpdaterData() {
+        return mUpdaterData;
+    }
+
+    /**
+     * Runs a runnable on the UI thread.
+     * The base implementation just runs the runnable right away.
+     *
+     * @param r Non-null runnable.
+     */
+    protected void runOnUiThread(@NonNull Runnable r) {
+        r.run();
     }
 
     /**
@@ -276,15 +289,11 @@ public class PackageLoader {
      * result of the accepted package.
      * When the task is completed, {@link IAutoInstallTask#taskCompleted()} is called.
      * <p/>
-     * <em>Important</em>: Since some UI will be displayed to install the selected package,
-     * the {@link UpdaterData} must have a window {@link Shell} associated using
-     * {@link UpdaterData#setWindowShell(Shell)}.
-     * <p/>
      * The call is blocking. Although the name says "Task", this is not an {@link ITask}
      * running in its own thread but merely a synchronous call.
      *
      * @param installFlags Flags for installation such as
-     *  {@link UpdaterData#TOOLS_MSG_UPDATED_FROM_ADT}.
+     *  {@link SwtUpdaterData#TOOLS_MSG_UPDATED_FROM_ADT}.
      * @param installTask The task to perform.
      */
     public void loadPackagesWithInstallTask(
@@ -361,23 +370,20 @@ public class PackageLoader {
 
                 final List<Archive> installedArchives = new ArrayList<Archive>();
 
-                Shell shell = mUpdaterData.getWindowShell();
-                if (shell != null && !shell.isDisposed()) {
-                    shell.getDisplay().syncExec(new Runnable() {;
-                        @Override
-                        public void run() {
-                            List<Archive> archives =
-                                mUpdaterData.updateOrInstallAll_WithGUI(
-                                    archivesToInstall,
-                                    true /* includeObsoletes */,
-                                    installFlags);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<Archive> archives =
+                            mUpdaterData.updateOrInstallAll_WithGUI(
+                                archivesToInstall,
+                                true /* includeObsoletes */,
+                                installFlags);
 
-                            if (archives != null) {
-                                installedArchives.addAll(archives);
-                            }
+                        if (archives != null) {
+                            installedArchives.addAll(archives);
                         }
-                    });
-                }
+                    }
+                });
 
                 if (installedArchives.isEmpty()) {
                     // We failed to install anything.
@@ -485,7 +491,7 @@ public class PackageLoader {
      * Returns the {@link DownloadCache} to use.
      *
      * @return Returns {@link #mOverrideCache} if not null; otherwise returns the
-     *  one from {@link UpdaterData} is used instead.
+     *  one from {@link SwtUpdaterData} is used instead.
      */
     private DownloadCache getDownloadCache() {
         return mOverrideCache != null ? mOverrideCache : mUpdaterData.getDownloadCache();

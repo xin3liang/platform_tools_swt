@@ -26,7 +26,7 @@ import com.android.sdkuilib.internal.repository.MenuBarWrapper;
 import com.android.sdkuilib.internal.repository.SettingsController;
 import com.android.sdkuilib.internal.repository.SettingsController.Settings;
 import com.android.sdkuilib.internal.repository.SettingsDialog;
-import com.android.sdkuilib.internal.repository.UpdaterData;
+import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.icons.ImageFactory;
 import com.android.sdkuilib.internal.repository.ui.PackagesPage.MenuAction;
 import com.android.sdkuilib.internal.tasks.ILogUiProvider;
@@ -72,7 +72,7 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
     private final Shell mParentShell;
     private final SdkInvocationContext mContext;
     /** Internal data shared between the window and its pages. */
-    private final UpdaterData mUpdaterData;
+    private final SwtUpdaterData mSwtUpdaterData;
 
     // --- UI members ---
 
@@ -101,27 +101,27 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
             SdkInvocationContext context) {
         mParentShell = parentShell;
         mContext = context;
-        mUpdaterData = new UpdaterData(osSdkRoot, sdkLog);
+        mSwtUpdaterData = new SwtUpdaterData(osSdkRoot, sdkLog);
     }
 
     /**
      * Creates a new window. Caller must call open(), which will block.
      * <p/>
      * This is to be used when the window is opened from {@link AvdManagerWindowImpl1}
-     * to share the same {@link UpdaterData} structure.
+     * to share the same {@link SwtUpdaterData} structure.
      *
      * @param parentShell Parent shell.
-     * @param updaterData The parent's updater data.
+     * @param swtUpdaterData The parent's updater data.
      * @param context The {@link SdkInvocationContext} to change the behavior depending on who's
      *  opening the SDK Manager.
      */
     public SdkUpdaterWindowImpl2(
             Shell parentShell,
-            UpdaterData updaterData,
+            SwtUpdaterData swtUpdaterData,
             SdkInvocationContext context) {
         mParentShell = parentShell;
         mContext = context;
-        mUpdaterData = updaterData;
+        mSwtUpdaterData = swtUpdaterData;
     }
 
     /**
@@ -189,7 +189,7 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
     }
 
     private void createContents() {
-        mPkgPage = new PackagesPage(mShell, SWT.NONE, mUpdaterData, mContext);
+        mPkgPage = new PackagesPage(mShell, SWT.NONE, mSwtUpdaterData, mContext);
         mPkgPage.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
         Composite composite1 = new Composite(mShell, SWT.NONE);
@@ -330,7 +330,7 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
                         Settings settings1 = new Settings(mSettingsController.getSettings());
 
                         // open the dialog and wait for it to close
-                        SettingsDialog sd = new SettingsDialog(mShell, mUpdaterData);
+                        SettingsDialog sd = new SettingsDialog(mShell, mSwtUpdaterData);
                         sd.open();
 
                         // get the new settings
@@ -346,27 +346,27 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
 
                     @Override
                     public void onAboutMenuSelected() {
-                        AboutDialog ad = new AboutDialog(mShell, mUpdaterData);
+                        AboutDialog ad = new AboutDialog(mShell, mSwtUpdaterData);
                         ad.open();
                     }
 
                     @Override
                     public void printError(String format, Object... args) {
-                        if (mUpdaterData != null) {
-                            mUpdaterData.getSdkLog().error(null, format, args);
+                        if (mSwtUpdaterData != null) {
+                            mSwtUpdaterData.getSdkLog().error(null, format, args);
                         }
                     }
                 };
             } catch (Throwable e) {
-                mUpdaterData.getSdkLog().error(e, "Failed to setup menu bar");
+                mSwtUpdaterData.getSdkLog().error(e, "Failed to setup menu bar");
                 e.printStackTrace();
             }
         }
     }
 
     private Image getImage(String filename) {
-        if (mUpdaterData != null) {
-            ImageFactory imgFactory = mUpdaterData.getImageFactory();
+        if (mSwtUpdaterData != null) {
+            ImageFactory imgFactory = mSwtUpdaterData.getImageFactory();
             if (imgFactory != null) {
                 return imgFactory.getImageByName(filename);
             }
@@ -383,7 +383,7 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
      */
     private void createLogWindow() {
         mLogWindow = new LogWindow(mShell,
-                mContext == SdkInvocationContext.IDE ? mUpdaterData.getSdkLog() : null);
+                mContext == SdkInvocationContext.IDE ? mSwtUpdaterData.getSdkLog() : null);
         mLogWindow.open();
     }
 
@@ -399,7 +399,7 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
      */
     @Override
     public void addListener(ISdkChangeListener listener) {
-        mUpdaterData.addListeners(listener);
+        mSwtUpdaterData.addListeners(listener);
     }
 
     /**
@@ -408,7 +408,7 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
      */
     @Override
     public void removeListener(ISdkChangeListener listener) {
-        mUpdaterData.removeListener(listener);
+        mSwtUpdaterData.removeListener(listener);
     }
 
     // --- Internals & UI Callbacks -----------
@@ -417,9 +417,9 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
      * Called before the UI is created.
      */
     private void preCreateContent() {
-        mUpdaterData.setWindowShell(mShell);
+        mSwtUpdaterData.setWindowShell(mShell);
         // We need the UI factory to create the UI
-        mUpdaterData.setImageFactory(new ImageFactory(mShell.getDisplay()));
+        mSwtUpdaterData.setImageFactory(new ImageFactory(mShell.getDisplay()));
         // Note: we can't create the TaskFactory yet because we need the UI
         // to be created first, so this is done in postCreateContent().
     }
@@ -479,18 +479,18 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
 
         factory.setProgressView(
                 new ProgressView(mStatusText, mProgressBar, mButtonStop, logAdapter));
-        mUpdaterData.setTaskFactory(factory);
+        mSwtUpdaterData.setTaskFactory(factory);
 
         setWindowImage(mShell);
 
         setupSources();
         initializeSettings();
 
-        if (mUpdaterData.checkIfInitFailed()) {
+        if (mSwtUpdaterData.checkIfInitFailed()) {
             return false;
         }
 
-        mUpdaterData.broadcastOnSdkLoaded();
+        mSwtUpdaterData.broadcastOnSdkLoaded();
 
         // Tell the one page its the selected one
         mPkgPage.performFirstLoad();
@@ -509,8 +509,8 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
             imageName = "android_icon_128.png"; //$NON-NLS-1$
         }
 
-        if (mUpdaterData != null) {
-            ImageFactory imgFactory = mUpdaterData.getImageFactory();
+        if (mSwtUpdaterData != null) {
+            ImageFactory imgFactory = mSwtUpdaterData.getImageFactory();
             if (imgFactory != null) {
                 shell.setImage(imgFactory.getImageByName(imageName));
             }
@@ -522,15 +522,15 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
      */
     private void dispose() {
         mLogWindow.close();
-        mUpdaterData.getSources().saveUserAddons(mUpdaterData.getSdkLog());
+        mSwtUpdaterData.getSources().saveUserAddons(mSwtUpdaterData.getSdkLog());
     }
 
     /**
      * Callback called when the window shell is disposed.
      */
     private void onAndroidSdkUpdaterDispose() {
-        if (mUpdaterData != null) {
-            ImageFactory imgFactory = mUpdaterData.getImageFactory();
+        if (mSwtUpdaterData != null) {
+            ImageFactory imgFactory = mSwtUpdaterData.getImageFactory();
             if (imgFactory != null) {
                 imgFactory.dispose();
             }
@@ -541,7 +541,7 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
      * Used to initialize the sources.
      */
     private void setupSources() {
-        mUpdaterData.setupDefaultSources();
+        mSwtUpdaterData.setupDefaultSources();
     }
 
     /**
@@ -551,7 +551,7 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
      * and use it to load and apply these settings.
      */
     private void initializeSettings() {
-        mSettingsController = mUpdaterData.getSettingsController();
+        mSettingsController = mSwtUpdaterData.getSettingsController();
         mSettingsController.loadSettings();
         mSettingsController.applySettings();
     }
@@ -569,19 +569,19 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
     }
 
     private void onAvdManager() {
-        ITaskFactory oldFactory = mUpdaterData.getTaskFactory();
+        ITaskFactory oldFactory = mSwtUpdaterData.getTaskFactory();
 
         try {
             AvdManagerWindowImpl1 win = new AvdManagerWindowImpl1(
                     mShell,
-                    mUpdaterData,
+                    mSwtUpdaterData,
                     AvdInvocationContext.DIALOG);
 
             win.open();
         } catch (Exception e) {
-            mUpdaterData.getSdkLog().error(e, "AVD Manager window error");
+            mSwtUpdaterData.getSdkLog().error(e, "AVD Manager window error");
         } finally {
-            mUpdaterData.setTaskFactory(oldFactory);
+            mSwtUpdaterData.setTaskFactory(oldFactory);
         }
     }
 

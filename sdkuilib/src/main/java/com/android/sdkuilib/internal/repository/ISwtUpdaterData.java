@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2013 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,19 @@
 
 package com.android.sdkuilib.internal.repository;
 
-import com.android.sdklib.SdkManager;
-import com.android.sdklib.internal.avd.AvdManager;
-import com.android.sdklib.internal.repository.DownloadCache;
-import com.android.sdklib.internal.repository.ITaskFactory;
-import com.android.utils.ILogger;
+import com.android.sdkuilib.internal.repository.icons.ImageFactory;
+
+import org.eclipse.swt.widgets.Shell;
 
 
 /**
  * Interface used to retrieve some parameters from an {@link UpdaterData} instance.
  * Useful mostly for unit tests purposes.
  */
-interface IUpdaterData {
+interface ISwtUpdaterData extends IUpdaterData {
 
-    public abstract ITaskFactory getTaskFactory();
+    public abstract ImageFactory getImageFactory();
 
-    public abstract ILogger getSdkLog();
-
-    public abstract DownloadCache getDownloadCache();
-
-    public abstract SdkManager getSdkManager();
-
-    public abstract AvdManager getAvdManager();
-
-    public abstract SettingsController getSettingsController();
+    public abstract Shell getWindowShell();
 
 }

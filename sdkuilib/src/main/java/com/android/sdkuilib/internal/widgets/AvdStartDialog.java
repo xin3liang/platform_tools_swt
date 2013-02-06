@@ -20,7 +20,7 @@ import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
-import com.android.sdkuilib.internal.repository.SettingsController;
+import com.android.sdklib.internal.repository.updater.SettingsController;
 import com.android.sdkuilib.ui.GridDialog;
 import com.android.utils.ILogger;
 import com.android.utils.SdkUtils;

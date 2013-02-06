@@ -30,6 +30,10 @@ import com.android.sdklib.internal.repository.packages.MockToolPackage;
 import com.android.sdklib.internal.repository.packages.Package;
 import com.android.sdklib.internal.repository.sources.SdkSource;
 import com.android.sdklib.internal.repository.sources.SdkSources;
+import com.android.sdklib.internal.repository.updater.ArchiveInfo;
+import com.android.sdklib.internal.repository.updater.IUpdaterData;
+import com.android.sdklib.internal.repository.updater.SdkUpdaterLogic;
+import com.android.sdklib.internal.repository.updater.SettingsController;
 import com.android.utils.ILogger;
 
 import java.util.ArrayList;

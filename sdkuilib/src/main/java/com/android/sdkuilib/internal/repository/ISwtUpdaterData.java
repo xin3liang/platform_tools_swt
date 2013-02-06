@@ -16,6 +16,8 @@
 
 package com.android.sdkuilib.internal.repository;
 
+import com.android.sdklib.internal.repository.updater.IUpdaterData;
+import com.android.sdklib.internal.repository.updater.UpdaterData;
 import com.android.sdkuilib.internal.repository.icons.ImageFactory;
 
 import org.eclipse.swt.widgets.Shell;

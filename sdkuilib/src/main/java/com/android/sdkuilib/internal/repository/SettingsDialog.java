@@ -18,6 +18,8 @@ package com.android.sdkuilib.internal.repository;
 
 import com.android.sdklib.internal.repository.DownloadCache;
 import com.android.sdklib.internal.repository.DownloadCache.Strategy;
+import com.android.sdklib.internal.repository.updater.ISettingsPage;
+import com.android.sdklib.internal.repository.updater.SettingsController;
 import com.android.sdklib.util.FormatUtils;
 import com.android.sdkuilib.ui.GridDataBuilder;
 import com.android.sdkuilib.ui.GridLayoutBuilder;

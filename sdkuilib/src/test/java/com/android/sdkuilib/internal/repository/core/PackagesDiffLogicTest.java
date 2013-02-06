@@ -30,12 +30,12 @@ import com.android.sdklib.internal.repository.packages.MockToolPackage;
 import com.android.sdklib.internal.repository.packages.Package;
 import com.android.sdklib.internal.repository.sources.SdkRepoSource;
 import com.android.sdklib.internal.repository.sources.SdkSource;
+import com.android.sdklib.internal.repository.updater.ISettingsPage;
+import com.android.sdklib.internal.repository.updater.PkgItem;
 import com.android.sdklib.repository.PkgProps;
-import com.android.sdkuilib.internal.repository.ISettingsPage;
 import com.android.sdkuilib.internal.repository.MockSwtUpdaterData;
 import com.android.sdkuilib.internal.repository.core.PackagesDiffLogic;
 import com.android.sdkuilib.internal.repository.core.PkgCategory;
-import com.android.sdkuilib.internal.repository.core.PkgItem;
 
 import java.util.Properties;
 

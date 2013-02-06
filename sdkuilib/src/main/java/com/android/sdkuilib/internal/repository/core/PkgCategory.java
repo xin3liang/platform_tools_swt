@@ -17,6 +17,8 @@
 package com.android.sdkuilib.internal.repository.core;
 
 
+import com.android.sdklib.internal.repository.updater.PkgItem;
+
 import java.util.ArrayList;
 import java.util.List;
 

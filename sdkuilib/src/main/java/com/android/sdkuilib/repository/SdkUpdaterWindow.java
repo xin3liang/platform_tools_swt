@@ -16,6 +16,7 @@
 
 package com.android.sdkuilib.repository;
 
+import com.android.sdklib.repository.ISdkChangeListener;
 import com.android.sdkuilib.internal.repository.ISdkUpdaterWindow;
 import com.android.sdkuilib.internal.repository.ui.SdkUpdaterWindowImpl2;
 import com.android.utils.ILogger;

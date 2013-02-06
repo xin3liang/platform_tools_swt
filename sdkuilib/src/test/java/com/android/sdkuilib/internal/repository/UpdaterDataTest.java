@@ -18,6 +18,7 @@ package com.android.sdkuilib.internal.repository;
 
 import com.android.sdklib.internal.repository.archives.Archive;
 import com.android.sdklib.internal.repository.packages.MockEmptyPackage;
+import com.android.sdklib.internal.repository.updater.ArchiveInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;

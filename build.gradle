@@ -21,6 +21,7 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'maven'
+    apply plugin: 'findbugs'
 
     repositories {
         mavenCentral()
@@ -105,6 +106,13 @@ subprojects {
             }
         }
     }
+
+    findbugs {
+        ignoreFailures = true
+        effort = "max"
+        reportLevel = "high"
+    }
+
 }
 
 // delay evaluation of this project before all subprojects have been evaluated.

@@ -15,7 +15,7 @@ def getVersion(Project p, String baseVersion) {
     return baseVersion + '-SNAPSHOT'
 }
 
-subprojects {
+subprojects { Project project ->
     // Change buildDir first so that all plugins pick up the new value.
     project.buildDir = project.file("$project.parent.buildDir/../$project.name")
 
@@ -74,15 +74,9 @@ subprojects {
         from(sourceSets.main.output)
     }
 
-    task distZip(type: Zip) {
-        from(prebuiltJar) {
-            rename "(.*)-${project.version}-.*.jar", '$1.jar'
-        }
-        from(project.configurations.runtime) {
-            rename "(.*)-${project.version}-.*.jar", '$1.jar'
-        }
-
-        archiveName archivesBaseName + ".zip"
+    if (project.hasProperty("prebuiltPath")) {
+        prebuiltJar.destinationDir file(prebuiltPath)
+        prebuiltJar.archiveName project.archivesBaseName + ".jar"
     }
 
     // delay computing the manifest classpath only if the

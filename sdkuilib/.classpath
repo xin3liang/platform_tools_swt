@@ -17,5 +17,6 @@
 	<classpathentry kind="var" path="ANDROID_OUT_FRAMEWORK/swt.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/layoutlib_api"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/common"/>
+	<classpathentry kind="var" path="ANDROID_SRC/prebuilts/tools/common/guava-tools/guava-13.0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

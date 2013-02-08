@@ -19,7 +19,10 @@ package com.android.sdkuilib.internal.repository.core;
 import com.android.SdkConstants;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.IAndroidTarget;
+import com.android.sdklib.internal.repository.packages.BuildToolPackage;
 import com.android.sdklib.internal.repository.packages.ExtraPackage;
+import com.android.sdklib.internal.repository.packages.FullRevision;
+import com.android.sdklib.internal.repository.packages.FullRevision.PreviewComparison;
 import com.android.sdklib.internal.repository.packages.IAndroidVersionProvider;
 import com.android.sdklib.internal.repository.packages.IFullRevisionProvider;
 import com.android.sdklib.internal.repository.packages.Package;
@@ -34,6 +37,8 @@ import com.android.sdklib.internal.repository.updater.PkgItem.PkgState;
 import com.android.sdklib.util.SparseArray;
 import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.ui.PackagesPageIcons;
+import com.android.utils.Pair;
+import com.google.common.collect.Maps;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -95,6 +100,11 @@ public class PackagesDiffLogic {
         Set<Integer> installedPlatforms = new HashSet<Integer>();
         SparseArray<List<PkgItem>> platformItems = new SparseArray<List<PkgItem>>();
 
+        boolean hasTools = false;
+        Map<Class<?>, Pair<PkgItem, FullRevision>> toolsCandidates = Maps.newHashMap();
+        toolsCandidates.put(PlatformToolPackage.class, Pair.of((PkgItem)null, (FullRevision)null));
+        toolsCandidates.put(BuildToolPackage.class,    Pair.of((PkgItem)null, (FullRevision)null));
+
         // sort items in platforms... directly deal with new/update items
         List<PkgItem> allItems = getAllPkgItems(true /*byApi*/, true /*bySource*/);
         for (PkgItem item : allItems) {
@@ -148,7 +158,7 @@ public class PackagesDiffLogic {
                             Package installed = item2.getMainPackage();
 
                             if (installed.getRevision().isPreview() &&
-                                    newPkg2.sameItemAs(installed, true /*ignorePreviews*/)) {
+                                    newPkg2.sameItemAs(installed, PreviewComparison.IGNORE)) {
                                 sameFound = true;
 
                                 if (installed.canBeUpdatedBy(newPkg) == UpdateInfo.UPDATE) {
@@ -167,7 +177,49 @@ public class PackagesDiffLogic {
             } else if (selectUpdates && item.hasUpdatePkg()) {
                 item.setChecked(true);
             }
+
+            // Keep track of the tools and offer to auto-select platform-tools/build-tools.
+            if (selectTop) {
+                if (p instanceof ToolPackage && p.isLocal()) {
+                    hasTools = true; // main tool package is installed.
+                } else if (p instanceof PlatformToolPackage || p instanceof BuildToolPackage) {
+                    for (Class<?> clazz : toolsCandidates.keySet()) {
+                        if (clazz.isInstance(p)) { // allow p to be a mock-derived class
+                            if (p.isLocal()) {
+                                // There's one such package installed, we don't need candidates.
+                                toolsCandidates.remove(clazz);
+                            } else if (toolsCandidates.containsKey(clazz)) {
+                                Pair<PkgItem, FullRevision> val = toolsCandidates.get(clazz);
+                                FullRevision rev = p.getRevision();
+                                if (!rev.isPreview()) {
+                                    // Don't auto-select previews.
+                                    if (val.getSecond() == null ||
+                                            rev.compareTo(val.getSecond()) > 0) {
+                                        // No revision: set the first candidate.
+                                        // Or we found a new higher revision
+                                        toolsCandidates.put(clazz, Pair.of(item, rev));
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
         }
+
+        // Select the top platform/build-tool found above if needed.
+        if (selectTop && hasTools) {
+            for (Pair<PkgItem, FullRevision> candidate : toolsCandidates.values()) {
+                PkgItem item = candidate.getFirst();
+                if (item != null) {
+                    item.setChecked(true);
+                }
+            }
+        }
+
+
+        // Select top platform items.
 
         List<PkgItem> items = platformItems.get(maxApi);
         if (selectTop && maxApi > 0 && items != null) {
@@ -670,7 +722,9 @@ public class PackagesDiffLogic {
             if (pkg instanceof IAndroidVersionProvider) {
                 return ((IAndroidVersionProvider) pkg).getAndroidVersion();
 
-            } else if (pkg instanceof ToolPackage || pkg instanceof PlatformToolPackage) {
+            } else if (pkg instanceof ToolPackage ||
+                    pkg instanceof PlatformToolPackage ||
+                    pkg instanceof BuildToolPackage) {
                 if (pkg.getRevision().isPreview()) {
                     return PkgCategoryApi.KEY_TOOLS_PREVIEW;
                 } else {
@@ -689,7 +743,7 @@ public class PackagesDiffLogic {
             List<PkgCategory> cats = getCategories();
             for (PkgCategory cat : cats) {
                 if (cat.getKey().equals(PkgCategoryApi.KEY_TOOLS)) {
-                    // Mark them as no unused to prevent their removal in updateEnd().
+                    // Mark them as not unused to prevent their removal in updateEnd().
                     keep(cat);
                     needTools = false;
                 } else if (cat.getKey().equals(PkgCategoryApi.KEY_EXTRA)) {

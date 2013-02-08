@@ -21,6 +21,7 @@ import com.android.sdklib.internal.repository.packages.BrokenPackage;
 import com.android.sdklib.internal.repository.packages.FullRevision;
 import com.android.sdklib.internal.repository.packages.MockAddonPackage;
 import com.android.sdklib.internal.repository.packages.MockBrokenPackage;
+import com.android.sdklib.internal.repository.packages.MockBuildToolPackage;
 import com.android.sdklib.internal.repository.packages.MockEmptyPackage;
 import com.android.sdklib.internal.repository.packages.MockExtraPackage;
 import com.android.sdklib.internal.repository.packages.MockPlatformPackage;
@@ -34,8 +35,6 @@ import com.android.sdklib.internal.repository.updater.ISettingsPage;
 import com.android.sdklib.internal.repository.updater.PkgItem;
 import com.android.sdklib.repository.PkgProps;
 import com.android.sdkuilib.internal.repository.MockSwtUpdaterData;
-import com.android.sdkuilib.internal.repository.core.PackagesDiffLogic;
-import com.android.sdkuilib.internal.repository.core.PkgCategory;
 
 import java.util.Properties;
 
@@ -1784,6 +1783,141 @@ public class PackagesDiffLogicTest extends TestCase {
                 "-- <INSTALLED, pkg:Android SDK Platform-tools, revision 4.0.1>\n" +
                 "-- <INSTALLED, pkg:SDK Platform Android android-1, API 1, revision 2>\n",
                 getTree(m, false /*displaySortByApi*/));
+    }
+
+    public void testBuildTool_New() {
+        // Test: No local packages installed. Remote server has tools, platform-tools and
+        // build-tools. Even though build-tools isn't a dependency we want to auto-select
+        // the latest one as an install candidate.
+
+        // Enable previews in the settings
+        u.overrideSetting(ISettingsPage.KEY_ENABLE_PREVIEWS, true);
+
+        SdkSource src1 = new SdkRepoSource("http://1.example.com/url1", "repo1");
+
+        m.updateStart();
+        m.updateSourcePackages(true /*sortByApi*/, src1, new Package[] {
+                new MockToolPackage        (src1, new FullRevision(2, 0, 0), 3),  // Tools 2
+                new MockPlatformToolPackage(src1, new FullRevision(3, 0, 0)),     // Plat-T 3
+                new MockBuildToolPackage   (src1, new FullRevision(4, 0, 0)),     // Build-T 3
+        });
+        m.updateEnd(true /*sortByApi*/);
+
+        assertEquals(
+                "PkgCategoryApi <API=TOOLS, label=Tools, #items=3>\n" +
+                "-- <NEW, pkg:Android SDK Tools, revision 2>\n" +
+                "-- <NEW, pkg:Android SDK Platform-tools, revision 3>\n" +
+                "-- <NEW, pkg:Android SDK Build-tools, revision 4>\n" +
+                "PkgCategoryApi <API=EXTRAS, label=Extras, #items=0>\n",
+                getTree(m, true /*displaySortByApi*/));
+        assertEquals(
+                "PkgCategorySource <source=repo1 (1.example.com), #items=3>\n" +
+                "-- <NEW, pkg:Android SDK Tools, revision 2>\n" +
+                "-- <NEW, pkg:Android SDK Platform-tools, revision 3>\n" +
+                "-- <NEW, pkg:Android SDK Build-tools, revision 4>\n",
+                getTree(m, false /*displaySortByApi*/));
+
+        // Auto select top items. This doesn't selected build-tools since no tools are installed.
+        m.checkNewUpdateItems(false, false, true, SdkConstants.PLATFORM_LINUX);
+
+        assertEquals(
+                "PkgCategoryApi <API=TOOLS, label=Tools, #items=3>\n" +
+                "-- <NEW, pkg:Android SDK Tools, revision 2>\n" +
+                "-- <NEW, pkg:Android SDK Platform-tools, revision 3>\n" +
+                "-- <NEW, pkg:Android SDK Build-tools, revision 4>\n" +
+                "PkgCategoryApi <API=EXTRAS, label=Extras, #items=0>\n",
+                getTree(m, true /*displaySortByApi*/));
+
+        // Auto select new items. This obviously selects the build-tools since its new.
+        m.checkNewUpdateItems(true, false, false, SdkConstants.PLATFORM_LINUX);
+
+        assertEquals(
+                "PkgCategoryApi <API=TOOLS, label=Tools, #items=3>\n" +
+                "-- < * NEW, pkg:Android SDK Tools, revision 2>\n" +
+                "-- < * NEW, pkg:Android SDK Platform-tools, revision 3>\n" +
+                "-- < * NEW, pkg:Android SDK Build-tools, revision 4>\n" +
+                "PkgCategoryApi <API=EXTRAS, label=Extras, #items=0>\n",
+                getTree(m, true /*displaySortByApi*/));
+    }
+
+    public void testBuildTool_InitialTop() {
+        // Test Build tools auto-selected as an initial top package.
+        // This time we have the tool package installed.
+        // When we first start and select the top packages, we should also auto-select
+        // the latest platform-tools and build-tools if none are installed.
+
+        // Enable previews in the settings
+        u.overrideSetting(ISettingsPage.KEY_ENABLE_PREVIEWS, true);
+
+        SdkSource src1 = new SdkRepoSource("http://1.example.com/url1", "repo1");
+
+        // First the local install only has tools, no plat-tools or build-tools.
+
+        m.uncheckAllItems();
+        m.updateStart();
+        m.updateSourcePackages(true /*sortByApi*/, null /*locals*/, new Package[] {
+                new MockToolPackage        (null, new FullRevision(2, 0, 0), 3),  // Tools 2
+        });
+        m.updateSourcePackages(true /*sortByApi*/, src1, new Package[] {
+                new MockToolPackage        (src1, new FullRevision(2, 1, 0), 3),  // Tools 2.1
+                new MockPlatformToolPackage(src1, new FullRevision(3, 0, 0)),     // Plat-T 3.1
+                new MockBuildToolPackage   (src1, new FullRevision(4, 0, 0)),     // Build-T 4.1
+        });
+        m.updateEnd(true /*sortByApi*/);
+
+        // Auto select top items.
+        m.checkNewUpdateItems(false, false, true, SdkConstants.PLATFORM_LINUX);
+
+        assertEquals(
+                "PkgCategoryApi <API=TOOLS, label=Tools, #items=3>\n" +
+                "-- <INSTALLED, pkg:Android SDK Tools, revision 2, updated by:Android SDK Tools, revision 2.1>\n" +
+                "-- < * NEW, pkg:Android SDK Platform-tools, revision 3>\n" +
+                "-- < * NEW, pkg:Android SDK Build-tools, revision 4>\n" +
+                "PkgCategoryApi <API=EXTRAS, label=Extras, #items=0>\n",
+                getTree(m, true /*displaySortByApi*/));
+
+        // Next we start again but this time the local install as all 3 tools.
+        // Auto-selecting the top shouldn't select the updated packages available.
+
+        m.uncheckAllItems();
+        m.updateStart();
+        m.updateSourcePackages(true /*sortByApi*/, null /*locals*/, new Package[] {
+                new MockToolPackage        (null, new FullRevision(2, 0, 0), 3),  // Tools 2
+                new MockPlatformToolPackage(null, new FullRevision(3, 0, 0)),     // Plat-T 3
+                new MockBuildToolPackage   (null, new FullRevision(4, 0, 0)),     // Build-T 4
+        });
+        m.updateSourcePackages(true /*sortByApi*/, src1, new Package[] {
+                new MockToolPackage        (src1, new FullRevision(2, 1, 0), 3),  // Tools 2.1
+                new MockPlatformToolPackage(src1, new FullRevision(3, 1, 0)),     // Plat-T 3.1
+                new MockBuildToolPackage   (src1, new FullRevision(4, 1, 0)),     // Build-T 4.1
+        });
+        m.updateEnd(true /*sortByApi*/);
+
+        // Auto select top items.
+        m.checkNewUpdateItems(false, false, true, SdkConstants.PLATFORM_LINUX);
+
+        assertEquals(
+                "PkgCategoryApi <API=TOOLS, label=Tools, #items=4>\n" +
+                "-- <INSTALLED, pkg:Android SDK Tools, revision 2, updated by:Android SDK Tools, revision 2.1>\n" +
+                "-- <INSTALLED, pkg:Android SDK Platform-tools, revision 3, updated by:Android SDK Platform-tools, revision 3.1>\n" +
+                "-- <NEW, pkg:Android SDK Build-tools, revision 4.1>\n" +
+                "-- <INSTALLED, pkg:Android SDK Build-tools, revision 4>\n" +
+                "PkgCategoryApi <API=EXTRAS, label=Extras, #items=0>\n",
+                getTree(m, true /*displaySortByApi*/));
+
+        // If we do request updates + top, they are selected however except for build-tools
+        // since new versions are not considered as updates.
+        m.uncheckAllItems();
+        m.checkNewUpdateItems(false, true, true, SdkConstants.PLATFORM_LINUX);
+
+        assertEquals(
+                "PkgCategoryApi <API=TOOLS, label=Tools, #items=4>\n" +
+                "-- < * INSTALLED, pkg:Android SDK Tools, revision 2, updated by:Android SDK Tools, revision 2.1>\n" +
+                "-- < * INSTALLED, pkg:Android SDK Platform-tools, revision 3, updated by:Android SDK Platform-tools, revision 3.1>\n" +
+                "-- <NEW, pkg:Android SDK Build-tools, revision 4.1>\n" +
+                "-- <INSTALLED, pkg:Android SDK Build-tools, revision 4>\n" +
+                "PkgCategoryApi <API=EXTRAS, label=Extras, #items=0>\n",
+                getTree(m, true /*displaySortByApi*/));
     }
 
 

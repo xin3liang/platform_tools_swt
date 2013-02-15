@@ -18,7 +18,6 @@ package com.android.sdkuilib.internal.repository.core;
 
 import com.android.SdkConstants;
 import com.android.sdklib.internal.repository.packages.BrokenPackage;
-import com.android.sdklib.internal.repository.packages.FullRevision;
 import com.android.sdklib.internal.repository.packages.MockAddonPackage;
 import com.android.sdklib.internal.repository.packages.MockBrokenPackage;
 import com.android.sdklib.internal.repository.packages.MockBuildToolPackage;
@@ -33,6 +32,7 @@ import com.android.sdklib.internal.repository.sources.SdkRepoSource;
 import com.android.sdklib.internal.repository.sources.SdkSource;
 import com.android.sdklib.internal.repository.updater.ISettingsPage;
 import com.android.sdklib.internal.repository.updater.PkgItem;
+import com.android.sdklib.repository.FullRevision;
 import com.android.sdklib.repository.PkgProps;
 import com.android.sdkuilib.internal.repository.MockSwtUpdaterData;
 

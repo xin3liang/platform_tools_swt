@@ -21,7 +21,6 @@ import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdklib.internal.repository.DownloadCache;
 import com.android.sdklib.internal.repository.ITaskFactory;
 import com.android.sdklib.internal.repository.archives.Archive;
-import com.android.sdklib.internal.repository.packages.FullRevision;
 import com.android.sdklib.internal.repository.packages.MockAddonPackage;
 import com.android.sdklib.internal.repository.packages.MockBrokenPackage;
 import com.android.sdklib.internal.repository.packages.MockPlatformPackage;
@@ -34,6 +33,7 @@ import com.android.sdklib.internal.repository.updater.ArchiveInfo;
 import com.android.sdklib.internal.repository.updater.IUpdaterData;
 import com.android.sdklib.internal.repository.updater.SdkUpdaterLogic;
 import com.android.sdklib.internal.repository.updater.SettingsController;
+import com.android.sdklib.repository.FullRevision;
 import com.android.utils.ILogger;
 
 import java.util.ArrayList;

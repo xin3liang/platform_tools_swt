@@ -1,4 +1,9 @@
+include "ddms"
+include "ddmuilib"
 include "sdkstats"
 include "sdkuilib"
 include "swtmenubar"
+
+project(':ddms'    ).projectDir = new File('ddms/app')
+project(':ddmuilib').projectDir = new File('ddms/ddmuilib')
 

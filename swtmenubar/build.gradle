@@ -1,13 +1,9 @@
-group = 'com.android.tools.sdk'
+group = 'com.android.tools'
 archivesBaseName = 'swtmenubar'
 
 dependencies {
     compile "com.android.tools.sdk:sdklib:$version"
-
-    def prebuiltsToolsDir = "$rootProject.ext.androidRootDir/prebuilts/tools"
-    compile files("$prebuiltsToolsDir/common/eclipse/org.eclipse.jface_3.6.2.M20110210-1200.jar")
-    // FIXME configure the host arch for swt
-    compile files("$prebuiltsToolsDir/linux-x86/swt/swt.jar")
+    compile 'com.android.external.eclipse:org-eclipse-jface:3.6.2'
 
     testCompile 'junit:junit:3.8.1'
 }
@@ -19,3 +15,6 @@ sourceSets {
     // Also add the MacOS specific sources for SWT Cocoa
     main.java.srcDir 'src/main-darwin/java'
 }
+
+// include swt for compilation
+sourceSets.main.compileClasspath += configurations.swt

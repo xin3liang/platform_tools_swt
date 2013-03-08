@@ -15,6 +15,3 @@ sourceSets {
     // Also add the MacOS specific sources for SWT Cocoa
     main.java.srcDir 'src/main-darwin/java'
 }
-
-// include swt for compilation
-sourceSets.main.compileClasspath += configurations.swt

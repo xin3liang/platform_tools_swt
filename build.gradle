@@ -72,6 +72,10 @@ subprojects { Project project ->
         swt "com.android.external.eclipse:swt:3.5.0"
     }
 
+    // include swt for compilation
+    sourceSets.main.compileClasspath += configurations.swt
+    sourceSets.test.compileClasspath += configurations.swt
+
     ext.baseVersion = '22.0'
 
     version = getVersion(project, ext.baseVersion)
@@ -110,7 +114,7 @@ subprojects { Project project ->
 }
 
 // delay evaluation of this project before all subprojects have been evaluated.
-subprojects.each { subproject -> evaluationDependsOn(subproject.name) }
+subprojects.each { subproject -> evaluationDependsOn(subproject.path) }
 
 def testTasks = subprojects.collect { it.tasks.withType(Test) }.flatten()
 

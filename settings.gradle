@@ -1,9 +1,13 @@
 include "ddms"
 include "ddmuilib"
+include "hierarchyviewer2"
+include "hierarchyviewer2lib"
 include "sdkstats"
 include "sdkuilib"
 include "swtmenubar"
 
 project(':ddms'    ).projectDir = new File('ddms/app')
 project(':ddmuilib').projectDir = new File('ddms/ddmuilib')
+project(':hierarchyviewer2'   ).projectDir = new File('hierarchyviewer2/app')
+project(':hierarchyviewer2lib').projectDir = new File('hierarchyviewer2/hierarchyviewer2lib')
 

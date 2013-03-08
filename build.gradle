@@ -1,3 +1,26 @@
+buildscript {
+    repositories {
+        maven { url "$rootDir/../../prebuilts/tools/common/gradle-plugins/repository" }
+    }
+    dependencies {
+        classpath 'com.android.tools.internal:internal-plugins:1.0'
+    }
+}
+
+apply plugin: 'clone-artifacts'
+apply plugin: 'distrib'
+
+// artifact cloning destinations
+cloneArtifacts {
+    mainRepo = "$rootDir/../../prebuilts/tools/common/m2/repository"
+    secondaryRepo = "$rootDir/../../prebuilts/tools/common/m2/internal"
+}
+// set up the distribution destination
+distribution {
+    destinationPath = "$rootDir/../../prebuilts/devtools"
+    dependenciesRepo = cloneArtifacts.mainRepo
+}
+
 // ext.androidHostOut is shared by all tools/{base,build,swt} gradle projects/
 ext.androidHostOut = file("$rootDir/../../out/host/gradle")
 ext.androidRootDir = file(new File(ext.androidHostOut, "../../../"))
@@ -19,10 +42,34 @@ subprojects { Project project ->
     apply plugin: 'java'
     apply plugin: 'maven'
     apply plugin: 'findbugs'
+    apply plugin: 'distrib'
+    apply plugin: 'clone-artifacts'
 
     repositories {
-        mavenCentral()
+        maven { url = uri(rootProject.cloneArtifacts.mainRepo) }
+        maven { url = uri(rootProject.cloneArtifacts.secondaryRepo) }
         maven { url = uri("$rootProject.ext.androidHostOut/repo") }
+    }
+
+    // find bug dependencies is added dynamically so it's hard for the
+    // clone artifact plugin to find it. This custom config lets us manually
+    // add such dependencies.
+    configurations {
+        hidden
+    }
+    dependencies {
+        hidden "com.google.code.findbugs:findbugs:2.0.1"
+    }
+
+    // configuration for swt dependency since the packaged jar is platform dependent
+    // but at compile time we don't care. Also we don't want the artifact in the
+    // main repo, so use the provided configuration
+    configurations {
+        swt
+    }
+
+    dependencies{
+        swt "com.android.external.eclipse:swt:3.5.0"
     }
 
     ext.baseVersion = '22.0'
@@ -37,50 +84,6 @@ subprojects { Project project ->
     task disableTestFailures << {
         tasks.withType(Test) {
             ignoreFailures = true
-        }
-    }
-
-    project.ext.getClassPath = {
-        String classPath = ""
-        project.configurations.runtime.files.each { file ->
-            String name = file.name
-
-            // handle tools/base lib that don't have the -SNAPSHOT on them
-            String versionPattern = "(.*)-${ext.baseVersion}-\\d+\\.\\d+-\\d+\\.jar"
-            if (java.util.regex.Pattern.matches(versionPattern, name)) {
-                name = name.replaceFirst(versionPattern, '$1.jar');
-            } else {
-                // now handle tools/swt libs with the -SNAPSHOT.
-                String suffix = "-" + project.version + ".jar"
-                if (name.endsWith(suffix)) {
-                    name = name.substring(0, name.size() - suffix.size()) + ".jar"
-                } else if (name.equals("swt.jar")) {
-                    // now handle swt.jar which should be removed as we add this manually later.
-                    name = "";
-                }
-            }
-
-            if (name.size() > 0) {
-                classPath = classPath + " " + name
-            }
-        }
-        return classPath
-    }
-
-    task prebuiltJar(type: Jar) {
-        from(sourceSets.main.output)
-    }
-
-    if (project.hasProperty("prebuiltPath")) {
-        prebuiltJar.destinationDir file(prebuiltPath)
-        prebuiltJar.archiveName project.archivesBaseName + ".jar"
-    }
-
-    // delay computing the manifest classpath only if the
-    // prebuiltJar task is set to run.
-    project.gradle.taskGraph.whenReady { taskGraph ->
-        if (taskGraph.hasTask(prebuiltJar)) {
-            prebuiltJar.manifest.attributes("Class-Path": project.ext.getClassPath())
         }
     }
 

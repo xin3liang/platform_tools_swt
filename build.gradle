@@ -70,11 +70,11 @@ subprojects { Project project ->
 
     dependencies{
         swt "com.android.external.eclipse:swt:3.5.0"
+        testCompile "com.android.external.eclipse:swt:3.5.0"
     }
 
     // include swt for compilation
     sourceSets.main.compileClasspath += configurations.swt
-    sourceSets.test.compileClasspath += configurations.swt
 
     ext.baseVersion = '22.0'
 

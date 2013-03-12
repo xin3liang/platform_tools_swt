@@ -3,7 +3,7 @@ archivesBaseName = 'sdkuilib'
 
 dependencies {
     compile project(':swtmenubar')
-    compile "com.android.tools.sdk:sdklib:$version"
+    compile "com.android.tools:sdklib:$version"
 
     compile 'org.apache.commons:commons-compress:1.0'
     compile 'org.apache.httpcomponents:httpclient:4.1.1'

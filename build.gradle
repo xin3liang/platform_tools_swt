@@ -70,6 +70,7 @@ subprojects { Project project ->
 
     dependencies{
         swt "com.android.external.eclipse:swt:3.5.0"
+        compile 'com.android.external.eclipse:org-eclipse-jface:3.6.2'
         testCompile "com.android.external.eclipse:swt:3.5.0"
     }
 

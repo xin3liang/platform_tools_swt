@@ -1,4 +1,4 @@
-group = 'com.android.tools.sdk'
+group = 'com.android.tools'
 archivesBaseName = 'sdkuilib'
 
 dependencies {
@@ -9,8 +9,6 @@ dependencies {
     compile 'org.apache.httpcomponents:httpclient:4.1.1'
     compile 'org.apache.httpcomponents:httpmime:4.1'
 
-    compile 'com.android.external.eclipse:org-eclipse-jface:3.6.2'
-
     testCompile "com.android.tools:sdklib-test:$version"
     testCompile 'junit:junit:3.8.1'
 }
@@ -19,3 +17,4 @@ sourceSets {
     main.resources.srcDir 'src/main/java'
     test.resources.srcDir 'src/test/java'
 }
+

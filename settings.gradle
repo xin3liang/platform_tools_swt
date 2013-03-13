@@ -6,6 +6,7 @@ include "sdkmanager"
 include "sdkstats"
 include "sdkuilib"
 include "swtmenubar"
+include "uiautomatorviewer"
 
 project(':ddms'    ).projectDir = new File('ddms/app')
 project(':ddmuilib').projectDir = new File('ddms/ddmuilib')

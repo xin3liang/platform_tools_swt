@@ -38,6 +38,7 @@ public class MenuBarEnhancer37 implements IMenuBarEnhancer {
     public MenuBarEnhancer37() {
     }
 
+    @Override
     public MenuBarMode getMenuBarMode() {
         return MenuBarMode.MAC_OS;
     }
@@ -50,6 +51,7 @@ public class MenuBarEnhancer37 implements IMenuBarEnhancer {
      * @param display The SWT display. Must not be null.
      * @param callbacks The callbacks invoked by the menus.
      */
+    @Override
     public void setupMenu(
             String appName,
             Display display,
@@ -64,6 +66,7 @@ public class MenuBarEnhancer37 implements IMenuBarEnhancer {
 
         // Schedule disposal of callback object
         display.disposeExec(new Runnable() {
+            @Override
             public void run() {
             }
         });

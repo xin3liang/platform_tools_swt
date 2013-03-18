@@ -16,6 +16,8 @@
 
 package com.android.menubar;
 
+import com.android.menubar.IMenuBarEnhancer.MenuBarMode;
+
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -25,8 +27,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-
-import com.android.menubar.IMenuBarEnhancer.MenuBarMode;
 
 
 /**
@@ -94,10 +94,12 @@ public final class MenuBarEnhancer {
         IMenuBarEnhancer enhancer;
         enhancer = new IMenuBarEnhancer() {
 
+            @Override
             public MenuBarMode getMenuBarMode() {
                 return MenuBarMode.GENERIC;
             }
 
+            @Override
             public void setupMenu(
                     String appName,
                     Display display,
@@ -153,16 +155,19 @@ public final class MenuBarEnhancer {
             final IAction quitAction) {
 
         IMenuBarCallback callbacks = new IMenuBarCallback() {
+            @Override
             public void printError(String format, Object... args) {
                 System.err.println(String.format(format, args));
             }
 
+            @Override
             public void onPreferencesMenuSelected() {
                 if (preferencesAction != null) {
                     preferencesAction.run();
                 }
             }
 
+            @Override
             public void onAboutMenuSelected() {
                 if (aboutAction != null) {
                     aboutAction.run();
@@ -176,10 +181,12 @@ public final class MenuBarEnhancer {
         if (enhancer == null) {
             enhancer = new IMenuBarEnhancer() {
 
+                @Override
                 public MenuBarMode getMenuBarMode() {
                     return MenuBarMode.GENERIC;
                 }
 
+                @Override
                 public void setupMenu(
                         String appName,
                         Display display,

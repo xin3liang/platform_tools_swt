@@ -5,10 +5,6 @@ dependencies {
     compile project(':swtmenubar')
     compile "com.android.tools:sdklib:$version"
 
-    compile 'org.apache.commons:commons-compress:1.0'
-    compile 'org.apache.httpcomponents:httpclient:4.1.1'
-    compile 'org.apache.httpcomponents:httpmime:4.1'
-
     testCompile "com.android.tools:sdklib-test:$version"
     testCompile 'junit:junit:3.8.1'
 }

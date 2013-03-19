@@ -3,18 +3,10 @@ archivesBaseName = 'chimpchat'
 
 dependencies {
     compile project(':hierarchyviewer2lib')
-    compile "com.android.tools:common:$version"
     compile "com.android.tools:sdklib:$version"
     compile "com.android.tools.ddms:ddmlib:$version"
 
-    compile "com.google.guava:guava:13.0.1"
-
     testCompile 'junit:junit:3.8.1'
-}
-
-sourceSets {
-    main.resources.srcDir 'src/main/java'
-    test.resources.srcDir 'src/test/java'
 }
 
 // include swt for compilation

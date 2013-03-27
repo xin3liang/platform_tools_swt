@@ -49,7 +49,7 @@ public class HierarchyViewerApplicationDirector extends HierarchyViewerDirector 
         String hvParentLocation = System.getProperty("com.android.hierarchyviewer.bindir"); //$NON-NLS-1$
 
         // in the new SDK, adb is in the platform-tools, but when run from the command line
-        // in the Android source tree, then adb is next to hierarchyviewer.
+        // in the Android source tree, then adb is in $ANDROID_HOST_OUT/bin/adb
         if (hvParentLocation != null && hvParentLocation.length() != 0) {
             // check if there's a platform-tools folder
             File platformTools = new File(new File(hvParentLocation).getParent(),
@@ -58,7 +58,10 @@ public class HierarchyViewerApplicationDirector extends HierarchyViewerDirector 
                 return platformTools.getAbsolutePath() + File.separator + SdkConstants.FN_ADB;
             }
 
-            return hvParentLocation + File.separator + SdkConstants.FN_ADB;
+            String androidOut = System.getenv("ANDROID_HOST_OUT");
+            if (androidOut != null) {
+                return androidOut + File.separator + "bin" + File.separator + SdkConstants.FN_ADB;
+            }
         }
 
         return SdkConstants.FN_ADB;

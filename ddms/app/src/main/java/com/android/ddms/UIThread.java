@@ -16,6 +16,7 @@
 
 package com.android.ddms;
 
+import com.android.SdkConstants;
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.AndroidDebugBridge.IClientChangeListener;
 import com.android.ddmlib.Client;
@@ -506,12 +507,20 @@ public class UIThread implements IUiSelectionListener, IClientChangeListener {
             File platformTools = new File(new File(ddmsParentLocation).getParent(),
                     "platform-tools");  //$NON-NLS-1$
             if (platformTools.isDirectory()) {
-                adbLocation = platformTools.getAbsolutePath() + File.separator + "adb"; //$NON-NLS-1$
+                adbLocation = platformTools.getAbsolutePath() + File.separator +
+                        SdkConstants.FN_ADB;
             } else {
-                adbLocation = ddmsParentLocation + File.separator + "adb"; //$NON-NLS-1$
+                // we're in the Android source tree, then adb is in $ANDROID_HOST_OUT/bin/adb
+                String androidOut = System.getenv("ANDROID_HOST_OUT");
+                if (androidOut != null) {
+                    adbLocation = androidOut + File.separator + "bin" + File.separator +
+                            SdkConstants.FN_ADB;
+                } else {
+                    adbLocation = SdkConstants.FN_ADB;
+                }
             }
         } else {
-            adbLocation = "adb"; //$NON-NLS-1$
+            adbLocation = SdkConstants.FN_ADB;
         }
 
         AndroidDebugBridge.init(true /* debugger support */);

@@ -19,15 +19,12 @@ package com.android.hierarchyviewerlib.device;
 import com.android.ddmlib.Client;
 import com.android.ddmlib.ClientData;
 import com.android.ddmlib.IDevice;
+import com.android.hierarchyviewerlib.HierarchyViewerDirector;
 
 public class HvDeviceFactory {
-    private static final String sHvProtoEnvVar =
-            System.getenv("ANDROID_HVPROTO"); //$NON-NLS-1$
-
     public static IHvDevice create(IDevice device) {
         // default to old mechanism until the new one is fully tested
-        if (sHvProtoEnvVar == null ||
-                !"ddm".equalsIgnoreCase(sHvProtoEnvVar)) { //$NON-NLS-1$
+        if (!HierarchyViewerDirector.isUsingDdmProtocol()) {
             return new ViewServerDevice(device);
         }
 

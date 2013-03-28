@@ -58,6 +58,11 @@ import java.util.TimerTask;
  */
 public abstract class HierarchyViewerDirector implements IDeviceChangeListener,
         IWindowChangeListener {
+    private static final boolean sIsUsingDdmProtocol;
+    static {
+        String sHvProtoEnvVar = System.getenv("ANDROID_HVPROTO"); //$NON-NLS-1$
+        sIsUsingDdmProtocol = "ddm".equalsIgnoreCase(sHvProtoEnvVar);
+    }
 
     protected static HierarchyViewerDirector sDirector;
 
@@ -79,6 +84,10 @@ public abstract class HierarchyViewerDirector implements IDeviceChangeListener,
 
     private static final Object mDevicesLock = new Object();
     private Map<IDevice, IHvDevice> mDevices = new HashMap<IDevice, IHvDevice>(10);
+
+    public static boolean isUsingDdmProtocol() {
+        return sIsUsingDdmProtocol;
+    }
 
     public void terminate() {
         WindowUpdater.terminate();

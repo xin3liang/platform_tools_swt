@@ -23,6 +23,7 @@ import com.android.ddmlib.Log;
 import com.android.ddmlib.MultiLineReceiver;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
 import com.android.ddmlib.TimeoutException;
+import com.android.hierarchyviewerlib.HierarchyViewerDirector;
 import com.android.hierarchyviewerlib.models.ViewNode;
 import com.android.hierarchyviewerlib.models.Window;
 import com.android.hierarchyviewerlib.ui.util.PsdFile;
@@ -99,7 +100,8 @@ public class DeviceBridge {
      */
     public static void initDebugBridge(String adbLocation) {
         if (sBridge == null) {
-            AndroidDebugBridge.init(true /* debugger support */);
+            /* debugger support required only if hv is using ddm protocol */
+            AndroidDebugBridge.init(HierarchyViewerDirector.isUsingDdmProtocol());
         }
         if (sBridge == null || !sBridge.isConnected()) {
             sBridge = AndroidDebugBridge.createBridge(adbLocation, true);

@@ -48,6 +48,16 @@ public class DebugBridge {
             return adb.getAbsolutePath();
         }
 
+        // check if we're in the Android source tree where adb is in $ANDROID_HOST_OUT/bin/adb
+        String androidOut = System.getenv("ANDROID_HOST_OUT");
+        if (androidOut != null) {
+            String adbLocation = androidOut + File.separator + "bin" + File.separator +
+                    SdkConstants.FN_ADB;
+            if (new File(adbLocation).exists()) {
+                return adbLocation;
+            }
+        }
+
         return null;
     }
 

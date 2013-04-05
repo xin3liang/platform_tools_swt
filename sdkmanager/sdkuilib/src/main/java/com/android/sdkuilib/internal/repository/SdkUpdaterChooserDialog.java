@@ -208,6 +208,7 @@ final class SdkUpdaterChooserDialog extends GridDialog {
 
         mLicenseRadioAccept = new Button(mPackageRootComposite, SWT.RADIO);
         mLicenseRadioAccept.setText("Accept");
+        mLicenseRadioAccept.setToolTipText("Accept this package.");
         mLicenseRadioAccept.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -217,6 +218,7 @@ final class SdkUpdaterChooserDialog extends GridDialog {
 
         mLicenseRadioReject = new Button(mPackageRootComposite, SWT.RADIO);
         mLicenseRadioReject.setText("Reject");
+        mLicenseRadioReject.setToolTipText("Reject this package.");
         mLicenseRadioReject.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -247,6 +249,7 @@ final class SdkUpdaterChooserDialog extends GridDialog {
 
         mLicenseRadioAcceptLicense = new Button(mPackageRootComposite, SWT.RADIO);
         mLicenseRadioAcceptLicense.setText("Accept License");
+        mLicenseRadioAcceptLicense.setToolTipText("Accept all packages that use the same license.");
         mLicenseRadioAcceptLicense.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

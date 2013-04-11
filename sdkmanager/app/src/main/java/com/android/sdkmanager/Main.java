@@ -49,6 +49,7 @@ import com.android.sdkuilib.repository.AvdManagerWindow.AvdInvocationContext;
 import com.android.sdkuilib.repository.SdkUpdaterWindow;
 import com.android.sdkuilib.repository.SdkUpdaterWindow.SdkInvocationContext;
 import com.android.utils.ILogger;
+import com.android.utils.IReaderLogger;
 import com.android.utils.Pair;
 import com.android.xml.AndroidXPathFactory;
 
@@ -125,7 +126,7 @@ public class Main {
      * This logger prints to the attached console.
      */
     private void createLogger() {
-        mSdkLog = new ILogger() {
+        mSdkLog = new IReaderLogger() {
             @Override
             public void error(Throwable t, String errorFormat, Object... args) {
                 if (errorFormat != null) {
@@ -157,6 +158,17 @@ public class Main {
             @Override
             public void verbose(@NonNull String msgFormat, Object... args) {
                 System.out.printf(msgFormat, args);
+            }
+
+            /**
+             * Used by UpdaterData.acceptLicense() to prompt for license acceptance
+             * when updating the SDK from the command-line.
+             * <p/>
+             * {@inheritDoc}
+             */
+            @Override
+            public int readLine(byte[] inputBuffer) throws IOException {
+                return System.in.read(inputBuffer);
             }
         };
     }
@@ -409,8 +421,11 @@ public class Main {
         boolean useHttp  = mSdkCommandLine.getFlagNoHttps();
         boolean dryMode  = mSdkCommandLine.getFlagDryMode();
         boolean all      = mSdkCommandLine.getFlagAll();
-        String proxyHost = mSdkCommandLine.getParamProxyHost();
-        String proxyPort = mSdkCommandLine.getParamProxyPort();
+        String proxyHost     = mSdkCommandLine.getParamProxyHost();
+        String proxyPort     = mSdkCommandLine.getParamProxyPort();
+        // This flag is not yet supported in Tools R22.
+        // String acceptLicense = mSdkCommandLine.getParamAcceptLicense();
+        String acceptLicense = null;
 
         boolean obsolete = mSdkCommandLine.getFlagObsolete();
         all |= obsolete;
@@ -431,7 +446,7 @@ public class Main {
                 useHttp,
                 proxyHost,
                 proxyPort);
-        upd.updateAll(filterResult.getSecond(), all, dryMode);
+        upd.updateAll(filterResult.getSecond(), all, dryMode, acceptLicense);
 
         if (obsolete) {
             mSdkLog.info("Note: Flag --obsolete is deprecated and will be removed in the next version.\n      Please use --all instead.\n");

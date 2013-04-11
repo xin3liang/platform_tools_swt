@@ -373,7 +373,6 @@ public class MainTest extends SdkManagerTestCase {
         URL url = new URL("file", null, "//" + path);  //$NON-NLS-1$ //$NON-NLS-2$
         String result = url.toString();
         return result;
-
     }
 
 }

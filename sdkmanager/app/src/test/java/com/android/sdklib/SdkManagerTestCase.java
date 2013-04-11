@@ -28,6 +28,7 @@ package com.android.sdklib;
 import com.android.SdkConstants;
 import com.android.prefs.AndroidLocation;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
+import com.android.sdklib.BuildToolInfo.PathId;
 import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdklib.io.FileOp;
 import com.android.sdklib.mock.MockLog;
@@ -157,7 +158,12 @@ public class SdkManagerTestCase extends TestCase {
         new File(toolsDir, SdkConstants.androidCmdName()).createNewFile();
         new File(toolsDir, SdkConstants.FN_EMULATOR).createNewFile();
 
-        // TODO makePlatformTools with at least a source props
+        File buildToolsDir = new File(sdkDir, SdkConstants.OS_SDK_BUILD_TOOLS_FOLDER);
+        buildToolsDir.mkdir();
+
+        File platToolsDir = new File(sdkDir, SdkConstants.OS_SDK_PLATFORM_TOOLS_FOLDER);
+        createTextFile(platToolsDir, SdkConstants.FN_SOURCE_PROP,
+                PkgProps.PKG_REVISION + "=0\n");
 
         File toolsLibEmuDir = new File(sdkDir, SdkConstants.OS_SDK_TOOLS_LIB_FOLDER + "emulator");
         toolsLibEmuDir.mkdirs();
@@ -165,7 +171,7 @@ public class SdkManagerTestCase extends TestCase {
         File platformsDir = new File(sdkDir, SdkConstants.FD_PLATFORMS);
 
         // Creating a fake target here on down
-        File targetDir = makeFakeTargetInternal(platformsDir);
+        File targetDir = makeFakeTargetInternal(platformsDir, buildToolsDir);
 
         File imagesDir = new File(targetDir, "images");
         makeFakeSysImgInternal(imagesDir, SdkConstants.ABI_ARMEABI);
@@ -190,26 +196,51 @@ public class SdkManagerTestCase extends TestCase {
 
     //----
 
+    private void createTextFile(File dir, String filename, String...lines) throws IOException {
+        File file = new File(dir, filename);
+
+        File parent = file.getParentFile();
+        if (!parent.isDirectory()) {
+            parent.mkdirs();
+        }
+
+        file.createNewFile();
+        if (lines != null && lines.length > 0) {
+            FileWriter out = new FileWriter(file);
+            for (String line : lines) {
+                out.write(line);
+            }
+            out.close();
+        }
+    }
+
     /** Utility used by {@link #makeFakeSdk()} to create a fake target with API 0, rev 0. */
-    private File makeFakeTargetInternal(File platformsDir) throws IOException {
+    private File makeFakeTargetInternal(File platformsDir, File buildToolsDir) throws IOException {
         File targetDir = new File(platformsDir, "v0_0");
         targetDir.mkdirs();
         new File(targetDir, SdkConstants.FN_FRAMEWORK_LIBRARY).createNewFile();
         new File(targetDir, SdkConstants.FN_FRAMEWORK_AIDL).createNewFile();
 
-        File sourceProp = new File(targetDir, SdkConstants.FN_SOURCE_PROP);
-        sourceProp.createNewFile();
-        FileWriter out = new FileWriter(sourceProp);
-        out.write(PkgProps.LAYOUTLIB_API + "=5\n");
-        out.write(PkgProps.LAYOUTLIB_REV + "=2\n");
-        out.close();
+        createTextFile(targetDir, SdkConstants.FN_SOURCE_PROP,
+                PkgProps.LAYOUTLIB_API + "=5\n",
+                PkgProps.LAYOUTLIB_REV + "=2\n");
 
-        File buildProp = new File(targetDir, SdkConstants.FN_BUILD_PROP);
-        out = new FileWriter(buildProp);
-        out.write(SdkManager.PROP_VERSION_RELEASE + "=0.0\n");
-        out.write(SdkManager.PROP_VERSION_SDK + "=0\n");
-        out.write(SdkManager.PROP_VERSION_CODENAME + "=REL\n");
-        out.close();
+        createTextFile(targetDir, SdkConstants.FN_BUILD_PROP,
+                SdkManager.PROP_VERSION_RELEASE + "=0.0\n",
+                SdkManager.PROP_VERSION_SDK + "=0\n",
+                SdkManager.PROP_VERSION_CODENAME + "=REL\n");
+
+        buildToolsDir = new File(buildToolsDir, "android-0");
+        createTextFile(buildToolsDir, SdkConstants.FN_SOURCE_PROP,
+                PkgProps.PKG_REVISION + "=0\n");
+        createTextFile(buildToolsDir, SdkConstants.FN_AAPT);
+        createTextFile(buildToolsDir, SdkConstants.FN_AIDL);
+        createTextFile(buildToolsDir, SdkConstants.FN_DX);
+        createTextFile(buildToolsDir, SdkConstants.FD_LIB + File.separator + SdkConstants.FN_DX_JAR);
+        createTextFile(buildToolsDir, SdkConstants.FN_RENDERSCRIPT);
+        createTextFile(buildToolsDir, SdkConstants.OS_FRAMEWORK_RS);
+        createTextFile(buildToolsDir, SdkConstants.OS_FRAMEWORK_RS_CLANG);
+
         return targetDir;
     }
 
@@ -218,12 +249,9 @@ public class SdkManagerTestCase extends TestCase {
         imagesDir.mkdirs();
         new File(imagesDir, "userdata.img").createNewFile();
 
-        File sourceProp = new File(imagesDir, SdkConstants.FN_SOURCE_PROP);
-        sourceProp.createNewFile();
-        FileWriter out = new FileWriter(sourceProp);
-        out.write(PkgProps.VERSION_API_LEVEL + "=0\n");
-        out.write(PkgProps.SYS_IMG_ABI + "=" + abiType + "\n");
-        out.close();
+        createTextFile(imagesDir, SdkConstants.FN_SOURCE_PROP,
+                PkgProps.VERSION_API_LEVEL + "=0\n",
+                PkgProps.SYS_IMG_ABI + "=" + abiType + "\n");
     }
 
     /** Utility to make a fake skin for the given target */
@@ -236,11 +264,8 @@ public class SdkManagerTestCase extends TestCase {
         File sourcesDir = FileOp.append(sdkDir, SdkConstants.FD_PKG_SOURCES, "android-0");
         sourcesDir.mkdirs();
 
-        File sourceProp = new File(sourcesDir, SdkConstants.FN_SOURCE_PROP);
-        sourceProp.createNewFile();
-        FileWriter out = new FileWriter(sourceProp);
-        out.write(PkgProps.VERSION_API_LEVEL + "=0\n");
-        out.close();
+        createTextFile(sourcesDir, SdkConstants.FN_SOURCE_PROP,
+                PkgProps.VERSION_API_LEVEL + "=0\n");
 
         File dir1 = FileOp.append(sourcesDir, "src", "com", "android");
         dir1.mkdirs();

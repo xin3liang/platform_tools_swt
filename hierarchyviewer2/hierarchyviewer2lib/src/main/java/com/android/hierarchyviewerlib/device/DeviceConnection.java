@@ -17,6 +17,7 @@
 package com.android.hierarchyviewerlib.device;
 
 import com.android.ddmlib.IDevice;
+import com.google.common.base.Charsets;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -54,16 +55,16 @@ public class DeviceConnection {
 
     public BufferedReader getInputStream() throws IOException {
         if (mIn == null) {
-            mIn = new BufferedReader(new InputStreamReader(mSocketChannel.socket().getInputStream()));
+            mIn = new BufferedReader(new InputStreamReader(
+                    mSocketChannel.socket().getInputStream(), Charsets.UTF_8));
         }
         return mIn;
     }
 
     public BufferedWriter getOutputStream() throws IOException {
         if (mOut == null) {
-            mOut =
-                    new BufferedWriter(new OutputStreamWriter(mSocketChannel.socket()
-                            .getOutputStream()));
+            mOut = new BufferedWriter(new OutputStreamWriter(
+                            mSocketChannel.socket().getOutputStream(), Charsets.UTF_8));
         }
         return mOut;
     }

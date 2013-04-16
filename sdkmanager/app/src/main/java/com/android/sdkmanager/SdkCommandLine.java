@@ -39,13 +39,13 @@ class SdkCommandLine extends CommandLineParser {
      *   or optional) for the given action.
      */
 
-    public final static String VERB_LIST    = "list";                               //$NON-NLS-1$
-    public final static String VERB_CREATE  = "create";                             //$NON-NLS-1$
-    public final static String VERB_MOVE    = "move";                               //$NON-NLS-1$
-    public final static String VERB_DELETE  = "delete";                             //$NON-NLS-1$
-    public final static String VERB_UPDATE  = "update";                             //$NON-NLS-1$
-    public final static String VERB_SDK     = "sdk";                                //$NON-NLS-1$
-    public final static String VERB_AVD     = "avd";                                //$NON-NLS-1$
+    public final static String VERB_LIST            = "list";                       //$NON-NLS-1$
+    public final static String VERB_CREATE          = "create";                     //$NON-NLS-1$
+    public final static String VERB_MOVE            = "move";                       //$NON-NLS-1$
+    public final static String VERB_DELETE          = "delete";                     //$NON-NLS-1$
+    public final static String VERB_UPDATE          = "update";                     //$NON-NLS-1$
+    public final static String VERB_SDK             = "sdk";                        //$NON-NLS-1$
+    public final static String VERB_AVD             = "avd";                        //$NON-NLS-1$
 
     public static final String OBJECT_SDK            = "sdk";                       //$NON-NLS-1$
     public static final String OBJECT_AVD            = "avd";                       //$NON-NLS-1$
@@ -58,40 +58,42 @@ class SdkCommandLine extends CommandLineParser {
     public static final String OBJECT_LIB_PROJECT    = "lib-project";               //$NON-NLS-1$
     public static final String OBJECT_ADB            = "adb";                       //$NON-NLS-1$
 
-    public static final String ARG_ALIAS        = "alias";                          //$NON-NLS-1$
-    public static final String ARG_ACTIVITY     = "activity";                       //$NON-NLS-1$
+    public static final String ARG_ALIAS            = "alias";                      //$NON-NLS-1$
+    public static final String ARG_ACTIVITY         = "activity";                   //$NON-NLS-1$
 
-    public static final String KEY_ACTIVITY     = ARG_ACTIVITY;
-    public static final String KEY_PACKAGE      = "package";                        //$NON-NLS-1$
-    public static final String KEY_MODE         = "mode";                           //$NON-NLS-1$
-    public static final String KEY_TARGET_ID    = OBJECT_TARGET;
-    public static final String KEY_NAME         = "name";                           //$NON-NLS-1$
-    public static final String KEY_LIBRARY      = "library";                        //$NON-NLS-1$
-    public static final String KEY_PATH         = "path";                           //$NON-NLS-1$
-    public static final String KEY_FILTER       = "filter";                         //$NON-NLS-1$
-    public static final String KEY_SKIN         = "skin";                           //$NON-NLS-1$
-    public static final String KEY_SDCARD       = "sdcard";                         //$NON-NLS-1$
-    public static final String KEY_FORCE        = "force";                          //$NON-NLS-1$
-    public static final String KEY_RENAME       = "rename";                         //$NON-NLS-1$
-    public static final String KEY_SUBPROJECTS  = "subprojects";                    //$NON-NLS-1$
-    public static final String KEY_MAIN_PROJECT = "main";                           //$NON-NLS-1$
-    public static final String KEY_NO_UI        = "no-ui";                          //$NON-NLS-1$
-    public static final String KEY_NO_HTTPS     = "no-https";                       //$NON-NLS-1$
-    public static final String KEY_PROXY_PORT   = "proxy-port";                     //$NON-NLS-1$
-    public static final String KEY_PROXY_HOST   = "proxy-host";                     //$NON-NLS-1$
-    public static final String KEY_DRY_MODE     = "dry-mode";                       //$NON-NLS-1$
-    public static final String KEY_ALL          = "all";                            //$NON-NLS-1$
-    public static final String KEY_EXTENDED     = "extended";                       //$NON-NLS-1$
-    public static final String KEY_SNAPSHOT     = "snapshot";                       //$NON-NLS-1$
-    public static final String KEY_COMPACT      = "compact";                        //$NON-NLS-1$
-    public static final String KEY_EOL_NULL     = "null";                           //$NON-NLS-1$
-    public static final String KEY_ABI          = "abi";                            //$NON-NLS-1$
-    public static final String KEY_ACCOUNT      = "account";                        //$NON-NLS-1$
-    public static final String KEY_KEYSTORE     = "keystore";                       //$NON-NLS-1$
-    public static final String KEY_ALIAS        = "alias";                          //$NON-NLS-1$
-    public static final String KEY_STOREPASS    = "storepass";                      //$NON-NLS-1$
-    public static final String KEY_KEYPASS      = "keypass";                        //$NON-NLS-1$
-    public static final String KEY_CLEAR_CACHE   = "clear-cache";                   //$NON-NLS-1$
+    public static final String KEY_ACTIVITY         = ARG_ACTIVITY;
+    public static final String KEY_PACKAGE          = "package";                    //$NON-NLS-1$
+    public static final String KEY_MODE             = "mode";                       //$NON-NLS-1$
+    public static final String KEY_TARGET_ID        = OBJECT_TARGET;
+    public static final String KEY_NAME             = "name";                       //$NON-NLS-1$
+    public static final String KEY_LIBRARY          = "library";                    //$NON-NLS-1$
+    public static final String KEY_PATH             = "path";                       //$NON-NLS-1$
+    public static final String KEY_FILTER           = "filter";                     //$NON-NLS-1$
+    public static final String KEY_SKIN             = "skin";                       //$NON-NLS-1$
+    public static final String KEY_SDCARD           = "sdcard";                     //$NON-NLS-1$
+    public static final String KEY_FORCE            = "force";                      //$NON-NLS-1$
+    public static final String KEY_RENAME           = "rename";                     //$NON-NLS-1$
+    public static final String KEY_SUBPROJECTS      = "subprojects";                //$NON-NLS-1$
+    public static final String KEY_MAIN_PROJECT     = "main";                       //$NON-NLS-1$
+    public static final String KEY_NO_UI            = "no-ui";                      //$NON-NLS-1$
+    public static final String KEY_NO_HTTPS         = "no-https";                   //$NON-NLS-1$
+    public static final String KEY_PROXY_PORT       = "proxy-port";                 //$NON-NLS-1$
+    public static final String KEY_PROXY_HOST       = "proxy-host";                 //$NON-NLS-1$
+    public static final String KEY_DRY_MODE         = "dry-mode";                   //$NON-NLS-1$
+    public static final String KEY_ALL              = "all";                        //$NON-NLS-1$
+    public static final String KEY_EXTENDED         = "extended";                   //$NON-NLS-1$
+    public static final String KEY_SNAPSHOT         = "snapshot";                   //$NON-NLS-1$
+    public static final String KEY_COMPACT          = "compact";                    //$NON-NLS-1$
+    public static final String KEY_EOL_NULL         = "null";                       //$NON-NLS-1$
+    public static final String KEY_ABI              = "abi";                        //$NON-NLS-1$
+    public static final String KEY_ACCOUNT          = "account";                    //$NON-NLS-1$
+    public static final String KEY_KEYSTORE         = "keystore";                   //$NON-NLS-1$
+    public static final String KEY_ALIAS            = "alias";                      //$NON-NLS-1$
+    public static final String KEY_STOREPASS        = "storepass";                  //$NON-NLS-1$
+    public static final String KEY_KEYPASS          = "keypass";                    //$NON-NLS-1$
+    public static final String KEY_CLEAR_CACHE      = "clear-cache";                //$NON-NLS-1$
+    // This flag is not yet supported in Tools R22.
+    // public static final String KEY_ACCEPT_LICENSE   = "accept-license";             //$NON-NLS-1$
 
     /**
      * Action definitions for SdkManager command line.
@@ -319,7 +321,7 @@ class SdkCommandLine extends CommandLineParser {
                 false);
 
         define(Mode.BOOLEAN, false,
-                VERB_UPDATE, OBJECT_SDK, "p", "obsolete",                             //$NON-NLS-1$
+                VERB_UPDATE, OBJECT_SDK, "p", "obsolete",                           //$NON-NLS-1$
                 "Deprecated. Please use --all instead.",
                 false);
 
@@ -328,15 +330,18 @@ class SdkCommandLine extends CommandLineParser {
                 "Simulates the update but does not download or install anything.",
                 false);
 
+        /* This flag is not yet supported in Tools R22.
+        define(Mode.STRING, false,
+                VERB_UPDATE, OBJECT_SDK, "", KEY_ACCEPT_LICENSE,                    //$NON-NLS-1$
+                "When unset, the SDK Manager prompts for license acceptance on the command " +
+                "line. When set to a comma-separated list of SDK licenses, these are " +
+                "automatically accepted and unknown licenses are rejected without a prompt.",
+                null);
+        */
+
+
         // --- create project ---
 
-        /* Disabled for ADT 0.9 / Cupcake SDK 1.5_r1 release. [bug #1795718].
-           This currently does not work, the alias build rules need to be fixed.
-
-        define(Mode.ENUM, true,
-                VERB_CREATE, OBJECT_PROJECT, "m", KEY_MODE,                         //$NON-NLS-1$
-                "Project mode", new String[] { ARG_ACTIVITY, ARG_ALIAS });
-        */
         define(Mode.STRING, true,
                 VERB_CREATE, OBJECT_PROJECT,
                 "p", KEY_PATH,
@@ -584,6 +589,13 @@ class SdkCommandLine extends CommandLineParser {
     public String getParamProxyPort() {
         return ((String) getValue(null, null, KEY_PROXY_PORT));
     }
+
+    /** Helper to retrieve the --accept-license value. */
+    /* This flag is not yet supported in Tools R22.
+    public String getParamAcceptLicense() {
+        return ((String) getValue(null, null, KEY_ACCEPT_LICENSE));
+    }
+    */
 
     // -- some helpers for list avds and list targets flags
 

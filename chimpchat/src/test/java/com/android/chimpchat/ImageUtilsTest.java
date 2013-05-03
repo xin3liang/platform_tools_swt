@@ -19,6 +19,7 @@ import com.android.ddmlib.RawImage;
 import com.android.chimpchat.adb.image.CaptureRawAndConvertedImage;
 import com.android.chimpchat.adb.image.ImageUtils;
 import com.android.chimpchat.adb.image.CaptureRawAndConvertedImage.ChimpRawImage;
+import com.android.chimpchat.adb.image.CaptureRawAndConvertedImage.IRawImager;
 
 import junit.framework.TestCase;
 
@@ -41,9 +42,9 @@ public class ImageUtilsTest extends TestCase {
     private static RawImage createRawImage(String name) throws IOException, ClassNotFoundException {
         ObjectInputStream is =
             new ObjectInputStream(ImageUtilsTest.class.getResourceAsStream(name));
-        CaptureRawAndConvertedImage.ChimpRawImage wrapper = (ChimpRawImage) is.readObject();
+        Object obj = is.readObject();
         is.close();
-        return wrapper.toRawImage();
+        return ((IRawImager) obj).toRawImage();
     }
 
     /**

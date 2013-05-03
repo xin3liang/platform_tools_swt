@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 The Android Open Source Project
+ * Copyright (C) 2013 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.chimpchat.adb.image;
+package com.android.monkeyrunner.adb.image;
 
+import com.android.chimpchat.adb.image.CaptureRawAndConvertedImage.IRawImager;
 import com.android.ddmlib.RawImage;
-import com.android.chimpchat.adb.AdbBackend;
-import com.android.chimpchat.adb.AdbChimpImage;
-import com.android.chimpchat.core.IChimpBackend;
-import com.android.chimpchat.core.IChimpImage;
-import com.android.chimpchat.core.IChimpDevice;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-/**
- * Utility program to capture raw and converted images from a device and write them to a file.
- * This is used to generate the test data for ImageUtilsTest.
- */
+@Deprecated
 public class CaptureRawAndConvertedImage {
 
-    public interface IRawImager {
-        public RawImage toRawImage();
-    }
-
-    public static class ChimpRawImage implements Serializable, IRawImager {
+    /**
+     * When com.android.chimpchat.ImageUtilsTest.createRawImage(String) deserializes
+     * an image from a file, it might try to recreate this older class -- the class itself
+     * is obsolete and replaced by the {@code ChipRawImage} but this exact implementation
+     * is still needed for deserialization compatibility purposes.
+     * <p/>
+     * This implementation is restored from sdk.git @ 8c09f35fe02c38c18f8f7b9e0a531d6ac158476e.
+     */
+    @Deprecated
+    public static class MonkeyRunnerRawImage implements Serializable, IRawImager {
+        private static final long serialVersionUID = -1137219979977761746L;
         public int version;
         public int bpp;
         public int size;
@@ -54,7 +50,7 @@ public class CaptureRawAndConvertedImage {
 
         public byte[] data;
 
-        public ChimpRawImage(RawImage rawImage) {
+        public MonkeyRunnerRawImage(RawImage rawImage) {
             version = rawImage.version;
             bpp = rawImage.bpp;
             size = rawImage.size;
@@ -95,20 +91,4 @@ public class CaptureRawAndConvertedImage {
         }
     }
 
-    private static void writeOutImage(RawImage screenshot, String name) throws IOException {
-        ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(name));
-        out.writeObject(new ChimpRawImage(screenshot));
-        out.close();
-    }
-
-    public static void main(String[] args) throws IOException {
-        IChimpBackend backend = new AdbBackend();
-        IChimpDevice device = backend.waitForConnection();
-        IChimpImage snapshot = (IChimpImage) device.takeSnapshot();
-
-        // write out to a file
-        snapshot.writeToFile("output.png", "png");
-        writeOutImage(((AdbChimpImage)snapshot).getRawImage(), "output.raw");
-        System.exit(0);
-    }
 }

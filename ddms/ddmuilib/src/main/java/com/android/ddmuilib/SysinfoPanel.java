@@ -16,6 +16,7 @@
 
 package com.android.ddmuilib;
 
+import com.android.annotations.concurrency.GuardedBy;
 import com.android.ddmlib.AdbCommandRejectedException;
 import com.android.ddmlib.Client;
 import com.android.ddmlib.ClientData;
@@ -52,19 +53,23 @@ import org.jfree.experimental.chart.swt.ChartComposite;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Displays system information graphs obtained from a bugreport file or device.
  */
-public class SysinfoPanel extends TablePanel implements IShellOutputReceiver {
+public class SysinfoPanel extends TablePanel {
 
     // UI components
     private Label mLabel;
@@ -79,15 +84,13 @@ public class SysinfoPanel extends TablePanel implements IShellOutputReceiver {
     private Composite mPieChartComposite;
     private Composite mStackedBarComposite;
 
-    // The bugreport file to process
-    private File mDataFile;
-
-    // To get output from adb commands
-    private FileOutputStream mTempStream;
-
     // Selects the current display: MODE_CPU, etc.
     private int mMode = 0;
     private String mGfxPackageName;
+
+    private static final Object RECEIVER_LOCK = new Object();
+    @GuardedBy("RECEIVER_LOCK")
+    private ShellOutputReceiver mLastOutputReceiver;
 
     private static final int MODE_CPU = 0;
     private static final int MODE_MEMINFO = 1;
@@ -196,12 +199,14 @@ public class SysinfoPanel extends TablePanel implements IShellOutputReceiver {
             @Override
             public void run() {
                 try {
-                    initShellOutputBuffer();
+                    String header = null;
                     if (mMode == MODE_MEMINFO) {
                         // Hack to add bugreport-style section header for meminfo
-                        mTempStream.write("------ MEMORY INFO ------\n".getBytes());
+                        header = "------ MEMORY INFO ------\n";
                     }
-                    getCurrentDevice().executeShellCommand(command, SysinfoPanel.this);
+
+                    IShellOutputReceiver receiver = initShellOutputBuffer(header);
+                    getCurrentDevice().executeShellCommand(command, receiver);
                 } catch (IOException e) {
                     Log.e("DDMS", e);
                 } catch (TimeoutException e) {
@@ -277,52 +282,18 @@ public class SysinfoPanel extends TablePanel implements IShellOutputReceiver {
      *
      * @throws IOException on file error
      */
-    void initShellOutputBuffer() throws IOException {
-        mDataFile = File.createTempFile("ddmsfile", ".txt");
-        mDataFile.deleteOnExit();
-        mTempStream = new FileOutputStream(mDataFile);
-    }
+    IShellOutputReceiver initShellOutputBuffer(String header) throws IOException {
+        File f = File.createTempFile("ddmsfile", ".txt");
+        f.deleteOnExit();
 
-    /**
-     * Adds output to the temp file. IShellOutputReceiver method. Called by
-     * executeShellCommand().
-     */
-    @Override
-    public void addOutput(byte[] data, int offset, int length) {
-        try {
-            mTempStream.write(data, offset, length);
-        } catch (IOException e) {
-            Log.e("DDMS", e);
-        }
-    }
-
-    /**
-     * Processes output from shell command. IShellOutputReceiver method. The
-     * output is passed to generateDataset(). Called by executeShellCommand() on
-     * completion.
-     */
-    @Override
-    public void flush() {
-        if (mTempStream != null) {
-            try {
-                mTempStream.close();
-                generateDataset(mDataFile);
-                mTempStream = null;
-                mDataFile = null;
-            } catch (IOException e) {
-                Log.e("DDMS", e);
+        synchronized (RECEIVER_LOCK) {
+            if (mLastOutputReceiver != null) {
+                mLastOutputReceiver.cancel();
             }
-        }
-    }
 
-    /**
-     * IShellOutputReceiver method.
-     *
-     * @return false - don't cancel
-     */
-    @Override
-    public boolean isCancelled() {
-        return false;
+            mLastOutputReceiver = new ShellOutputReceiver(f, header);
+        }
+        return mLastOutputReceiver;
     }
 
     /**
@@ -346,9 +317,7 @@ public class SysinfoPanel extends TablePanel implements IShellOutputReceiver {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 mMode = mDisplayMode.getSelectionIndex();
-                if (mDataFile != null) {
-                    generateDataset(mDataFile);
-                } else if (getCurrentDevice() != null) {
+                if (getCurrentDevice() != null) {
                     loadFromDevice();
                 }
             }
@@ -904,4 +873,58 @@ public class SysinfoPanel extends TablePanel implements IShellOutputReceiver {
         });
     }
 
+    private class ShellOutputReceiver implements IShellOutputReceiver {
+        private final OutputStream mStream;
+        private final File mFile;
+        private AtomicBoolean mCancelled = new AtomicBoolean();
+
+        public ShellOutputReceiver(File f, String header) {
+            mFile = f;
+            try {
+                mStream = new FileOutputStream(f);
+            } catch (FileNotFoundException e) {
+                throw new IllegalArgumentException(e);
+            }
+
+            if (header != null) {
+                byte[] data = header.getBytes();
+                addOutput(data, 0, data.length);
+            }
+        }
+
+        @Override
+        public void addOutput(byte[] data, int offset, int length) {
+            try {
+                mStream.write(data, offset, length);
+            } catch (IOException e) {
+                Log.e("DDMS", e);
+            }
+        }
+
+        @Override
+        public void flush() {
+            try {
+                mStream.close();
+            } catch (IOException e) {
+                Log.e("DDMS", e);
+            }
+
+            if (!isCancelled()) {
+                generateDataset(mFile);
+            }
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return mCancelled.get();
+        }
+
+        public void cancel() {
+            mCancelled.set(true);
+        }
+
+        public File getDataFile() {
+            return mFile;
+        }
+    }
 }

@@ -859,6 +859,34 @@ public class AvdCreationDialog extends GridDialog {
             return;
         }
 
+        // If the target is an addon, check its base platform requirement is satisfied.
+        String targetName = mTarget.getItem(mTarget.getSelectionIndex());
+        IAndroidTarget target = mCurrentTargets.get(targetName);
+        if (target != null && !target.isPlatform()) {
+
+            ISystemImage[] sis = target.getSystemImages();
+            if (sis != null && sis.length > 0) {
+                // Note: if an addon has no system-images of its own, it depends on its parent
+                // platform and it wouldn't have been loaded properly if the platform were
+                // missing so we don't need to double-check that part here.
+
+                String abiType = getSelectedAbiType(target);
+                if (abiType != null &&
+                        !abiType.isEmpty() &&
+                        target.getParent().getSystemImage(abiType) == null) {
+                    // We have a system-image requirement but there is no such system image
+                    // loaded in the parent platform. This AVD won't run properly.
+                    error = String.format("To create this AVD, please install the %1$s system image\n" +
+                                          "for %2$s (%3$s) first.",
+                                          abiType,
+                                          target.getParent().getName(),
+                                          target.getParent().getVersion().toString());
+                    setPageValid(false, error, warning);
+                    return;
+                }
+            }
+        }
+
         if (mRam.getText().isEmpty()) {
             setPageValid(false, error, warning);
             return;
@@ -978,18 +1006,7 @@ public class AvdCreationDialog extends GridDialog {
         }
 
         // get the abi type
-        String abiType = SdkConstants.ABI_ARMEABI;
-        ISystemImage[] systemImages = getSystemImages(target);
-        if (systemImages.length > 0) {
-            int abiIndex = mAbi.getSelectionIndex();
-            if (abiIndex >= 0) {
-                String prettyname = mAbi.getItem(abiIndex);
-                // Extract the abi type
-                int firstIndex = prettyname.indexOf("(");
-                int lastIndex = prettyname.indexOf(")");
-                abiType = prettyname.substring(firstIndex + 1, lastIndex);
-            }
-        }
+        String abiType = getSelectedAbiType(target);
 
         // get the SD card data from the UI.
         String sdName = null;
@@ -1109,6 +1126,22 @@ public class AvdCreationDialog extends GridDialog {
             ((MessageBoxLog) log).displayResult(success);
         }
         return success;
+    }
+
+    private String getSelectedAbiType(IAndroidTarget target) {
+        String abiType = SdkConstants.ABI_ARMEABI;
+        ISystemImage[] systemImages = getSystemImages(target);
+        if (systemImages.length > 0) {
+            int abiIndex = mAbi.getSelectionIndex();
+            if (abiIndex >= 0) {
+                String prettyname = mAbi.getItem(abiIndex);
+                // Extract the abi type
+                int firstIndex = prettyname.indexOf("(");
+                int lastIndex = prettyname.indexOf(")");
+                abiType = prettyname.substring(firstIndex + 1, lastIndex);
+            }
+        }
+        return abiType;
     }
 
     private void fillExistingAvdInfo(AvdInfo avd) {

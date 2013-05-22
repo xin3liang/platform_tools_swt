@@ -145,12 +145,13 @@ public class AvdCreationDialog extends GridDialog {
             ImageFactory imageFactory,
             ILogger log,
             AvdInfo editAvdInfo) {
-
         super(shell, 2, false);
         mAvdManager = avdManager;
         mImageFactory = imageFactory;
         mSdkLog = log;
         mAvdInfo = editAvdInfo;
+
+        setShellStyle(getShellStyle() | SWT.RESIZE);
     }
 
     /** Returns the AVD Created, if successful. */
@@ -411,8 +412,12 @@ public class AvdCreationDialog extends GridDialog {
         mStatusIcon = new Label(mStatusComposite, SWT.NONE);
         mStatusIcon.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING,
                 false, false));
-        mStatusLabel = new Label(mStatusComposite, SWT.NONE);
-        mStatusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        mStatusLabel = new Label(mStatusComposite, SWT.WRAP);
+        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+        // allow for approx 3 lines of text corresponding to the number of lines in the longest
+        // error or warning
+        gridData.heightHint = 50;
+        mStatusLabel.setLayoutData(gridData);
         mStatusLabel.setText(""); //$NON-NLS-1$
     }
 
@@ -962,7 +967,7 @@ public class AvdCreationDialog extends GridDialog {
 
             if (ramSize > 768) {
                 warning = "On Windows, emulating RAM greater than 768M may fail depending on the"
-                        + " system load.\nTry progressively smaller values of RAM if the emulator"
+                        + " system load. Try progressively smaller values of RAM if the emulator"
                         + " fails to launch.";
             }
         }
@@ -990,6 +995,7 @@ public class AvdCreationDialog extends GridDialog {
         }
 
         mStatusComposite.pack(true);
+        getShell().layout(true, true);
     }
 
     private boolean createAvd() {

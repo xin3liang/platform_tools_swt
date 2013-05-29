@@ -56,6 +56,9 @@ public class NativeHeapProviderByLibrary implements ILazyTreeContentProvider {
         if (element instanceof NativeHeapSnapshot) {
             NativeHeapSnapshot snapshot = (NativeHeapSnapshot) element;
             childCount = getLibraryAllocations(snapshot).size();
+        } else if (element instanceof NativeLibraryAllocationInfo) {
+            NativeLibraryAllocationInfo info = (NativeLibraryAllocationInfo) element;
+            childCount = info.getAllocations().size();
         }
 
         mViewer.setChildCount(element, childCount);

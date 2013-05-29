@@ -46,7 +46,28 @@ public class NativeHeapDiffSnapshot extends NativeHeapSnapshot {
             NativeHeapSnapshot oldSnapshot) {
         Set<NativeAllocationInfo> allocations =
                 new HashSet<NativeAllocationInfo>(newSnapshot.getAllocations());
+
+        // compute new allocations
         allocations.removeAll(oldSnapshot.getAllocations());
+
+        // Account for allocations with the same stack trace that were
+        // present in the older set of allocations.
+        // e.g. A particular stack trace might have had 3 allocations in snapshot 1,
+        // and 2 more in snapshot 2. We only want to show the new allocations (just the 2 from
+        // snapshot 2). However, the way the allocations are stored, in snapshot 2, we'll see
+        // 5 allocations at the stack trace. We need to subtract out the 3 from the first allocation
+        Set<NativeAllocationInfo> onlyInPrevious =
+                new HashSet<NativeAllocationInfo>(oldSnapshot.getAllocations());
+        onlyInPrevious.removeAll(newSnapshot.getAllocations());
+        for (NativeAllocationInfo allocation : allocations) {
+            for (NativeAllocationInfo old : onlyInPrevious) {
+                if (allocation.stackEquals(old)) {
+                    allocation.subtract(old);
+                    break;
+                }
+            }
+        }
+
         return new ArrayList<NativeAllocationInfo>(allocations);
     }
 

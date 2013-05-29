@@ -88,11 +88,7 @@ public class NativeHeapPanel extends BaseHeapPanel {
     private static final boolean USE_OLD_RESOLVER;
     static {
         String useOldResolver = System.getenv("ANDROID_DDMS_OLD_SYMRESOLVER");
-        if (useOldResolver != null && useOldResolver.equalsIgnoreCase("true")) {
-            USE_OLD_RESOLVER = true;
-        } else {
-            USE_OLD_RESOLVER = false;
-        }
+        USE_OLD_RESOLVER = useOldResolver != null && useOldResolver.equalsIgnoreCase("true");
     }
     private final int MAX_DISPLAYED_ERROR_ITEMS = 5;
 
@@ -145,7 +141,6 @@ public class NativeHeapPanel extends BaseHeapPanel {
     private NativeHeapProviderByLibrary mContentProviderByLibrary;
     private NativeHeapLabelProvider mDetailsTreeLabelProvider;
 
-    private ToolBar mDetailsToolBar;
     private ToolItem mGroupByButton;
     private ToolItem mDiffsOnlyButton;
     private ToolItem mShowZygoteAllocationsButton;
@@ -458,7 +453,7 @@ public class NativeHeapPanel extends BaseHeapPanel {
             items.add("Snapshot " + (i + 1));
         }
 
-        mSnapshotIndexCombo.setItems(items.toArray(new String[0]));
+        mSnapshotIndexCombo.setItems(items.toArray(new String[items.size()]));
 
         if (numSnapshots > 0) {
             mSnapshotIndexCombo.setEnabled(true);
@@ -633,7 +628,7 @@ public class NativeHeapPanel extends BaseHeapPanel {
 
         // Create: Display: __________________
         createLabel(c, "Display:");
-        mSnapshotIndexCombo = new Combo(c, SWT.NONE | SWT.READ_ONLY);
+        mSnapshotIndexCombo = new Combo(c, SWT.READ_ONLY);
         mSnapshotIndexCombo.setItems(new String[] {"No heap snapshots available."});
         mSnapshotIndexCombo.setEnabled(false);
         mSnapshotIndexCombo.addSelectionListener(new SelectionAdapter() {
@@ -698,8 +693,8 @@ public class NativeHeapPanel extends BaseHeapPanel {
         c.setLayout(new FormLayout());
         c.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        mDetailsToolBar = new ToolBar(c, SWT.FLAT | SWT.BORDER);
-        initializeDetailsToolBar(mDetailsToolBar);
+        ToolBar detailsToolBar = new ToolBar(c, SWT.FLAT | SWT.BORDER);
+        initializeDetailsToolBar(detailsToolBar);
 
         Tree detailsTree = new Tree(c, SWT.VIRTUAL | SWT.BORDER | SWT.MULTI);
         initializeDetailsTree(detailsTree);
@@ -717,10 +712,10 @@ public class NativeHeapPanel extends BaseHeapPanel {
         data.top    = new FormAttachment(0, 0);
         data.left   = new FormAttachment(0, 0);
         data.right  = new FormAttachment(100, 0);
-        mDetailsToolBar.setLayoutData(data);
+        detailsToolBar.setLayoutData(data);
 
         data = new FormData();
-        data.top    = new FormAttachment(mDetailsToolBar, 0);
+        data.top    = new FormAttachment(detailsToolBar, 0);
         data.bottom = new FormAttachment(sash, 0);
         data.left   = new FormAttachment(0, 0);
         data.right  = new FormAttachment(100, 0);
@@ -864,33 +859,27 @@ public class NativeHeapPanel extends BaseHeapPanel {
         tree.setHeaderVisible(true);
         tree.setLinesVisible(true);
 
-        List<String> properties = Arrays.asList(new String[] {
-                "Library",
+        List<String> properties = Arrays.asList("Library",
                 "Total",
                 "Percentage",
                 "Count",
                 "Size",
-                "Method",
-        });
+                "Method");
 
-        List<String> sampleValues = Arrays.asList(new String[] {
-                "/path/in/device/to/system/library.so",
+        List<String> sampleValues = Arrays.asList("/path/in/device/to/system/library.so",
                 "123456789",
                 " 100%",
                 "123456789",
                 "123456789",
-                "PossiblyLongDemangledMethodName",
-        });
+                "PossiblyLongDemangledMethodName");
 
         // right align numeric values
-        List<Integer> swtFlags = Arrays.asList(new Integer[] {
-                SWT.LEFT,
+        List<Integer> swtFlags = Arrays.asList(SWT.LEFT,
                 SWT.RIGHT,
                 SWT.RIGHT,
                 SWT.RIGHT,
                 SWT.RIGHT,
-                SWT.LEFT,
-        });
+                SWT.LEFT);
 
         for (int i = 0; i < properties.size(); i++) {
             String p = properties.get(i);
@@ -931,21 +920,17 @@ public class NativeHeapPanel extends BaseHeapPanel {
         tree.setHeaderVisible(true);
         tree.setLinesVisible(true);
 
-        List<String> properties = Arrays.asList(new String[] {
-                "Address",
+        List<String> properties = Arrays.asList("Address",
                 "Library",
                 "Method",
                 "File",
-                "Line",
-        });
+                "Line");
 
-        List<String> sampleValues = Arrays.asList(new String[] {
-                "0x1234_5678",
+        List<String> sampleValues = Arrays.asList("0x1234_5678",
                 "/path/in/device/to/system/library.so",
                 "PossiblyLongDemangledMethodName",
                 "/android/out/prefix/in/home/directory/to/path/in/device/to/system/library.so",
-                "2000",
-        });
+                "2000");
 
         for (int i = 0; i < properties.size(); i++) {
             String p = properties.get(i);

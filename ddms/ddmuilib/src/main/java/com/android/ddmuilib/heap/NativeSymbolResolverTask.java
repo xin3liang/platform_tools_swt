@@ -161,7 +161,7 @@ public class NativeSymbolResolverTask implements IRunnableWithProgress {
 
     private void resolveAddresses(NativeLibraryMapInfo lib, String libPath,
             Set<Long> addressesToResolve) {
-        Process addr2line = null;
+        Process addr2line;
         try {
             addr2line = new ProcessBuilder(ADDR2LINE,
                     "-C",   // demangle
@@ -183,7 +183,7 @@ public class NativeSymbolResolverTask implements IRunnableWithProgress {
         long libStartAddress = isExecutable(lib) ? 0 : lib.getStartAddress();
         try {
             for (Long addr : addressesToResolve) {
-                long offset = addr.longValue() - libStartAddress;
+                long offset = addr - libStartAddress;
                 addressWriter.write(Long.toHexString(offset));
                 addressWriter.newLine();
                 addressWriter.flush();
@@ -191,7 +191,7 @@ public class NativeSymbolResolverTask implements IRunnableWithProgress {
                 String sourceFile = resultReader.readLine();
 
                 mAddressResolution.put(addr,
-                        new NativeStackCallInfo(addr.longValue(),
+                        new NativeStackCallInfo(addr,
                                 lib.getLibraryName(),
                                 method,
                                 sourceFile));
@@ -233,7 +233,7 @@ public class NativeSymbolResolverTask implements IRunnableWithProgress {
 
     private void markAddressNotResolvable(NativeLibraryMapInfo lib, Long addr) {
         mAddressResolution.put(addr,
-                new NativeStackCallInfo(addr.longValue(),
+                new NativeStackCallInfo(addr,
                         lib.getLibraryName(),
                         Long.toHexString(addr),
                         ""));

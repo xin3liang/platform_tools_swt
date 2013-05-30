@@ -17,6 +17,7 @@
 package com.android.ddmuilib.heap;
 
 import com.android.ddmlib.NativeAllocationInfo;
+import com.google.common.collect.Sets;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -58,17 +59,32 @@ public class NativeHeapDiffSnapshot extends NativeHeapSnapshot {
         // 5 allocations at the stack trace. We need to subtract out the 3 from the first allocation
         Set<NativeAllocationInfo> onlyInPrevious =
                 new HashSet<NativeAllocationInfo>(oldSnapshot.getAllocations());
+        Set<NativeAllocationInfo> newAllocations =
+                Sets.newHashSetWithExpectedSize(allocations.size());
+
         onlyInPrevious.removeAll(newSnapshot.getAllocations());
-        for (NativeAllocationInfo allocation : allocations) {
-            for (NativeAllocationInfo old : onlyInPrevious) {
-                if (allocation.stackEquals(old)) {
-                    allocation.subtract(old);
-                    break;
-                }
+        for (NativeAllocationInfo current : allocations) {
+            NativeAllocationInfo old = getOldAllocationWithSameStack(current, onlyInPrevious);
+            if (old == null) {
+                newAllocations.add(current);
+            } else if (current.getAllocationCount() > old.getAllocationCount()) {
+                newAllocations.add(new NativeDiffAllocationInfo(current, old));
             }
         }
 
-        return new ArrayList<NativeAllocationInfo>(allocations);
+        return new ArrayList<NativeAllocationInfo>(newAllocations);
+    }
+
+    private static NativeAllocationInfo getOldAllocationWithSameStack(
+            NativeAllocationInfo info,
+            Set<NativeAllocationInfo> allocations) {
+        for (NativeAllocationInfo a : allocations) {
+            if (info.getSize() == a.getSize() && info.stackEquals(a)) {
+                return a;
+            }
+        }
+
+        return null;
     }
 
     @Override

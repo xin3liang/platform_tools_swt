@@ -40,6 +40,7 @@ import com.android.sdkuilib.internal.repository.icons.ImageFactory;
 import com.android.sdkuilib.ui.GridDialog;
 import com.android.utils.ILogger;
 import com.android.utils.Pair;
+import com.google.common.base.Joiner;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -835,12 +836,12 @@ public class AvdCreationDialog extends GridDialog {
 
     private void validatePage() {
         String error = null;
-        String warning = null;
+        ArrayList<String> warnings = new ArrayList<String>();
         boolean valid = true;
 
         if (mAvdName.getText().isEmpty()) {
             error = "AVD Name cannot be empty";
-            setPageValid(false, error, warning);
+            setPageValid(false, error, null);
             return;
         }
 
@@ -849,18 +850,19 @@ public class AvdCreationDialog extends GridDialog {
             error = String.format(
                     "AVD name '%1$s' contains invalid characters.\nAllowed characters are: %2$s",
                     avdName, AvdManager.CHARS_AVD_NAME);
-            setPageValid(false, error, warning);
+            setPageValid(false, error, null);
             return;
         }
 
         if (mDevice.getSelectionIndex() < 0) {
-            setPageValid(false, error, warning);
+            error = "No device selected";
+            setPageValid(false, error, null);
             return;
         }
 
-        if (mTarget.getSelectionIndex() < 0 ||
-                !mHaveSystemImage || mAbi.getSelectionIndex() < 0) {
-            setPageValid(false, error, warning);
+        if (mTarget.getSelectionIndex() < 0 || !mHaveSystemImage || mAbi.getSelectionIndex() < 0) {
+            error = "No target selected";
+            setPageValid(false, error, null);
             return;
         }
 
@@ -881,30 +883,32 @@ public class AvdCreationDialog extends GridDialog {
                         target.getParent().getSystemImage(abiType) == null) {
                     // We have a system-image requirement but there is no such system image
                     // loaded in the parent platform. This AVD won't run properly.
-                    error = String.format("To create this AVD, please install the %1$s system image\n" +
-                                          "for %2$s (%3$s) first.",
-                                          abiType,
-                                          target.getParent().getName(),
-                                          target.getParent().getVersion().toString());
-                    setPageValid(false, error, warning);
-                    return;
+                    warnings.add(
+                            String.format(
+                                "This AVD may not work unless you install the %1$s system image " +
+                                "for %2$s (%3$s) first.",
+                                abiType,
+                                target.getParent().getName(),
+                                target.getParent().getVersion().toString()));
                 }
             }
         }
 
         if (mRam.getText().isEmpty()) {
-            setPageValid(false, error, warning);
+            error = "Mising RAM value";
+            setPageValid(false, error, null);
             return;
         }
 
         if (mVmHeap.getText().isEmpty()) {
-            setPageValid(false, error, warning);
+            error = "Mising VM Heap value";
+            setPageValid(false, error, null);
             return;
         }
 
         if (mDataPartition.getText().isEmpty() || mDataPartitionSize.getSelectionIndex() < 0) {
             error = "Invalid Data partition size.";
-            setPageValid(false, error, warning);
+            setPageValid(false, error, null);
             return;
         }
 
@@ -937,7 +941,7 @@ public class AvdCreationDialog extends GridDialog {
             }
         }
         if (!valid) {
-            setPageValid(valid, error, warning);
+            setPageValid(valid, error, null);
             return;
         }
 
@@ -950,9 +954,10 @@ public class AvdCreationDialog extends GridDialog {
         }
 
         if (mAvdInfo != null && !mAvdInfo.getName().equals(mAvdName.getText())) {
-            warning = String.format("The AVD '%1$s' will be duplicated into '%2$s'.",
-                    mAvdInfo.getName(),
-                    mAvdName.getText());
+            warnings.add(
+                    String.format("The AVD '%1$s' will be duplicated into '%2$s'.",
+                        mAvdInfo.getName(),
+                        mAvdName.getText()));
         }
 
         // On Windows, display a warning if attempting to create AVD's with RAM > 512 MB.
@@ -966,9 +971,10 @@ public class AvdCreationDialog extends GridDialog {
             }
 
             if (ramSize > 768) {
-                warning = "On Windows, emulating RAM greater than 768M may fail depending on the"
-                        + " system load. Try progressively smaller values of RAM if the emulator"
-                        + " fails to launch.";
+                warnings.add(
+                    "On Windows, emulating RAM greater than 768M may fail depending on the"
+                    + " system load. Try progressively smaller values of RAM if the emulator"
+                    + " fails to launch.");
             }
         }
 
@@ -977,16 +983,17 @@ public class AvdCreationDialog extends GridDialog {
             error = "GPU Emulation and Snapshot cannot be used simultaneously";
         }
 
+        String warning = Joiner.on('\n').join(warnings);
         setPageValid(valid, error, warning);
         return;
     }
 
     private void setPageValid(boolean valid, String error, String warning) {
         mOkButton.setEnabled(valid);
-        if (error != null) {
-            mStatusIcon.setImage(mImageFactory.getImageByName("reject_icon16.png")); //$NON-NLS-1$
+        if (error != null && !error.isEmpty()) {
+            mStatusIcon.setImage(mImageFactory.getImageByName("reject_icon16.png"));  //$NON-NLS-1$
             mStatusLabel.setText(error);
-        } else if (warning != null) {
+        } else if (warning != null && !warning.isEmpty()) {
             mStatusIcon.setImage(mImageFactory.getImageByName("warning_icon16.png")); //$NON-NLS-1$
             mStatusLabel.setText(warning);
         } else {

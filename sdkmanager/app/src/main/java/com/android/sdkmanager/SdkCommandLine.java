@@ -92,6 +92,8 @@ class SdkCommandLine extends CommandLineParser {
     public static final String KEY_STOREPASS        = "storepass";                  //$NON-NLS-1$
     public static final String KEY_KEYPASS          = "keypass";                    //$NON-NLS-1$
     public static final String KEY_CLEAR_CACHE      = "clear-cache";                //$NON-NLS-1$
+    public static final String KEY_GRADLE           = "gradle";                     //$NON-NLS-1$
+    public static final String KEY_GRADLE_VERSION   = "gradle-version";             //$NON-NLS-1$
     // This flag is not yet supported in Tools R22.
     // public static final String KEY_ACCEPT_LICENSE   = "accept-license";             //$NON-NLS-1$
 
@@ -358,6 +360,12 @@ class SdkCommandLine extends CommandLineParser {
         define(Mode.STRING, false,
                 VERB_CREATE, OBJECT_PROJECT, "n", KEY_NAME,                         //$NON-NLS-1$
                 "Project name.", null);
+        define(Mode.BOOLEAN, false,
+                VERB_CREATE, OBJECT_PROJECT, "g", KEY_GRADLE,                       //$NON-NLS-1$
+                "Use gradle template.", false);
+        define(Mode.STRING, false,
+                VERB_CREATE, OBJECT_PROJECT, "v", KEY_GRADLE_VERSION,               //$NON-NLS-1$
+                "Gradle Android plugin version.", null);
 
         // --- create test-project ---
 
@@ -398,6 +406,12 @@ class SdkCommandLine extends CommandLineParser {
         define(Mode.STRING, true,
                 VERB_CREATE, OBJECT_LIB_PROJECT, "k", KEY_PACKAGE,                  //$NON-NLS-1$
                 "Android package name for the library.", null);
+        define(Mode.BOOLEAN, false,
+                VERB_CREATE, OBJECT_LIB_PROJECT, "g", KEY_GRADLE,                   //$NON-NLS-1$
+                "Use gradle template.", false);
+        define(Mode.STRING, false,
+                VERB_CREATE, OBJECT_LIB_PROJECT, "v", KEY_GRADLE_VERSION,           //$NON-NLS-1$
+                "Gradle Android plugin version.", null);
 
         // --- update project ---
 
@@ -528,6 +542,16 @@ class SdkCommandLine extends CommandLineParser {
     /** Helper to retrieve the --subprojects for any project action. */
     public boolean getParamSubProject() {
         return ((Boolean) getValue(null, OBJECT_PROJECT, KEY_SUBPROJECTS)).booleanValue();
+    }
+
+    /** Helper that returns true if --gradle was requested. */
+    public boolean getParamGradle() {
+        return ((Boolean) getValue(null, null, KEY_GRADLE)).booleanValue();
+    }
+
+    /** Helper to retrieve the --gradle-version value. */
+    public String getParamGradleVersion() {
+        return ((String) getValue(null, null, KEY_GRADLE_VERSION));
     }
 
     // -- some helpers for test-project action flags

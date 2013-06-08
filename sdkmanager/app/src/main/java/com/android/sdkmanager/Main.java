@@ -585,13 +585,31 @@ public class Main {
             return;
         }
 
-        creator.createProject(projectDir,
-                projectName,
-                packageName,
-                activityName,
-                target,
-                library,
-                null /*pathToMain*/);
+        if (mSdkCommandLine.getParamGradle()) {
+            String gradleVersion = mSdkCommandLine.getParamGradleVersion();
+
+            if (gradleVersion == null) {
+                errorAndExit(
+                    "Using the gradle template requires specifying the artifact version.");
+                return;
+            }
+
+            creator.createGradleProject(projectDir,
+                    projectName,
+                    packageName,
+                    activityName,
+                    target,
+                    library,
+                    gradleVersion);
+        } else {
+            creator.createProject(projectDir,
+                    projectName,
+                    packageName,
+                    activityName,
+                    target,
+                    library,
+                    null /*pathToMain*/);
+        }
     }
 
     /**

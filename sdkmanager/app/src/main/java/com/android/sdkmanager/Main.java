@@ -590,7 +590,7 @@ public class Main {
 
             if (gradleVersion == null) {
                 errorAndExit(
-                    "Using the gradle template requires specifying the artifact version.");
+                    "Using the gradle template requires specifying the Gradle Android plugin version.");
                 return;
             }
 

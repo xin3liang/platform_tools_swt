@@ -34,7 +34,7 @@ import com.android.sdklib.internal.repository.updater.PkgItem;
 import com.android.sdklib.internal.repository.updater.PkgItem.PkgState;
 import com.android.sdklib.repository.FullRevision;
 import com.android.sdklib.repository.FullRevision.PreviewComparison;
-import com.android.sdklib.util.SparseArray;
+import com.android.utils.SparseArray;
 import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.ui.PackagesPageIcons;
 import com.android.utils.Pair;

@@ -62,7 +62,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 " L_[] Android SDK Build-tools    |  |      3.0.1 | Installed\n" +
                 " L_[] Android SDK Build-tools    |  |          3 | Installed\n" +
                 "[]    Tools (Preview Channel)    |  |            |          \n" +
-                " L_[] Android SDK Build-tools    |  | 12.3.4 rc5 | Installed\n" +
+                " L_[] Android SDK Build-tools    |  | 18.3.4 rc5 | Installed\n" +
                 "[]    Android 0.0 (API 0)        |  |            |          \n" +
                 " L_[] SDK Platform               |  |          1 | Installed\n" +
                 " L_[] Sources for Android SDK    |  |          0 | Installed\n" +
@@ -100,7 +100,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 " L_[] Android SDK Build-tools    |  |          3 | Installed                    \n" +
                 "[]    Tools (Preview Channel)    |  |            |                              \n" +
                 // Note: locally installed previews are always shown, even when enable previews is false.
-                " L_[] Android SDK Build-tools    |  | 12.3.4 rc5 | Installed                    \n" +
+                " L_[] Android SDK Build-tools    |  | 18.3.4 rc5 | Installed                    \n" +
                 "[]    Android 0.0 (API 0)        |  |            |                              \n" +
                 " L_[] SDK Platform               |  |          1 | Installed                    \n" +
                 " L_[] Sources for Android SDK    |  |          0 | Installed                    \n" +
@@ -137,7 +137,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 " L_[] Android SDK Build-tools    |  |      3.0.1 | Installed                    \n" +
                 " L_[] Android SDK Build-tools    |  |          3 | Installed                    \n" +
                 "[]    Tools (Preview Channel)    |  |            |                              \n" +
-                " L_[] Android SDK Build-tools    |  | 12.3.4 rc5 | Installed                    \n" +
+                " L_[] Android SDK Build-tools    |  | 18.3.4 rc5 | Installed                    \n" +
                 "[]    Android 0.0 (API 0)        |  |            |                              \n" +
                 " L_[] SDK Platform               |  |          1 | Installed                    \n" +
                 " L_[] Sources for Android SDK    |  |          0 | Installed                    \n" +
@@ -174,7 +174,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 " L_[] Android SDK Build-tools    |  |      3.0.1 | Installed                         \n" +
                 " L_[] Android SDK Build-tools    |  |          3 | Installed                         \n" +
                 "[]    Tools (Preview Channel)    |  |            |                                   \n" +
-                " L_[] Android SDK Build-tools    |  | 12.3.4 rc5 | Update available: rev. 12.3.4 rc15\n" +
+                " L_[] Android SDK Build-tools    |  | 18.3.4 rc5 | Update available: rev. 18.3.4 rc15\n" +
                 "[]    Android 0.0 (API 0)        |  |            |                                   \n" +
                 " L_[] SDK Platform               |  |          1 | Installed                         \n" +
                 " L_[] Sources for Android SDK    |  |          0 | Installed                         \n" +
@@ -225,7 +225,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
             "\n" +
             "<sdk:build-tool>\n" +
             "    <sdk:revision>\n" +
-            "        <sdk:major>12</sdk:major>\n" +
+            "        <sdk:major>18</sdk:major>\n" +
             "        <sdk:minor>3</sdk:minor>\n" +
             "        <sdk:micro>4</sdk:micro>\n" +
             "        <sdk:preview>15</sdk:preview>\n" +

@@ -1719,7 +1719,8 @@ public class UIThread implements IUiSelectionListener, IClientChangeListener {
 
             if (data.hasFeature(ClientData.FEATURE_PROFILING)) {
                 mTBProfiling.setEnabled(true);
-                if (data.getMethodProfilingStatus() == MethodProfilingStatus.ON) {
+                if (data.getMethodProfilingStatus() == MethodProfilingStatus.TRACER_ON
+                        || data.getMethodProfilingStatus() == MethodProfilingStatus.SAMPLER_ON) {
                     mTBProfiling.setToolTipText("Stop Method Profiling");
                     mTBProfiling.setImage(mTracingStopImage);
                 } else {
@@ -1729,7 +1730,7 @@ public class UIThread implements IUiSelectionListener, IClientChangeListener {
             } else {
                 mTBProfiling.setEnabled(false);
                 mTBProfiling.setImage(mTracingStartImage);
-                mTBProfiling.setToolTipText("Start Method Profiling (not supported by this VM)");
+                mTBProfiling.setToolTipText("Method Profiling (not supported by this VM)");
             }
         } else {
             // list is empty, disable these

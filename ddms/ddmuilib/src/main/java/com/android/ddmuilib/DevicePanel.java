@@ -16,6 +16,7 @@
 
 package com.android.ddmuilib;
 
+import com.android.annotations.NonNull;
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.AndroidDebugBridge.IClientChangeListener;
 import com.android.ddmlib.AndroidDebugBridge.IDebugBridgeChangeListener;
@@ -26,7 +27,10 @@ import com.android.ddmlib.ClientData.DebuggerStatus;
 import com.android.ddmlib.DdmPreferences;
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.IDevice.DeviceState;
+import com.android.ddmuilib.vmtrace.VmTraceOptionsDialog;
+import com.google.common.base.Throwables;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -35,6 +39,7 @@ import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -48,8 +53,10 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A display of both the devices and their clients.
@@ -310,7 +317,6 @@ public final class DevicePanel extends Panel implements IDebugBridgeChangeListen
 
     /**
      * Creates the {@link DevicePanel} object.
-     * @param loader
      * @param advancedPortSupport if true the device panel will add support for selected client port
      * and display the ports in the ui.
      */
@@ -447,8 +453,49 @@ public final class DevicePanel extends Panel implements IDebugBridgeChangeListen
     }
 
     public void toggleMethodProfiling() {
-        if (mCurrentClient != null) {
-            mCurrentClient.toggleMethodProfiling();
+        if (mCurrentClient == null) {
+            return;
+        }
+
+        try {
+            toggleMethodProfiling(mCurrentClient);
+        } catch (IOException e) {
+            MessageDialog.openError(mTree.getShell(), "Method Profiling",
+                    "Unexpected I/O error while starting/stopping profiling: "
+                            + Throwables.getRootCause(e).getMessage());
+        }
+    }
+
+    private void toggleMethodProfiling(@NonNull Client client) throws IOException {
+        ClientData cd = mCurrentClient.getClientData();
+        if (cd.getMethodProfilingStatus() == ClientData.MethodProfilingStatus.TRACER_ON) {
+            mCurrentClient.stopMethodTracer();
+        } else if (cd.getMethodProfilingStatus() == ClientData.MethodProfilingStatus.SAMPLER_ON) {
+            mCurrentClient.stopSamplingProfiler();
+        } else {
+            boolean supportsSampling = cd.hasFeature(ClientData.FEATURE_SAMPLING_PROFILER);
+
+            // default to tracing
+            boolean shouldUseTracing = true;
+            int samplingIntervalMicros = 1;
+
+            // if client supports sampling, then ask the user to choose the method
+            if (supportsSampling) {
+                VmTraceOptionsDialog dialog = new VmTraceOptionsDialog(mTree.getShell());
+                if (dialog.open() == Window.CANCEL) {
+                    return;
+                }
+                shouldUseTracing = dialog.shouldUseTracing();
+                if (!shouldUseTracing) {
+                    samplingIntervalMicros = dialog.getSamplingIntervalMicros();
+                }
+            }
+
+            if (shouldUseTracing) {
+                mCurrentClient.startMethodTracer();
+            } else {
+                mCurrentClient.startSamplingProfiler(samplingIntervalMicros, TimeUnit.MICROSECONDS);
+            }
         }
     }
 
@@ -469,8 +516,6 @@ public final class DevicePanel extends Panel implements IDebugBridgeChangeListen
      * <p/>
      * This is sent from a non UI thread.
      * @param bridge the new {@link AndroidDebugBridge} object.
-     *
-     * @see IDebugBridgeChangeListener#serverChanged(AndroidDebugBridge)
      */
     @Override
     public void bridgeChanged(final AndroidDebugBridge bridge) {
@@ -563,7 +608,7 @@ public final class DevicePanel extends Panel implements IDebugBridgeChangeListen
      * @param device the device that was updated.
      * @param changeMask the mask indicating what changed.
      *
-     * @see IDeviceChangeListener#deviceChanged(IDevice)
+     * @see IDeviceChangeListener#deviceChanged(IDevice,int)
      */
     @Override
     public void deviceChanged(final IDevice device, int changeMask) {

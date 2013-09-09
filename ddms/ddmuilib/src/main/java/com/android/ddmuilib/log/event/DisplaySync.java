@@ -261,6 +261,7 @@ public class DisplaySync extends SyncCommon {
         } else if (eventSource == 3) {
             sb.append("(user)");
         }
+        scanner.close();
         return sb.toString();
     }
 

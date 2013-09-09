@@ -33,7 +33,7 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class NativeHeapDataImporter implements IRunnableWithProgress {
-    private LineNumberReader mReader;
+    private final LineNumberReader mReader;
     private int mStartLineNumber;
     private int mEndLineNumber;
 
@@ -118,67 +118,72 @@ public class NativeHeapDataImporter implements IRunnableWithProgress {
     private NativeAllocationInfo getNativeAllocation(String block) {
         Scanner sc = new Scanner(block);
 
-        String kw = sc.next();
-        if (!NativeAllocationInfo.ALLOCATIONS_KW.equals(kw)) {
-            throw new InputMismatchException(
-                    expectedKeywordErrorMessage(NativeAllocationInfo.ALLOCATIONS_KW, kw));
-        }
-
-        int allocations = sc.nextInt();
-
-        kw = sc.next();
-        if (!NativeAllocationInfo.SIZE_KW.equals(kw)) {
-            throw new InputMismatchException(
-                    expectedKeywordErrorMessage(NativeAllocationInfo.SIZE_KW, kw));
-        }
-
-        int size = sc.nextInt();
-
-        kw = sc.next();
-        if (!NativeAllocationInfo.TOTAL_SIZE_KW.equals(kw)) {
-            throw new InputMismatchException(
-                    expectedKeywordErrorMessage(NativeAllocationInfo.TOTAL_SIZE_KW, kw));
-        }
-
-        int totalSize = sc.nextInt();
-        if (totalSize != size * allocations) {
-            throw new InputMismatchException(
-                    genericErrorMessage("Total Size does not match size * # of allocations"));
-        }
-
-        NativeAllocationInfo info = new NativeAllocationInfo(size, allocations);
-
-        kw = sc.next();
-        if (!NativeAllocationInfo.BEGIN_STACKTRACE_KW.equals(kw)) {
-            throw new InputMismatchException(
-                    expectedKeywordErrorMessage(NativeAllocationInfo.BEGIN_STACKTRACE_KW, kw));
-        }
-
-        List<NativeStackCallInfo> stackInfo = new ArrayList<NativeStackCallInfo>();
-        Pattern endTracePattern = Pattern.compile(NativeAllocationInfo.END_STACKTRACE_KW);
-
-        while (true) {
-            long address = sc.nextLong(16);
-            info.addStackCallAddress(address);
-
-            String library = sc.next();
-            sc.next();  // ignore "---"
-            String method = scanTillSeparator(sc, "---");
-
-            String filename = "";
-            if (!isUnresolved(method, address)) {
-                filename = sc.next();
+        try {
+            String kw = sc.next();
+            if (!NativeAllocationInfo.ALLOCATIONS_KW.equals(kw)) {
+                throw new InputMismatchException(
+                        expectedKeywordErrorMessage(NativeAllocationInfo.ALLOCATIONS_KW, kw));
             }
 
-            stackInfo.add(new NativeStackCallInfo(address, library, method, filename));
+            int allocations = sc.nextInt();
 
-            if (sc.hasNext(endTracePattern)) {
-                break;
+            kw = sc.next();
+            if (!NativeAllocationInfo.SIZE_KW.equals(kw)) {
+                throw new InputMismatchException(
+                        expectedKeywordErrorMessage(NativeAllocationInfo.SIZE_KW, kw));
             }
-        }
 
-        info.setResolvedStackCall(stackInfo);
-        return info;
+            int size = sc.nextInt();
+
+            kw = sc.next();
+            if (!NativeAllocationInfo.TOTAL_SIZE_KW.equals(kw)) {
+                throw new InputMismatchException(
+                        expectedKeywordErrorMessage(NativeAllocationInfo.TOTAL_SIZE_KW, kw));
+            }
+
+            int totalSize = sc.nextInt();
+            if (totalSize != size * allocations) {
+                throw new InputMismatchException(
+                        genericErrorMessage("Total Size does not match size * # of allocations"));
+            }
+
+            NativeAllocationInfo info = new NativeAllocationInfo(size, allocations);
+
+            kw = sc.next();
+            if (!NativeAllocationInfo.BEGIN_STACKTRACE_KW.equals(kw)) {
+                throw new InputMismatchException(
+                        expectedKeywordErrorMessage(NativeAllocationInfo.BEGIN_STACKTRACE_KW, kw));
+            }
+
+            List<NativeStackCallInfo> stackInfo = new ArrayList<NativeStackCallInfo>();
+            Pattern endTracePattern = Pattern.compile(NativeAllocationInfo.END_STACKTRACE_KW);
+
+
+            while (true) {
+                long address = sc.nextLong(16);
+                info.addStackCallAddress(address);
+
+                String library = sc.next();
+                sc.next();  // ignore "---"
+                String method = scanTillSeparator(sc, "---");
+
+                String filename = "";
+                if (!isUnresolved(method, address)) {
+                    filename = sc.next();
+                }
+
+                stackInfo.add(new NativeStackCallInfo(address, library, method, filename));
+
+                if (sc.hasNext(endTracePattern)) {
+                    break;
+                }
+            }
+
+            info.setResolvedStackCall(stackInfo);
+            return info;
+        } finally {
+            sc.close();
+        }
     }
 
     private String scanTillSeparator(Scanner sc, String separator) {

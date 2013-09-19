@@ -37,7 +37,7 @@ public class VmTraceOptionsDialog extends Dialog {
     private static final int DEFAULT_SAMPLING_INTERVAL_US = 1000;
 
     // Static variables that maintain state across invocations of the dialog
-    private static boolean sTracingEnabled = true;
+    private static boolean sTracingEnabled = false;
     private static int sSamplingIntervalUs = DEFAULT_SAMPLING_INTERVAL_US;
 
     public VmTraceOptionsDialog(Shell parentShell) {
@@ -59,33 +59,17 @@ public class VmTraceOptionsDialog extends Dialog {
         c.setLayout(new GridLayout(2, false));
         c.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        final Button useTracingButton = new Button(c, SWT.RADIO);
-        useTracingButton.setText("Trace based profiling");
-        useTracingButton.setSelection(sTracingEnabled);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
-                GridData.VERTICAL_ALIGN_CENTER, true, true, 2, 1);
-        useTracingButton.setLayoutData(gd);
-
-        Label l = new Label(c, SWT.NONE);
-        l.setText("Trace based profiling works by tracing the entry and exit of every method.\n"
-                + "This gives an accurate view of the execution, but has a high overhead.");
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_CENTER, true,
-                true, 2, 1);
-        gd.horizontalIndent = horizontalIndent;
-        l.setLayoutData(gd);
-
         final Button useSamplingButton = new Button(c, SWT.RADIO);
         useSamplingButton.setText("Sample based profiling");
         useSamplingButton.setSelection(!sTracingEnabled);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_CENTER, true,
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_CENTER, true,
                 true, 2, 1);
         useSamplingButton.setLayoutData(gd);
 
-        l = new Label(c, SWT.NONE);
-        l.setText("Sample based profiling works by interrupting the VM at a given frequency and "
-                + "collecting the call stacks at that time.\n"
-                + "This has a much lower overhead, but statistical sampling requires longer runs "
-                + "to obtain a representative sample.");
+        Label l = new Label(c, SWT.NONE);
+        l.setText("Sample based profiling works by interrupting the VM at a given frequency and \n"
+                + "collecting the call stacks at that time. The overhead is proportional to the \n"
+                + "sampling frequency.");
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_CENTER, true,
                 true, 2, 1);
         gd.horizontalIndent = horizontalIndent;
@@ -121,6 +105,22 @@ public class VmTraceOptionsDialog extends Dialog {
                 }
             }
         });
+
+        final Button useTracingButton = new Button(c, SWT.RADIO);
+        useTracingButton.setText("Trace based profiling");
+        useTracingButton.setSelection(sTracingEnabled);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
+                GridData.VERTICAL_ALIGN_CENTER, true, true, 2, 1);
+        useTracingButton.setLayoutData(gd);
+
+        l = new Label(c, SWT.NONE);
+        l.setText("Trace based profiling works by tracing the entry and exit of every method.\n"
+                + "This captures the execution of all methods, no matter how small, and hence\n"
+                + "has a high overhead.");
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_CENTER, true,
+                true, 2, 1);
+        gd.horizontalIndent = horizontalIndent;
+        l.setLayoutData(gd);
 
         SelectionAdapter selectionAdapter = new SelectionAdapter() {
             @Override

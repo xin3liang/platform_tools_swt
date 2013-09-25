@@ -26,6 +26,7 @@ import com.android.sdklib.internal.repository.CanceledByUserException;
 import com.android.sdklib.internal.repository.DownloadCache;
 import com.android.sdklib.internal.repository.DownloadCache.Strategy;
 import com.android.sdklib.internal.repository.NullTaskMonitor;
+import com.android.sdklib.local.LocalSdk;
 import com.android.sdklib.repository.SdkAddonConstants;
 import com.android.sdklib.repository.SdkRepoConstants;
 import com.android.utils.Pair;
@@ -183,6 +184,7 @@ public class MainTest extends SdkManagerTestCase {
 
             assertFalse(sdkman.hasChanged(getLog()));
             getLog().clear();
+            sdkman.getLocalSdk().getPkgsInfos(LocalSdk.PKG_ALL); // parse everything
 
             File addonsDir = new File(sdkman.getLocation(), SdkConstants.FD_ADDONS);
             assertTrue(addonsDir.isDirectory());
@@ -191,10 +193,12 @@ public class MainTest extends SdkManagerTestCase {
             readme.write("test\n");
             readme.close();
 
-            // Adding a file doesn't alter sdk.hasChanged
-            assertFalse(sdkman.hasChanged(getLog()));
+            // Adding a file does alter sdk.hasChanged
+            assertTrue(sdkman.hasChanged(getLog()));
             getLog().clear();
+            // Once reloaded & reparsed, sdk.hasChanged is reset
             sdkman.reloadSdk(getLog());
+            sdkman.getLocalSdk().getPkgsInfos(LocalSdk.PKG_ALL); // parse everything
             assertFalse(sdkman.hasChanged(getLog()));
             getLog().clear();
 
@@ -208,8 +212,8 @@ public class MainTest extends SdkManagerTestCase {
             // Adding a directory does alter sdk.hasChanged even if not a real add-on
             assertTrue(sdkman.hasChanged(getLog()));
             getLog().clear();
-            // Once reloaded, sdk.hasChanged will be reset
             sdkman.reloadSdk(getLog());
+            sdkman.getLocalSdk().getPkgsInfos(LocalSdk.PKG_ALL); // parse everything
             assertFalse(sdkman.hasChanged(getLog()));
             getLog().clear();
 
@@ -221,6 +225,7 @@ public class MainTest extends SdkManagerTestCase {
             getLog().clear();
             // Once reloaded, sdk.hasChanged will be reset
             sdkman.reloadSdk(getLog());
+            sdkman.getLocalSdk().getPkgsInfos(LocalSdk.PKG_ALL); // parse everything
             assertFalse(sdkman.hasChanged(getLog()));
             getLog().clear();
         } catch (AssertionFailedError e) {

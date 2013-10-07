@@ -407,8 +407,8 @@ public class MonkeyDevice extends PyObject implements ClassDictInit {
     public MonkeyView getViewByAccessibilityIds(PyObject[] args, String[] kws) {
         ArgParser ap = JythonUtils.createArgParser(args, kws);
         Preconditions.checkNotNull(ap);
-        int windowId = ap.getInt(0);
-        int accessibilityId = ap.getInt(1);
+        int windowId = Integer.parseInt(ap.getString(0));
+        long accessibilityId = Long.parseLong(ap.getString(1));
         IChimpView view = impl.getView(By.accessibilityIds(windowId, accessibilityId));
         return new MonkeyView(view);
     }

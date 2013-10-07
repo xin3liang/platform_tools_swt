@@ -16,6 +16,7 @@
 
 package com.android.chimpchat.core;
 
+import com.android.chimpchat.core.IChimpView.AccessibilityIds ;
 import com.android.chimpchat.ChimpManager;
 
 import com.google.common.collect.Lists;
@@ -191,24 +192,21 @@ public class ChimpView implements IChimpView {
 
     /**
      * Gets the accessibility ids of the current view
-     * @return the accessibility ids of the current view. Its returned as a two-item array of ints
-     * with first int being the window id, and the second int being the accessibility view id.
+     * @return an AccessibilityIds object which contains the window id as an int
+     * and the accessibility node id as a long.
      */
     @Override
-    public int[] getAccessibilityIds() {
+    public AccessibilityIds getAccessibilityIds() {
         List<String> results = Lists.newArrayList(queryView("getaccessibilityids").split(" "));
         if (results.size() == 2) {
-            int[] accessibilityIds = new int[2];
             try {
-                accessibilityIds[0] = Integer.parseInt(results.get(0));
-                accessibilityIds[1] = Integer.parseInt(results.get(1));
-                return accessibilityIds;
+                return new AccessibilityIds(Integer.parseInt(results.get(0)),
+                                            Long.parseLong(results.get(1)));
             } catch (NumberFormatException e) {
                 LOG.log(Level.SEVERE, "Error retrieving accesibility ids: " + e.getMessage());
             }
         }
-        int[] empty = {0,0};
-        return empty;
+        return new AccessibilityIds(0, 0);
     }
 
 }

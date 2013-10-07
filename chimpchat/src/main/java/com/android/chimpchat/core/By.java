@@ -36,7 +36,7 @@ public class By {
      * @param accessibilityId the accessibility id of the object you want to select
      * @return a selector that will select the appropriate object by its accessibility ids.
      */
-    public static ISelector accessibilityIds(int windowId, int accessibilityId){
+    public static ISelector accessibilityIds(int windowId, long accessibilityId){
         return new SelectorAccessibilityIds(windowId, accessibilityId);
     }
 

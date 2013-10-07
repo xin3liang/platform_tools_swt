@@ -23,13 +23,13 @@ import com.google.common.collect.Lists;
 /* A class for selecting objects by their accessibility ids */
 public class SelectorAccessibilityIds implements ISelector {
     private int windowId;
-    private int accessibilityId;
+    private long accessibilityId;
 
     /**
      * @param windowId the window id of the node you want to select
      * @param accessibilityId the accessibility id of the node you want to select
      */
-    public SelectorAccessibilityIds(int windowId, int accessibilityId) {
+    public SelectorAccessibilityIds(int windowId, long accessibilityId) {
         this.windowId = windowId;
         this.accessibilityId = accessibilityId;
     }
@@ -42,7 +42,7 @@ public class SelectorAccessibilityIds implements ISelector {
     @Override
     public IChimpView getView(ChimpManager manager) {
         ChimpView view = new ChimpView(ChimpView.ACCESSIBILITY_IDS,
-                Lists.newArrayList(Integer.toString(windowId), Integer.toString(accessibilityId)));
+                Lists.newArrayList(Integer.toString(windowId), Long.toString(accessibilityId)));
         view.setManager(manager);
         return view;
     }

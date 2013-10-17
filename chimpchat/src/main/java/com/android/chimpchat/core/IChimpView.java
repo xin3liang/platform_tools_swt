@@ -26,6 +26,35 @@ import java.util.List;
 public interface IChimpView {
 
     /**
+    * A representation of accessibility ids containing
+    * the window id of the accessibility node, and the
+    * id of the node itself.
+    */
+    public static class AccessibilityIds {
+        private final int windowId;
+        private final long nodeId;
+
+        public AccessibilityIds() {
+            this.windowId = 0;
+            this.nodeId = 0;
+        }
+
+        public AccessibilityIds(int windowId,
+                                long nodeId) {
+            this.windowId = windowId;
+            this.nodeId = nodeId;
+        }
+
+        public int getWindowId() {
+            return windowId;
+        }
+
+        public long getNodeId() {
+            return nodeId;
+        }
+    }
+
+    /**
      * Set the manager for this view to communicate through.
      */
     void setManager(ChimpManager manager);
@@ -88,5 +117,5 @@ public interface IChimpView {
     /**
      * Get the accessibility ids of this view.
      */
-    int[] getAccessibilityIds();
+    AccessibilityIds getAccessibilityIds();
 }

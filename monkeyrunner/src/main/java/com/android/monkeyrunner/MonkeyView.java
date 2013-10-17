@@ -18,6 +18,7 @@ package com.android.monkeyrunner;
 import com.google.common.base.Preconditions;
 
 import com.android.chimpchat.core.IChimpView;
+import com.android.chimpchat.core.IChimpView.AccessibilityIds;
 
 import com.android.monkeyrunner.doc.MonkeyRunnerExported;
 
@@ -25,6 +26,7 @@ import org.python.core.ArgParser;
 import org.python.core.ClassDictInit;
 import org.python.core.PyBoolean;
 import org.python.core.PyInteger;
+import org.python.core.PyLong;
 import org.python.core.PyList;
 import org.python.core.PyObject;
 import org.python.core.PyString;
@@ -152,15 +154,14 @@ public class MonkeyView extends PyObject implements ClassDictInit {
     }
 
     @MonkeyRunnerExported(doc = "Returns the accessibility ids of the current view",
-                          returns = "The accessibility ids of the view as a list of ints")
+                          returns = "The accessibility ids of the view as a list of int and long")
     public PyList getAccessibilityIds(PyObject[] args, String[] kws) {
         ArgParser ap = JythonUtils.createArgParser(args, kws);
         Preconditions.checkNotNull(ap);
-        int[] ids = impl.getAccessibilityIds();
+        AccessibilityIds ids = impl.getAccessibilityIds();
         PyList pyIds = new PyList();
-        for (int i = 0; i < ids.length; i++) {
-            pyIds.append(new PyInteger(ids[i]));
-        }
+        pyIds.append( new PyInteger(ids.getWindowId()) );
+        pyIds.append( new PyLong(ids.getNodeId()) );
         return pyIds;
     }
 

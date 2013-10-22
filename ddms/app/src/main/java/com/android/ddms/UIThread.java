@@ -54,6 +54,7 @@ import com.android.ddmuilib.logcat.LogFilter;
 import com.android.ddmuilib.logcat.LogPanel;
 import com.android.ddmuilib.logcat.LogPanel.ILogFilterStorageManager;
 import com.android.ddmuilib.net.NetworkPanel;
+import com.android.ddmuilib.screenrecord.ScreenRecorderAction;
 import com.android.menubar.IMenuBarCallback;
 import com.android.menubar.IMenuBarEnhancer;
 import com.android.menubar.IMenuBarEnhancer.MenuBarMode;
@@ -72,6 +73,7 @@ import org.eclipse.swt.events.MenuAdapter;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Color;
@@ -856,15 +858,27 @@ public class UIThread implements IUiSelectionListener, IClientChangeListener {
         // so it's fine to leave it there for the other platforms.
         screenShotItem.setText("&Screen capture...\tCtrl-S");
         screenShotItem.setAccelerator('S' | SWT.MOD1);
-        screenShotItem.addSelectionListener(new SelectionAdapter() {
+
+        final MenuItem screenRecordItem = new MenuItem(deviceMenu, SWT.NONE);
+        screenRecordItem.setText("Screen Record");
+
+        SelectionListener selectionListener = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (mCurrentDevice != null) {
+                if (mCurrentDevice == null) {
+                    return;
+                }
+
+                if (e.getSource() == screenShotItem) {
                     ScreenShotDialog dlg = new ScreenShotDialog(shell);
                     dlg.open(mCurrentDevice);
+                } else if (e.getSource() == screenRecordItem) {
+                    new ScreenRecorderAction(shell, mCurrentDevice).performAction();
                 }
             }
-        });
+        };
+        screenShotItem.addSelectionListener(selectionListener);
+        screenRecordItem.addSelectionListener(selectionListener);
 
         new MenuItem(deviceMenu, SWT.SEPARATOR);
 
@@ -953,6 +967,8 @@ public class UIThread implements IUiSelectionListener, IClientChangeListener {
                 appStateItem.setEnabled(deviceEnabled);
                 radioStateItem.setEnabled(deviceEnabled);
                 logCatItem.setEnabled(deviceEnabled);
+                screenRecordItem.setEnabled(mCurrentDevice != null &&
+                        mCurrentDevice.supportsFeature(IDevice.Feature.SCREEN_RECORD));
             }
         });
 

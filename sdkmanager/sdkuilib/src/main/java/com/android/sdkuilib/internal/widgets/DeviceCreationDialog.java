@@ -921,6 +921,8 @@ public class DeviceCreationDialog extends GridDialog {
             // The diagonal DPI will be somewhere in between the X and Y dpi if
             // they differ
             double dpi = Math.sqrt(x * x + y * y) / diagonal;
+            // The diagonal DPI should keep only two digits precision.
+            dpi = Math.round(dpi * 100) / 100.0;
             s.setXdpi(dpi);
             s.setYdpi(dpi);
             s.setPixelDensity(Density.getEnum(mDensity.getText()));

@@ -17,6 +17,7 @@
 package com.android.uiautomator;
 
 import com.android.uiautomator.actions.OpenFilesAction;
+import com.android.uiautomator.actions.SaveScreenShotAction;
 import com.android.uiautomator.actions.ScreenshotAction;
 
 import org.eclipse.jface.action.ToolBarManager;
@@ -36,7 +37,6 @@ import java.io.File;
 
 public class UiAutomatorViewer extends ApplicationWindow {
     private UiAutomatorView mUiAutomatorView;
-
     public UiAutomatorViewer() {
         super(null);
     }
@@ -57,7 +57,9 @@ public class UiAutomatorViewer extends ApplicationWindow {
 
         ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
         toolBarManager.add(new OpenFilesAction(this));
-        toolBarManager.add(new ScreenshotAction(this));
+        toolBarManager.add(new ScreenshotAction(this,false));
+        toolBarManager.add(new ScreenshotAction(this,true));
+        toolBarManager.add(new SaveScreenShotAction(this));
         ToolBar tb = toolBarManager.createControl(c);
         tb.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -104,5 +106,11 @@ public class UiAutomatorViewer extends ApplicationWindow {
         } else {
             mUiAutomatorView.setModel(model, modelFile, screenshot);
         }
+    }
+    public Image getScreenShot() {
+        return mUiAutomatorView.getScreenShot();
+    }
+    public File getModelFile(){
+        return mUiAutomatorView.getModelFile();
     }
 }

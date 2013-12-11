@@ -17,10 +17,12 @@
 package com.android.uiautomator;
 
 import com.android.uiautomator.actions.ExpandAllAction;
+import com.android.uiautomator.actions.ImageHelper;
 import com.android.uiautomator.actions.ToggleNafAction;
 import com.android.uiautomator.tree.AttributePair;
 import com.android.uiautomator.tree.BasicTreeNode;
 import com.android.uiautomator.tree.BasicTreeNodeContentProvider;
+import com.android.uiautomator.tree.UiNode;
 
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.layout.TableColumnLayout;
@@ -41,6 +43,8 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
@@ -48,6 +52,8 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
@@ -60,13 +66,19 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 
 import java.io.File;
+import java.util.List;
 
 public class UiAutomatorView extends Composite {
     private static final int IMG_BORDER = 2;
@@ -89,20 +101,46 @@ public class UiAutomatorView extends Composite {
     private File mModelFile;
     private Image mScreenshot;
 
+    private List<BasicTreeNode> mSearchResult;
+    private int mSearchResultIndex;
+    private ToolItem itemDeleteAndInfo;
+    private Text searchTextarea;
+    private Cursor mOrginialCursor;
+    private ToolItem itemPrev, itemNext;
+    private ToolItem coordinateLabel;
+
+    private String mLastSearchedTerm;
+
+    private Cursor mCrossCursor;
+
     public UiAutomatorView(Composite parent, int style) {
         super(parent, SWT.NONE);
         setLayout(new FillLayout());
 
         SashForm baseSash = new SashForm(this, SWT.HORIZONTAL);
-
+        mOrginialCursor = getShell().getCursor();
+        mCrossCursor = new Cursor(getDisplay(), SWT.CURSOR_CROSS);
         mScreenshotComposite = new Composite(baseSash, SWT.BORDER);
         mStackLayout = new StackLayout();
         mScreenshotComposite.setLayout(mStackLayout);
-
         // draw the canvas with border, so the divider area for sash form can be highlighted
         mScreenshotCanvas = new Canvas(mScreenshotComposite, SWT.BORDER);
         mStackLayout.topControl = mScreenshotCanvas;
         mScreenshotComposite.layout();
+
+        // set cursor when enter canvas
+        mScreenshotCanvas.addListener(SWT.MouseEnter, new Listener() {
+            @Override
+            public void handleEvent(Event arg0) {
+                getShell().setCursor(mCrossCursor);
+            }
+        });
+        mScreenshotCanvas.addListener(SWT.MouseExit, new Listener() {
+            @Override
+            public void handleEvent(Event arg0) {
+                getShell().setCursor(mOrginialCursor);
+            }
+        });
 
         mScreenshotCanvas.addMouseListener(new MouseAdapter() {
             @Override
@@ -146,6 +184,25 @@ public class UiAutomatorView extends Composite {
                                     getScaledSize(r.width), getScaledSize(r.height));
                         }
                     }
+
+                    // draw the search result rects
+                    if (mSearchResult != null){
+                        for (BasicTreeNode result : mSearchResult){
+                            if (result instanceof UiNode) {
+                                UiNode uiNode = (UiNode) result;
+                                Rectangle rect = new Rectangle(
+                                        uiNode.x, uiNode.y, uiNode.width, uiNode.height);
+                                e.gc.setForeground(
+                                        e.gc.getDevice().getSystemColor(SWT.COLOR_YELLOW));
+                                e.gc.setLineStyle(SWT.LINE_DASH);
+                                e.gc.setLineWidth(1);
+                                e.gc.drawRectangle(mDx + getScaledSize(rect.x),
+                                        mDy + getScaledSize(rect.y),
+                                        getScaledSize(rect.width), getScaledSize(rect.height));
+                            }
+                        }
+                    }
+
                     // draw the mouseover rects
                     Rectangle rect = mModel.getCurrentDrawingRect();
                     if (rect != null) {
@@ -170,12 +227,16 @@ public class UiAutomatorView extends Composite {
         mScreenshotCanvas.addMouseMoveListener(new MouseMoveListener() {
             @Override
             public void mouseMove(MouseEvent e) {
-                if (mModel != null && mModel.isExploreMode()) {
-                    BasicTreeNode node = mModel.updateSelectionForCoordinates(
-                            getInverseScaledSize(e.x - mDx),
-                            getInverseScaledSize(e.y - mDy));
-                    if (node != null) {
-                        updateTreeSelection(node);
+                if (mModel != null) {
+                    int x = getInverseScaledSize(e.x - mDx);
+                    int y = getInverseScaledSize(e.y - mDy);
+                    // show coordinate
+                    coordinateLabel.setText(String.format("(%d,%d)", x,y));
+                    if (mModel.isExploreMode()) {
+                        BasicTreeNode node = mModel.updateSelectionForCoordinates(x, y);
+                        if (node != null) {
+                            updateTreeSelection(node);
+                        }
                     }
                 }
             }
@@ -190,7 +251,7 @@ public class UiAutomatorView extends Composite {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
                 FileDialog fd = new FileDialog(setScreenshotButton.getShell());
-                fd.setFilterExtensions(new String[] { "*.png" });
+                fd.setFilterExtensions(new String[] {"*.png" });
                 if (mModelFile != null) {
                     fd.setFilterPath(mModelFile.getParent());
                 }
@@ -217,7 +278,6 @@ public class UiAutomatorView extends Composite {
             }
         });
 
-
         // right sash is split into 2 parts: upper-right and lower-right
         // both are composites with borders, so that the horizontal divider can be highlighted by
         // the borders
@@ -230,7 +290,73 @@ public class UiAutomatorView extends Composite {
         ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
         toolBarManager.add(new ExpandAllAction(this));
         toolBarManager.add(new ToggleNafAction(this));
-        toolBarManager.createControl(upperRightBase);
+        ToolBar searchtoolbar = toolBarManager.createControl(upperRightBase);
+
+        // add search box and navigation buttons for search results
+        ToolItem itemSeparator = new ToolItem(searchtoolbar, SWT.SEPARATOR | SWT.RIGHT);
+        searchTextarea = new Text(searchtoolbar, SWT.BORDER | SWT.SINGLE | SWT.SEARCH);
+        searchTextarea.pack();
+        itemSeparator.setWidth(searchTextarea.getBounds().width);
+        itemSeparator.setControl(searchTextarea);
+        itemPrev = new ToolItem(searchtoolbar, SWT.SIMPLE);
+        itemPrev.setImage(ImageHelper.loadImageDescriptorFromResource("images/prev.png")
+                .createImage());
+        itemNext = new ToolItem(searchtoolbar, SWT.SIMPLE);
+        itemNext.setImage(ImageHelper.loadImageDescriptorFromResource("images/next.png")
+                .createImage());
+        itemDeleteAndInfo = new ToolItem(searchtoolbar, SWT.SIMPLE);
+        itemDeleteAndInfo.setImage(ImageHelper.loadImageDescriptorFromResource("images/delete.png")
+                .createImage());
+        itemDeleteAndInfo.setToolTipText("Clear search results");
+        coordinateLabel = new ToolItem(searchtoolbar, SWT.SIMPLE);
+        coordinateLabel.setText("");
+        coordinateLabel.setEnabled(false);
+
+        // add search function
+        searchTextarea.addKeyListener(new KeyListener() {
+            @Override
+            public void keyReleased(KeyEvent event) {
+                if (event.keyCode == SWT.CR) {
+                    String term = searchTextarea.getText();
+                    if (!term.isEmpty()) {
+                        if (term.equals(mLastSearchedTerm)) {
+                            nextSearchResult();
+                            return;
+                        }
+                        clearSearchResult();
+                        mSearchResult = mModel.searchNode(term);
+                        if (!mSearchResult.isEmpty()) {
+                            mSearchResultIndex = 0;
+                            updateSearchResultSelection();
+                            mLastSearchedTerm = term;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent event) {
+            }
+        });
+        SelectionListener l = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent se) {
+                if (se.getSource() == itemPrev) {
+                    prevSearchResult();
+                 } else if (se.getSource() == itemNext) {
+                    nextSearchResult();
+                 } else if (se.getSource() == itemDeleteAndInfo) {
+                    searchTextarea.setText("");
+                    clearSearchResult();
+                 }
+            }
+        };
+        itemPrev.addSelectionListener(l);
+        itemNext.addSelectionListener(l);
+        itemDeleteAndInfo.addSelectionListener(l);
+
+        searchtoolbar.pack();
+        searchtoolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         mTreeViewer = new TreeViewer(upperRightBase, SWT.NONE);
         mTreeViewer.setContentProvider(new BasicTreeNodeContentProvider());
@@ -286,7 +412,7 @@ public class UiAutomatorView extends Composite {
             public String getText(Object element) {
                 if (element instanceof AttributePair) {
                     // first column, shows the attribute name
-                    return ((AttributePair)element).key;
+                    return ((AttributePair) element).key;
                 }
                 return super.getText(element);
             }
@@ -304,13 +430,50 @@ public class UiAutomatorView extends Composite {
             public String getText(Object element) {
                 if (element instanceof AttributePair) {
                     // second column, shows the attribute value
-                    return ((AttributePair)element).value;
+                    return ((AttributePair) element).value;
                 }
                 return super.getText(element);
             }
         });
         // sets the ratio of the vertical split: left 5 vs right 3
-        baseSash.setWeights(new int[]{5, 3});
+        baseSash.setWeights(new int[] {5, 3 });
+    }
+
+    protected void prevSearchResult() {
+        if (mSearchResult == null)
+            return;
+        if(mSearchResult.isEmpty()){
+            mSearchResult = null;
+            return;
+        }
+        mSearchResultIndex = mSearchResultIndex - 1;
+        if (mSearchResultIndex < 0){
+            mSearchResultIndex += mSearchResult.size();
+        }
+        updateSearchResultSelection();
+    }
+    protected void clearSearchResult() {
+        itemDeleteAndInfo.setText("");
+        mSearchResult = null;
+        mSearchResultIndex = 0;
+        mLastSearchedTerm = "";
+        mScreenshotCanvas.redraw();
+    }
+    protected void nextSearchResult() {
+        if (mSearchResult == null)
+            return;
+        if(mSearchResult.isEmpty()){
+            mSearchResult = null;
+            return;
+        }
+        mSearchResultIndex = (mSearchResultIndex + 1) % mSearchResult.size();
+        updateSearchResultSelection();
+    }
+
+    private void updateSearchResultSelection() {
+        updateTreeSelection(mSearchResult.get(mSearchResultIndex));
+        itemDeleteAndInfo.setText("" + (mSearchResultIndex + 1) + "/"
+                + mSearchResult.size());
     }
 
     private int getScaledSize(int size) {
@@ -332,8 +495,9 @@ public class UiAutomatorView extends Composite {
     private void updateScreenshotTransformation() {
         Rectangle canvas = mScreenshotCanvas.getBounds();
         Rectangle image = mScreenshot.getBounds();
-        float scaleX = (canvas.width - 2 * IMG_BORDER - 1) / (float)image.width;
-        float scaleY = (canvas.height - 2 * IMG_BORDER - 1) / (float)image.height;
+        float scaleX = (canvas.width - 2 * IMG_BORDER - 1) / (float) image.width;
+        float scaleY = (canvas.height - 2 * IMG_BORDER - 1) / (float) image.height;
+
         // use the smaller scale here so that we can fit the entire screenshot
         mScale = Math.min(scaleX, scaleY);
         // calculate translation values to center the image on the canvas
@@ -362,7 +526,7 @@ public class UiAutomatorView extends Composite {
 
         @Override
         protected Object getValue(Object o) {
-            return ((AttributePair)o).value;
+            return ((AttributePair) o).value;
         }
 
         @Override
@@ -392,7 +556,7 @@ public class UiAutomatorView extends Composite {
     }
 
     public void loadAttributeTable() {
-        // udpate the lower right corner table to show the attributes of the node
+        // update the lower right corner table to show the attributes of the node
         mTableViewer.setInput(mModel.getSelectedNode().getAttributesArray());
     }
 
@@ -412,7 +576,7 @@ public class UiAutomatorView extends Composite {
             mScreenshot.dispose();
         }
         mScreenshot = screenshot;
-
+        clearSearchResult();
         redrawScreenshot();
         // load xml into tree
         BasicTreeNode wrapper = new BasicTreeNode();
@@ -432,5 +596,13 @@ public class UiAutomatorView extends Composite {
         if (mModel != null) {
             mModel.toggleShowNaf();
         }
+    }
+
+    public Image getScreenShot() {
+        return mScreenshot;
+    }
+
+    public File getModelFile() {
+        return mModelFile;
     }
 }

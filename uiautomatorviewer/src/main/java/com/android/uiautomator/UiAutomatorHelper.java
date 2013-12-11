@@ -57,7 +57,8 @@ public class UiAutomatorHelper {
         return apiLevel >= UIAUTOMATOR_MIN_API_LEVEL;
     }
 
-    private static void getUiHierarchyFile(IDevice device, File dst, IProgressMonitor monitor) {
+    private static void getUiHierarchyFile(IDevice device, File dst,
+            IProgressMonitor monitor, boolean compressed) {
         if (monitor == null) {
             monitor = new NullProgressMonitor();
         }
@@ -75,9 +76,15 @@ public class UiAutomatorHelper {
         }
 
         monitor.subTask("Taking UI XML snapshot...");
-        command = String.format("%s %s %s", UIAUTOMATOR,
+        if (compressed){
+            command = String.format("%s %s --compressed %s", UIAUTOMATOR,
                 UIAUTOMATOR_DUMP_COMMAND,
                 UIDUMP_DEVICE_PATH);
+        } else {
+            command = String.format("%s %s %s", UIAUTOMATOR,
+                    UIAUTOMATOR_DUMP_COMMAND,
+                    UIDUMP_DEVICE_PATH);
+        }
         CountDownLatch commandCompleteLatch = new CountDownLatch(1);
 
         try {
@@ -95,8 +102,14 @@ public class UiAutomatorHelper {
         }
     }
 
+    //to maintain a backward compatible api, use non-compressed as default snapshot type
     public static UiAutomatorResult takeSnapshot(IDevice device, IProgressMonitor monitor)
-                                throws UiAutomatorException {
+            throws UiAutomatorException {
+        return takeSnapshot(device, monitor,false);
+    }
+
+    public static UiAutomatorResult takeSnapshot(IDevice device, IProgressMonitor monitor,
+           boolean compressed) throws UiAutomatorException {
         if (monitor == null) {
             monitor = new NullProgressMonitor();
         }
@@ -131,7 +144,7 @@ public class UiAutomatorHelper {
 
         monitor.subTask("Obtaining UI hierarchy");
         try {
-            UiAutomatorHelper.getUiHierarchyFile(device, xmlDumpFile, monitor);
+            UiAutomatorHelper.getUiHierarchyFile(device, xmlDumpFile, monitor, compressed);
         } catch (Exception e) {
             String msg = "Error while obtaining UI hierarchy XML file: " + e.getMessage();
             throw new UiAutomatorException(msg, e);

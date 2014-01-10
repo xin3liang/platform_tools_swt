@@ -49,15 +49,21 @@ import java.util.List;
 
 public class ScreenshotAction extends Action {
     UiAutomatorViewer mViewer;
+    private boolean mCompressed;
 
-    public ScreenshotAction(UiAutomatorViewer viewer) {
-        super("&Device Screenshot");
+    public ScreenshotAction(UiAutomatorViewer viewer, boolean compressed) {
+        super("&Device Screenshot "+ (compressed ? "with Compressed Hierarchy" : "")
+                +"(uiautomator dump" + (compressed ? " --compressed)" : ")"));
         mViewer = viewer;
+        mCompressed = compressed;
     }
 
     @Override
     public ImageDescriptor getImageDescriptor() {
-        return ImageHelper.loadImageDescriptorFromResource("images/screenshot.png");
+        if(mCompressed)
+            return ImageHelper.loadImageDescriptorFromResource("images/screenshotcompressed.png");
+        else
+            return ImageHelper.loadImageDescriptorFromResource("images/screenshot.png");
     }
 
     @Override
@@ -82,7 +88,7 @@ public class ScreenshotAction extends Action {
                                                                         InterruptedException {
                     UiAutomatorResult result = null;
                     try {
-                        result = UiAutomatorHelper.takeSnapshot(device, monitor);
+                        result = UiAutomatorHelper.takeSnapshot(device, monitor, mCompressed);
                     } catch (UiAutomatorException e) {
                         monitor.done();
                         showError(e.getMessage(), e);

@@ -16,6 +16,7 @@
 
 package com.android.uiautomator;
 
+import com.android.uiautomator.tree.AttributePair;
 import com.android.uiautomator.tree.BasicTreeNode;
 import com.android.uiautomator.tree.BasicTreeNode.IFindNodeListener;
 import com.android.uiautomator.tree.UiHierarchyXmlLoader;
@@ -24,7 +25,10 @@ import com.android.uiautomator.tree.UiNode;
 import org.eclipse.swt.graphics.Rectangle;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class UiAutomatorModel {
     private BasicTreeNode mRootNode;
@@ -36,8 +40,13 @@ public class UiAutomatorModel {
     private boolean mExploreMode = true;
 
     private boolean mShowNafNodes = false;
+    private List<BasicTreeNode> mNodelist;
+    private Set<String> mSearchKeySet = new HashSet<String>();
 
     public UiAutomatorModel(File xmlDumpFile) {
+        mSearchKeySet.add("text");
+        mSearchKeySet.add("content-desc");
+
         UiHierarchyXmlLoader loader = new UiHierarchyXmlLoader();
         BasicTreeNode rootNode = loader.parseXml(xmlDumpFile.getAbsolutePath());
         if (rootNode == null) {
@@ -52,6 +61,7 @@ public class UiAutomatorModel {
 
         mRootNode = rootNode;
         mExploreMode = true;
+        mNodelist = loader.getAllNodes();
     }
 
     public BasicTreeNode getXmlRootNode() {
@@ -117,6 +127,7 @@ public class UiAutomatorModel {
 
     private static class MinAreaFindNodeListener implements IFindNodeListener {
         BasicTreeNode mNode = null;
+
         @Override
         public void onFoundNode(BasicTreeNode node) {
             if (mNode == null) {
@@ -139,5 +150,21 @@ public class UiAutomatorModel {
 
     public boolean shouldShowNafNodes() {
         return mShowNafNodes;
+    }
+
+    public List<BasicTreeNode> searchNode(String tofind) {
+        List<BasicTreeNode> result = new LinkedList<BasicTreeNode>();
+        for (BasicTreeNode node : mNodelist) {
+            Object[] attrs = node.getAttributesArray();
+            for (Object attr : attrs) {
+                if (!mSearchKeySet.contains(((AttributePair) attr).key))
+                    continue;
+                if (((AttributePair) attr).value.toLowerCase().contains(tofind.toLowerCase())) {
+                    result.add(node);
+                    break;
+                }
+            }
+        }
+        return result;
     }
 }

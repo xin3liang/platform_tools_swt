@@ -2,12 +2,12 @@ group = 'com.android.tools'
 archivesBaseName = 'hierarchyviewer2'
 
 dependencies {
-    compile project(':ddmuilib')
-    compile project(':hierarchyviewer2lib')
-    compile project(':swtmenubar')
-    compile "com.android.tools:common:$version"
-    compile "com.android.tools:sdklib:$version"
-    compile "com.android.tools.ddms:ddmlib:$version"
+    compile project(':swt:ddms:ddmuilib')
+    compile project(':swt:hierarchyviewer2:hierarchyviewer2lib')
+    compile project(':swt:swtmenubar')
+    compile project(':common')
+    compile project(':sdklib')
+    compile project(':ddmlib')
 }
 
 shipping {

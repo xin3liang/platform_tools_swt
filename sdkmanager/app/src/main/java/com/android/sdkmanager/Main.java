@@ -1106,7 +1106,7 @@ public class Main {
      */
     private void displayAvdList() {
         try {
-            AvdManager avdManager = AvdManager.getInstance(mSdkManager, mSdkLog);
+            AvdManager avdManager = AvdManager.getInstance(mSdkManager.getLocalSdk(), mSdkLog);
             displayAvdList(avdManager);
         } catch (AndroidLocationException e) {
             errorAndExit(e.getMessage());
@@ -1130,7 +1130,7 @@ public class Main {
 
         try {
             boolean removePrevious = mSdkCommandLine.getFlagForce();
-            AvdManager avdManager = AvdManager.getInstance(mSdkManager, mSdkLog);
+            AvdManager avdManager = AvdManager.getInstance(mSdkManager.getLocalSdk(), mSdkLog);
 
             String avdName = mSdkCommandLine.getParamName();
 
@@ -1256,7 +1256,7 @@ public class Main {
     private void deleteAvd() {
         try {
             String avdName = mSdkCommandLine.getParamName();
-            AvdManager avdManager = AvdManager.getInstance(mSdkManager, mSdkLog);
+            AvdManager avdManager = AvdManager.getInstance(mSdkManager.getLocalSdk(), mSdkLog);
             AvdInfo info = avdManager.getAvd(avdName, false /*validAvdOnly*/);
 
             if (info == null) {
@@ -1276,7 +1276,7 @@ public class Main {
     private void moveAvd() {
         try {
             String avdName = mSdkCommandLine.getParamName();
-            AvdManager avdManager = AvdManager.getInstance(mSdkManager, mSdkLog);
+            AvdManager avdManager = AvdManager.getInstance(mSdkManager.getLocalSdk(), mSdkLog);
             AvdInfo info = avdManager.getAvd(avdName, true /*validAvdOnly*/);
 
             if (info == null) {
@@ -1372,7 +1372,7 @@ public class Main {
     private void updateAvd() {
         try {
             String avdName = mSdkCommandLine.getParamName();
-            AvdManager avdManager = AvdManager.getInstance(mSdkManager, mSdkLog);
+            AvdManager avdManager = AvdManager.getInstance(mSdkManager.getLocalSdk(), mSdkLog);
             avdManager.updateAvd(avdName, mSdkLog);
         } catch (AndroidLocationException e) {
             errorAndExit(e.getMessage());

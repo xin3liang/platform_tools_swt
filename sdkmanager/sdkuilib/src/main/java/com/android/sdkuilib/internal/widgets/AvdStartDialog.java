@@ -76,7 +76,7 @@ final class AvdStartDialog extends GridDialog {
     private static final Pattern sScreenSizePattern = Pattern.compile("\\d*(\\.\\d?)?");
 
     private final AvdInfo mAvd;
-    private final String mSdkLocation;
+    private final File mSdkLocation;
     private final SettingsController mSettingsController;
     private final DeviceManager mDeviceManager;
 
@@ -97,7 +97,7 @@ final class AvdStartDialog extends GridDialog {
     private boolean mSnapshotLaunch = true;
     private Button mSnapshotLaunchCheckbox;
 
-    AvdStartDialog(Shell parentShell, AvdInfo avd, String sdkLocation,
+    AvdStartDialog(Shell parentShell, AvdInfo avd, File sdkLocation,
             SettingsController settingsController, ILogger sdkLog) {
         super(parentShell, 2, false);
         mAvd = avd;

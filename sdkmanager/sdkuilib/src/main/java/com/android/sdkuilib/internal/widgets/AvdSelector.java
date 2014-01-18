@@ -87,7 +87,7 @@ public final class AvdSelector {
     private final DisplayMode mDisplayMode;
 
     private AvdManager mAvdManager;
-    private final String mOsSdkPath;
+    private final String mOsSdkPath;    // TODO consider converting to File later
 
     private Table mTable;
     private Button mDeleteButton;
@@ -1031,7 +1031,7 @@ public final class AvdSelector {
             // Overwrite the properties derived from the device and nothing else
             Map<String, String> properties = new HashMap<String, String>(avdInfo.getProperties());
 
-            DeviceManager devMan  = DeviceManager.createInstance(mOsSdkPath, mSdkLog);
+            DeviceManager devMan  = DeviceManager.createInstance(new File(mOsSdkPath), mSdkLog);
             List<Device>  devices = devMan.getDevices(DeviceManager.ALL_DEVICES);
             String name = properties.get(AvdManager.AVD_INI_DEVICE_NAME);
             String manufacturer = properties.get(AvdManager.AVD_INI_DEVICE_MANUFACTURER);
@@ -1100,8 +1100,12 @@ public final class AvdSelector {
             return;
         }
 
-        AvdStartDialog dialog = new AvdStartDialog(mTable.getShell(), avdInfo, mOsSdkPath,
-                mController, mSdkLog);
+        AvdStartDialog dialog = new AvdStartDialog(
+                mTable.getShell(),
+                avdInfo,
+                new File(mOsSdkPath),
+                mController,
+                mSdkLog);
         if (dialog.open() == Window.OK) {
             String path = mOsSdkPath + File.separator
                     + SdkConstants.OS_SDK_TOOLS_FOLDER

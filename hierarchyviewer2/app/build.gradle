@@ -10,7 +10,7 @@ dependencies {
     compile project(':ddmlib')
 }
 
-shipping {
+sdkPackaging {
     launcherScripts = ['etc/hierarchyviewer', 'etc/hierarchyviewer.bat']
 }
 
@@ -18,5 +18,5 @@ shipping {
 sourceSets.main.compileClasspath += configurations.swt
 
 // configure the manifest of the buildDistributionJar task.
-buildDistributionJar.manifest.attributes("Main-Class": "com.android.hierarchyviewer.HierarchyViewerApplication")
+sdkJar.manifest.attributes("Main-Class": "com.android.hierarchyviewer.HierarchyViewerApplication")
 

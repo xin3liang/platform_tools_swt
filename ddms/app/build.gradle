@@ -9,10 +9,10 @@ dependencies {
     compile project(':ddmlib')
 }
 
-shipping {
+sdkPackaging {
     launcherScripts = ['etc/ddms', 'etc/ddms.bat']
 }
 
 // configure the manifest of the buildDistributionJar task.
-buildDistributionJar.manifest.attributes("Main-Class": "com.android.ddms.Main")
+sdkJar.manifest.attributes("Main-Class": "com.android.ddms.Main")
 

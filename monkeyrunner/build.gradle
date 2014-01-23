@@ -20,7 +20,7 @@ sourceSets {
     test.resources.srcDir 'src/test/java'
 }
 
-shipping {
+sdkPackaging {
     launcherScripts = [
       'etc/monkeyrunner.bat',
       'etc/monkeyrunner',
@@ -28,5 +28,5 @@ shipping {
 }
 
 // configure the manifest of the buildDistributionJar task.
-buildDistributionJar.manifest.attributes("Main-Class": "com.android.monkeyrunner.MonkeyRunnerStarter")
+sdkJar.manifest.attributes("Main-Class": "com.android.monkeyrunner.MonkeyRunnerStarter")
 

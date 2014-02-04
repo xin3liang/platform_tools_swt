@@ -21,6 +21,10 @@ import com.android.utils.StdLogger;
 
 import junit.framework.TestCase;
 
+/**
+ * Test the SDK Manager command-line parser using mocks.
+ * These tests do not actually use SDK files.
+ */
 public class SdkCommandLineTest extends TestCase {
 
     private StdLogger mLog;

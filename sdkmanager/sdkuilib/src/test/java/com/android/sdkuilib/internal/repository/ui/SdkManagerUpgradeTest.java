@@ -79,6 +79,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                  "<https://dl-ssl.google.com/android/repository/repository-6.xml : 2>, " +
                  "<https://dl-ssl.google.com/android/repository/repository-7.xml : 2>, " +
                  "<https://dl-ssl.google.com/android/repository/repository-8.xml : 2>, " +
+                 "<https://dl-ssl.google.com/android/repository/repository-9.xml : 2>, " +
                  "<https://dl-ssl.google.com/android/repository/repository.xml : 2>]",
                 Arrays.toString(cache.getCachedHits()));
 
@@ -115,6 +116,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                  "<https://dl-ssl.google.com/android/repository/repository-6.xml : 1>, " +
                  "<https://dl-ssl.google.com/android/repository/repository-7.xml : 1>, " +
                  "<https://dl-ssl.google.com/android/repository/repository-8.xml : 1>, " +
+                 "<https://dl-ssl.google.com/android/repository/repository-9.xml : 1>, " +
                  "<https://dl-ssl.google.com/android/repository/repository.xml : 1>]",
                 Arrays.toString(cache.getCachedHits()));
 
@@ -152,6 +154,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 "<https://dl-ssl.google.com/android/repository/repository-6.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository-7.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository-8.xml : 1>, " +
+                "<https://dl-ssl.google.com/android/repository/repository-9.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository.xml : 1>]",
                 Arrays.toString(cache.getCachedHits()));
 
@@ -189,6 +192,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 "<https://dl-ssl.google.com/android/repository/repository-6.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository-7.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository-8.xml : 1>, " +
+                "<https://dl-ssl.google.com/android/repository/repository-9.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository.xml : 1>]",
                 Arrays.toString(cache.getCachedHits()));
     }

@@ -21,6 +21,7 @@ import com.android.SdkConstants;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.SdkManager;
 import com.android.sdklib.SdkManagerTestCase;
+import com.android.sdklib.SystemImage;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.repository.CanceledByUserException;
 import com.android.sdklib.internal.repository.DownloadCache;
@@ -44,7 +45,11 @@ import java.util.TreeSet;
 
 import junit.framework.AssertionFailedError;
 
-public class MainTest extends SdkManagerTestCase {
+/**
+ * Tests the SDK Manager command-line tool using the temp fake SDK
+ * created by {@link SdkManagerTestCase}.
+ */
+public class SdkManagerTest extends SdkManagerTestCase {
 
     private IAndroidTarget mTarget;
     private File mAvdFolder;
@@ -52,6 +57,8 @@ public class MainTest extends SdkManagerTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        makeSystemImageFolder(TARGET_DIR_NAME_0, "tag-1", "x86");
+        makeSystemImageFolder(TARGET_DIR_NAME_0, "tag-1", "armeabi");
 
         mTarget = getSdkManager().getTargets()[0];
         mAvdFolder = AvdInfo.getDefaultAvdFolder(getAvdManager(), getName());
@@ -70,13 +77,14 @@ public class MainTest extends SdkManagerTestCase {
         assertEquals("[P Available Android Virtual Devices:\n]", getLog().toString());
     }
 
-    public void testDisplayAvdListOfOneNonSnapshot() {
+    public void testDisplayAvdList_OneNonSnapshot() {
         Main main = new Main();
         main.setLogger(getLog());
         getAvdManager().createAvd(
                 mAvdFolder,
                 this.getName(),
                 mTarget,
+                SystemImage.DEFAULT_TAG,
                 SdkConstants.ABI_ARMEABI,
                 null,   // skinName
                 null,   // sdName
@@ -93,13 +101,13 @@ public class MainTest extends SdkManagerTestCase {
                 + ", P     Name: " + this.getName() + "\n"
                 + ", P     Path: " + mAvdFolder + "\n"
                 + ", P   Target: Android 0.0 (API level 0)\n"
-                + ", P      ABI: armeabi\n"
+                + ", P  Tag/ABI: default/armeabi\n"
                 + ", P     Skin: HVGA\n"
                 + "]",
                 getLog().toString());
     }
 
-    public void testDisplayAvdListOfOneSnapshot() {
+    public void testDisplayAvdList_OneSnapshot() {
         Main main = new Main();
         main.setLogger(getLog());
 
@@ -107,6 +115,7 @@ public class MainTest extends SdkManagerTestCase {
                 mAvdFolder,
                 this.getName(),
                 mTarget,
+                SystemImage.DEFAULT_TAG,
                 SdkConstants.ABI_ARMEABI,
                 null,   // skinName
                 null,   // sdName
@@ -123,7 +132,7 @@ public class MainTest extends SdkManagerTestCase {
                 + ", P     Name: " + this.getName() + "\n"
                 + ", P     Path: " + mAvdFolder + "\n"
                 + ", P   Target: Android 0.0 (API level 0)\n"
-                + ", P      ABI: armeabi\n"
+                + ", P  Tag/ABI: default/armeabi\n"
                 + ", P     Skin: HVGA\n"
                 + ", P Snapshot: true\n"
                 + "]",
@@ -145,19 +154,19 @@ public class MainTest extends SdkManagerTestCase {
                 ", P      API level: 0\n" +
                 ", P      Revision: 1\n" +
                 ", P      Skins: , P \n" +
-                ", P      ABIs : , P armeabi, P \n" +
+                ", P  Tag/ABIs : , P default/armeabi, P , , P tag-1/armeabi, P , , P tag-1/x86, P \n" +
                 "]",
                 getLog().toString());
     }
 
-    public void testDisplayAbiList() {
+    public void testDisplayTagAbiList() {
         Main main = new Main();
         main.setLogger(getLog());
         main.setSdkManager(getSdkManager());
         getLog().clear();
-        main.displayAbiList(mTarget, "message");
+        main.displayTagAbiList(mTarget, "message");
         assertEquals(
-                "[P message, P armeabi, P \n" +
+                "[P message, P default/armeabi, P , , P tag-1/armeabi, P , , P tag-1/x86, P \n" +
                 "]",
                 getLog().toString());
     }

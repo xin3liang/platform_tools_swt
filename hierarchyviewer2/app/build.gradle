@@ -10,9 +10,18 @@ dependencies {
     compile project(':ddmlib')
 }
 
-sdkPackaging {
-    launcherScripts = ['etc/hierarchyviewer', 'etc/hierarchyviewer.bat']
+sdk {
+    linux {
+       path('etc/hierarchyviewer')  { executable true }
+    }
+    mac {
+       path('etc/hierarchyviewer')  { executable true }
+    }
+    windows {
+       path 'etc/hierarchyviewer.bat'
+    }
 }
+
 
 // include swt for compilation
 sourceSets.main.compileClasspath += configurations.swt

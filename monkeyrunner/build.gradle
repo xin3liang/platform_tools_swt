@@ -20,11 +20,16 @@ sourceSets {
     test.resources.srcDir 'src/test/java'
 }
 
-sdkPackaging {
-    launcherScripts = [
-      'etc/monkeyrunner.bat',
-      'etc/monkeyrunner',
-    ]
+sdk {
+    linux {
+       path('etc/monkeyrunner')  { executable true }
+    }
+    mac {
+       path('etc/monkeyrunner')  { executable true }
+    }
+    windows {
+       path 'etc/monkeyrunner.bat'
+    }
 }
 
 // configure the manifest of the buildDistributionJar task.

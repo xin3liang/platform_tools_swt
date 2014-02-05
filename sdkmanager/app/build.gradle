@@ -10,8 +10,16 @@ dependencies {
     testCompile 'junit:junit:3.8.1'
 }
 
-sdkPackaging {
-    launcherScripts = ['etc/android', 'etc/android.bat']
+sdk {
+    linux {
+       path('etc/android')  { executable true }
+    }
+    mac {
+       path('etc/android')  { executable true }
+    }
+    windows {
+       path 'etc/android.bat'
+    }
 }
 
 // configure the manifest of the buildDistributionJar task.

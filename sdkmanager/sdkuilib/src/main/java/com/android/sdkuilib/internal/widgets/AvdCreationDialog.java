@@ -53,6 +53,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -67,10 +68,15 @@ import org.eclipse.swt.widgets.Text;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -98,7 +104,7 @@ public class AvdCreationDialog extends GridDialog {
     private Combo mTagAbi;
 
     private Button mKeyboard;
-    private Button mSkin;
+    private Combo mSkinCombo;
 
     private Combo mFrontCamera;
     private Combo mBackCamera;
@@ -127,6 +133,13 @@ public class AvdCreationDialog extends GridDialog {
 
     private Device mInitWithDevice;
     private AvdInfo mCreatedAvd;
+
+    private static final AvdSkinChoice SKIN_DYNAMIC =
+        new AvdSkinChoice(SkinType.DYNAMIC, "Skin with dynamic hardware controls");
+    private static final AvdSkinChoice SKIN_NONE =
+        new AvdSkinChoice(SkinType.NONE, "No skin");
+
+    private final List<AvdSkinChoice> mCurrentSkinData = new ArrayList<AvdSkinChoice>();
 
     /**
      * {@link VerifyListener} for {@link Text} widgets that should only contains
@@ -168,6 +181,7 @@ public class AvdCreationDialog extends GridDialog {
     @Override
     protected Control createContents(Composite parent) {
         Control control = super.createContents(parent);
+        getShell().setMinimumSize(new Point(350, 600));
         getShell().setText(mAvdInfo == null ? "Create new Android Virtual Device (AVD)"
                                             : "Edit Android Virtual Device (AVD)");
 
@@ -224,8 +238,6 @@ public class AvdCreationDialog extends GridDialog {
             }
         });
 
-        reloadTargetCombo();
-
         // --- avd ABIs
         label = new Label(parent, SWT.NONE);
         label.setText("CPU/ABI:");
@@ -234,7 +246,13 @@ public class AvdCreationDialog extends GridDialog {
         mTagAbi = new Combo(parent, SWT.READ_ONLY | SWT.DROP_DOWN);
         mTagAbi.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         mTagAbi.setToolTipText(tooltip);
-        mTagAbi.addSelectionListener(validateListener);
+        mTagAbi.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                reloadSkinCombo();
+                validatePage();
+            }
+        });
 
         label = new Label(parent, SWT.NONE);
         label.setText("Keyboard:");
@@ -243,13 +261,30 @@ public class AvdCreationDialog extends GridDialog {
         mKeyboard.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         mKeyboard.setText("Hardware keyboard present");
 
+        // --- skins
         label = new Label(parent, SWT.NONE);
         label.setText("Skin:");
-        mSkin = new Button(parent, SWT.CHECK);
-        mSkin.setSelection(true);
-        mSkin.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        mSkin.setText("Display a skin with hardware controls");
+        mSkinCombo = new Combo(parent, SWT.READ_ONLY | SWT.DROP_DOWN);
+        mSkinCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        mSkinCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                validatePage();
+            }
+        });
 
+        // setup the 2 default choices (no skin, dynamic skin); do not select any right now.
+        mCurrentSkinData.add(SKIN_DYNAMIC);
+        mCurrentSkinData.add(SKIN_NONE);
+        Collections.sort(mCurrentSkinData);
+        mSkinCombo.add(mCurrentSkinData.get(0).getLabel());
+        mSkinCombo.add(mCurrentSkinData.get(1).getLabel());
+
+        // Preload target combo *after* ABI/Tag and Skin combos have been setup as
+        // they will be setup depending on the selected target.
+        preloadTargetCombo();
+
+        // --- camera
         label = new Label(parent, SWT.NONE);
         label.setText("Front Camera:");
         tooltip = "";
@@ -278,8 +313,7 @@ public class AvdCreationDialog extends GridDialog {
         label = new Label(parent, SWT.NONE);
         label.setText("Memory Options:");
 
-
-        Group memoryGroup = new Group(parent, SWT.BORDER);
+        Group memoryGroup = new Group(parent, SWT.NONE);
         memoryGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         memoryGroup.setLayout(new GridLayout(4, false));
 
@@ -690,7 +724,7 @@ public class AvdCreationDialog extends GridDialog {
         }
     }
 
-    private void reloadTargetCombo() {
+    private void preloadTargetCombo() {
         String selected = null;
         int index = mTarget.getSelectionIndex();
         if (index >= 0) {
@@ -734,6 +768,8 @@ public class AvdCreationDialog extends GridDialog {
         if (found) {
             mTarget.select(index);
         }
+
+        reloadTagAbiCombo();
     }
 
     private void selectTarget(IAndroidTarget target) {
@@ -749,7 +785,6 @@ public class AvdCreationDialog extends GridDialog {
     }
 
     @SuppressWarnings("unused")
-    @Deprecated // FIXME unused, cleanup later
     private IAndroidTarget getSelectedTarget() {
         IAndroidTarget[] targets = (IAndroidTarget[]) mTarget.getData();
         int index = mTarget.getSelectionIndex();
@@ -761,7 +796,8 @@ public class AvdCreationDialog extends GridDialog {
     }
 
     /**
-     * Reload all the abi types in the selection list
+     * Reload all the abi types in the selection list.
+     * Also adds/remove the skin choices embedded in a tag/abi, if any.
      */
     private void reloadTagAbiCombo() {
         String selected = null;
@@ -810,6 +846,72 @@ public class AvdCreationDialog extends GridDialog {
                 mTagAbi.select(0);
             }
         }
+
+        reloadSkinCombo();
+    }
+
+    private void reloadSkinCombo() {
+        AvdSkinChoice selected = getSelectedSkinChoice();
+
+        // Remove existing target & tag skins
+        for (Iterator<AvdSkinChoice> it = mCurrentSkinData.iterator(); it.hasNext(); ) {
+            AvdSkinChoice choice = it.next();
+            if (choice.hasPath()) {
+                it.remove();
+            }
+        }
+
+        IAndroidTarget target = getSelectedTarget();
+        if (target != null) {
+            ISystemImage   sysImg = getSelectedSysImg();
+            Set<File> sysImgSkins = new HashSet<File>();
+            if (sysImg != null) {
+                sysImgSkins.addAll(Arrays.asList(sysImg.getSkins()));
+            }
+
+            // path of sdk/system-images
+            String sdkSysImgPath = new File(mAvdManager.getLocalSdk().getLocation(),
+                                            SdkConstants.FD_SYSTEM_IMAGES).getAbsolutePath();
+
+            for (File skin : target.getSkins()) {
+                String label = skin.getName();
+                String skinPath = skin.getAbsolutePath();
+                if (skinPath.startsWith(sdkSysImgPath)) {
+                    if (sysImg == null) {
+                        // Reject a sys-img based skin if no sys img is selected
+                        break;
+                    }
+                    if (!sysImgSkins.contains(skin)) {
+                        // If a skin comes from a tagged system-image, only display
+                        // those matching the current system image.
+                        break;
+                    }
+                    if (!SystemImage.DEFAULT_TAG.equals(sysImg.getTag().getId())) {
+                        // Append the tag name if it's not the similar to the label.
+                        String display = sysImg.getTag().getDisplay();
+                        String azDisplay = display.toLowerCase(Locale.US).replaceAll("[^a-z]", "");
+                        String azLabel   = label  .toLowerCase(Locale.US).replaceAll("[^a-z]", "");
+                        if (!azLabel.contains(azDisplay)) {
+                            label = String.format("%s (%s)", label, display);
+                        }
+                    }
+                }
+                AvdSkinChoice sc = new AvdSkinChoice(SkinType.FROM_TARGET, label, skin);
+                mCurrentSkinData.add(sc);
+            }
+        }
+
+        Collections.sort(mCurrentSkinData);
+
+        mSkinCombo.removeAll();
+        for (int i = 0; i < mCurrentSkinData.size(); i++) {
+            AvdSkinChoice choice = mCurrentSkinData.get(i);
+            mSkinCombo.add(choice.getLabel());
+            if (choice == selected) {
+                mSkinCombo.select(i);
+            }
+        }
+
     }
 
     /**
@@ -869,8 +971,14 @@ public class AvdCreationDialog extends GridDialog {
             return;
         }
 
-        if (mTarget.getSelectionIndex() < 0 || !mHaveSystemImage || mTagAbi.getSelectionIndex() < 0) {
+        if (mTarget.getSelectionIndex() < 0) {
             error = "No target selected";
+            setPageValid(false, error, null);
+            return;
+        }
+
+        if (mHaveSystemImage && getSelectedAbiType() == null) {
+            error = "No CPU/ABI selected";
             setPageValid(false, error, null);
             return;
         }
@@ -903,6 +1011,13 @@ public class AvdCreationDialog extends GridDialog {
                                 target.getParent().getVersion().toString()));
                 }
             }
+        }
+
+        AvdSkinChoice skinChoice = getSelectedSkinChoice();
+        if (skinChoice == null) {
+            error = "No skin selected";
+            setPageValid(false, error, null);
+            return;
         }
 
         if (mRam.getText().isEmpty()) {
@@ -1017,7 +1132,6 @@ public class AvdCreationDialog extends GridDialog {
     }
 
     private boolean createAvd() {
-
         String avdName = mAvdName.getText();
         if (avdName == null || avdName.isEmpty()) {
             return false;
@@ -1031,6 +1145,9 @@ public class AvdCreationDialog extends GridDialog {
 
         // get the tag & abi type
         Pair<IdDisplay, String> tagAbi = getSelectedAbiType();
+        if (tagAbi == null) {
+            return false;
+        }
         IdDisplay tag = tagAbi.getFirst();
         String abiType = tagAbi.getSecond();
 
@@ -1068,8 +1185,18 @@ public class AvdCreationDialog extends GridDialog {
             return false;
         }
 
-        Screen s = device.getDefaultHardware().getScreen();
-        String skinName = s.getXDimension() + "x" + s.getYDimension();
+        File skinFolder = null;
+        String skinName = null;
+        AvdSkinChoice skinChoice = getSelectedSkinChoice();
+        if (skinChoice == null) {
+            return false;
+        }
+        if (skinChoice.hasPath()) {
+            skinFolder = skinChoice.getPath();
+        } else {
+            Screen s = device.getDefaultHardware().getScreen();
+            skinName = s.getXDimension() + "x" + s.getYDimension();
+        }
 
         ILogger log = mSdkLog;
         if (log == null || log instanceof MessageBoxLog) {
@@ -1116,7 +1243,7 @@ public class AvdCreationDialog extends GridDialog {
                         HardwareProperties.BOOLEAN_YES : HardwareProperties.BOOLEAN_NO);
 
         hwProps.put(AvdManager.AVD_INI_SKIN_DYNAMIC,
-                mSkin.getSelection() ?
+                skinChoice.getType() == SkinType.DYNAMIC ?
                         HardwareProperties.BOOLEAN_YES : HardwareProperties.BOOLEAN_NO);
 
         if (mFrontCamera.isEnabled()) {
@@ -1138,6 +1265,7 @@ public class AvdCreationDialog extends GridDialog {
                 target,
                 tag,
                 abiType,
+                skinFolder,
                 skinName,
                 sdName,
                 hwProps,
@@ -1155,19 +1283,37 @@ public class AvdCreationDialog extends GridDialog {
         return success;
     }
 
-    @NonNull
-    private Pair<IdDisplay,String> getSelectedAbiType() {
-        String abiType = SdkConstants.ABI_ARMEABI;
-        Object appData = mTagAbi.getData(ABI_SYS_IMG_DATA_KEY);
-        if (appData instanceof ISystemImage[]) {
-            int abiIndex = mTagAbi.getSelectionIndex();
-            ISystemImage[] systemImages = (ISystemImage[]) appData;
-            if (abiIndex >= 0 && abiIndex < systemImages.length) {
-                ISystemImage selected = systemImages[abiIndex];
-                return Pair.of(selected.getTag(), selected.getAbiType());
+    @Nullable
+    private AvdSkinChoice getSelectedSkinChoice() {
+        int choiceIndex = mSkinCombo.getSelectionIndex();
+        if (choiceIndex >= 0 && choiceIndex < mCurrentSkinData.size()) {
+            return mCurrentSkinData.get(choiceIndex);
+        }
+        return null;
+    }
+
+    @Nullable
+    private Pair<IdDisplay, String> getSelectedAbiType() {
+        ISystemImage selected = getSelectedSysImg();
+        if (selected != null) {
+            return Pair.of(selected.getTag(), selected.getAbiType());
+        }
+        return null;
+    }
+
+    @Nullable
+    private ISystemImage getSelectedSysImg() {
+        if (mHaveSystemImage) {
+            Object comboData = mTagAbi.getData(ABI_SYS_IMG_DATA_KEY);
+            if (comboData instanceof ISystemImage[]) {
+                int abiIndex = mTagAbi.getSelectionIndex();
+                ISystemImage[] systemImages = (ISystemImage[]) comboData;
+                if (abiIndex >= 0 && abiIndex < systemImages.length) {
+                    return systemImages[abiIndex];
+                }
             }
         }
-        return Pair.of(SystemImage.DEFAULT_TAG, abiType);
+        return null;
     }
 
     private void fillExistingAvdInfo(AvdInfo avd) {
@@ -1186,6 +1332,7 @@ public class AvdCreationDialog extends GridDialog {
             int n = mTarget.getItemCount();
             for (int i = 0; i < n; i++) {
                 if (target.equals(mCurrentTargets.get(mTarget.getItem(i)))) {
+                    // Note: combo.select does not trigger the combo's widgetSelected callback.
                     mTarget.select(i);
                     reloadTagAbiCombo();
                     break;
@@ -1201,6 +1348,7 @@ public class AvdCreationDialog extends GridDialog {
             for (int i = 0; i < n; i++) {
                 if (abiType.equals(mTagAbi.getItem(i))) {
                     mTagAbi.select(i);
+                    reloadSkinCombo();
                     break;
                 }
             }
@@ -1255,9 +1403,37 @@ public class AvdCreationDialog extends GridDialog {
             mKeyboard.setSelection(
                     HardwareProperties.BOOLEAN_YES.equalsIgnoreCase(
                             props.get(HardwareProperties.HW_KEYBOARD)));
-            mSkin.setSelection(
-                    HardwareProperties.BOOLEAN_YES.equalsIgnoreCase(
-                            props.get(AvdManager.AVD_INI_SKIN_DYNAMIC)));
+
+            SkinType defaultSkinType = SkinType.NONE;
+            // the AVD .ini skin path is relative to the SDK folder *or* is a numeric size.
+            String skinIniPath = props.get(AvdManager.AVD_INI_SKIN_PATH);
+            if (skinIniPath != null) {
+                File skinFolder = new File(mAvdManager.getLocalSdk().getLocation(), skinIniPath);
+
+                for (int i = 0; i < mCurrentSkinData.size(); i++) {
+                    if (mCurrentSkinData.get(i).hasPath() &&
+                            skinFolder.equals(mCurrentSkinData.get(i).getPath())) {
+                        mSkinCombo.select(i);
+                        defaultSkinType = null;
+                        break;
+                    }
+                }
+            }
+
+            if (defaultSkinType != null) {
+                if (HardwareProperties.BOOLEAN_YES.equalsIgnoreCase(
+                        props.get(AvdManager.AVD_INI_SKIN_DYNAMIC))) {
+                    defaultSkinType = SkinType.DYNAMIC;
+                }
+
+                for (int i = 0; i < mCurrentSkinData.size(); i++) {
+                    if (mCurrentSkinData.get(i).getType() == defaultSkinType) {
+                        mSkinCombo.select(i);
+                        break;
+                    }
+                }
+
+            }
 
             String cameraFront = props.get(AvdManager.AVD_INI_CAMERA_FRONT);
             if (cameraFront != null) {
@@ -1448,4 +1624,111 @@ public class AvdCreationDialog extends GridDialog {
                 screen.getYDimension(),
                 screen.getPixelDensity().getResourceValue());
     }
+
+    /**
+     * AVD skin type. Order defines the order of the skin combo list.
+     */
+    private enum SkinType {
+        DYNAMIC,
+        NONE,
+        FROM_TARGET,
+    }
+
+    /*
+     * Choice of AVD skin: dynamic, no skin, or one from the target.
+     * The 2 "internals" skins (dynamic and no skin) have no path.
+     * The target-based skins have a path.
+     */
+    private static class AvdSkinChoice implements Comparable<AvdSkinChoice> {
+
+        private final SkinType mType;
+        private final String mLabel;
+        private final File mPath;
+
+        AvdSkinChoice(@NonNull SkinType type, @NonNull String label) {
+            this(type, label, null);
+        }
+
+        AvdSkinChoice(@NonNull SkinType type, @NonNull String label, @NonNull File path) {
+            mType = type;
+            mLabel = label;
+            mPath = path;
+        }
+
+        @NonNull
+        public SkinType getType() {
+            return mType;
+        }
+
+        @NonNull
+        public String getLabel() {
+            return mLabel;
+        }
+
+        @Nullable
+        public File getPath() {
+            return mPath;
+        }
+
+        public boolean hasPath() {
+            return mType == SkinType.FROM_TARGET;
+        }
+
+        @Override
+        public int compareTo(AvdSkinChoice o) {
+            int t = mType.compareTo(o.mType);
+            if (t == 0) {
+                t = mLabel.compareTo(o.mLabel);
+            }
+            if (t == 0 && mPath != null && o.mPath != null) {
+                t = mPath.compareTo(o.mPath);
+            }
+            return t;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((mType == null) ? 0 : mType.hashCode());
+            result = prime * result + ((mLabel == null) ? 0 : mLabel.hashCode());
+            result = prime * result + ((mPath == null) ? 0 : mPath.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof AvdSkinChoice)) {
+                return false;
+            }
+            AvdSkinChoice other = (AvdSkinChoice) obj;
+            if (mType != other.mType) {
+                return false;
+            }
+            if (mLabel == null) {
+                if (other.mLabel != null) {
+                    return false;
+                }
+            } else if (!mLabel.equals(other.mLabel)) {
+                return false;
+            }
+            if (mPath == null) {
+                if (other.mPath != null) {
+                    return false;
+                }
+            } else if (!mPath.equals(other.mPath)) {
+                return false;
+            }
+            return true;
+        }
+
+
+    }
+
 }

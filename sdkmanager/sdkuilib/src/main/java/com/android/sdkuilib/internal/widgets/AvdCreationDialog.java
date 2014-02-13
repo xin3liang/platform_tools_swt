@@ -17,12 +17,14 @@
 package com.android.sdkuilib.internal.widgets;
 
 import com.android.SdkConstants;
+import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.android.resources.Density;
 import com.android.resources.ScreenSize;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.ISystemImage;
+import com.android.sdklib.SystemImage;
 import com.android.sdklib.devices.Camera;
 import com.android.sdklib.devices.CameraLocation;
 import com.android.sdklib.devices.Device;
@@ -35,6 +37,7 @@ import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdklib.internal.avd.AvdManager.AvdConflict;
 import com.android.sdklib.internal.avd.HardwareProperties;
+import com.android.sdklib.repository.descriptors.IdDisplay;
 import com.android.sdklib.repository.local.LocalSdk;
 import com.android.sdkuilib.internal.repository.icons.ImageFactory;
 import com.android.sdkuilib.ui.GridDialog;
@@ -74,6 +77,8 @@ import java.util.regex.Pattern;
 
 public class AvdCreationDialog extends GridDialog {
 
+    private static final String ABI_SYS_IMG_DATA_KEY = "systemImagesData";  //$NON-NLS-1$
+
     private AvdManager mAvdManager;
     private ImageFactory mImageFactory;
     private ILogger mSdkLog;
@@ -90,7 +95,7 @@ public class AvdCreationDialog extends GridDialog {
     private Combo mDevice;
 
     private Combo mTarget;
-    private Combo mAbi;
+    private Combo mTagAbi;
 
     private Button mKeyboard;
     private Button mSkin;
@@ -214,7 +219,7 @@ public class AvdCreationDialog extends GridDialog {
         mTarget.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                reloadAbiTypeCombo();
+                reloadTagAbiCombo();
                 validatePage();
             }
         });
@@ -226,10 +231,10 @@ public class AvdCreationDialog extends GridDialog {
         label.setText("CPU/ABI:");
         tooltip = "The CPU/ABI of the virtual device";
         label.setToolTipText(tooltip);
-        mAbi = new Combo(parent, SWT.READ_ONLY | SWT.DROP_DOWN);
-        mAbi.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        mAbi.setToolTipText(tooltip);
-        mAbi.addSelectionListener(validateListener);
+        mTagAbi = new Combo(parent, SWT.READ_ONLY | SWT.DROP_DOWN);
+        mTagAbi.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        mTagAbi.setToolTipText(tooltip);
+        mTagAbi.addSelectionListener(validateListener);
 
         label = new Label(parent, SWT.NONE);
         label.setText("Keyboard:");
@@ -663,7 +668,7 @@ public class AvdCreationDialog extends GridDialog {
 
                 if (bestTarget != null) {
                     selectTarget(bestTarget);
-                    reloadAbiTypeCombo();
+                    reloadTagAbiCombo();
                 }
             }
         }
@@ -758,7 +763,7 @@ public class AvdCreationDialog extends GridDialog {
     /**
      * Reload all the abi types in the selection list
      */
-    private void reloadAbiTypeCombo() {
+    private void reloadTagAbiCombo() {
         String selected = null;
         boolean found = false;
 
@@ -769,36 +774,40 @@ public class AvdCreationDialog extends GridDialog {
 
             ISystemImage[] systemImages = getSystemImages(target);
 
-            mAbi.setEnabled(systemImages.length > 1);
+            // keep a reference to the array into the combo app data field
+            // so that we can lookup the tag/abi later in getSelectedAbiType()
+            mTagAbi.setData(ABI_SYS_IMG_DATA_KEY, systemImages);
+
+            mTagAbi.setEnabled(systemImages.length > 1);
 
             // If user explicitly selected an ABI before, preserve that option
             // If user did not explicitly select before (only one option before)
             // force them to select
-            index = mAbi.getSelectionIndex();
-            if (index >= 0 && mAbi.getItemCount() > 1) {
-                selected = mAbi.getItem(index);
+            index = mTagAbi.getSelectionIndex();
+            if (index >= 0 && mTagAbi.getItemCount() > 1) {
+                selected = mTagAbi.getItem(index);
             }
 
-            mAbi.removeAll();
+            mTagAbi.removeAll();
 
             int i;
             for (i = 0; i < systemImages.length; i++) {
-                String prettyAbiType = AvdInfo.getPrettyAbiType(systemImages[i].getAbiType());
-                mAbi.add(prettyAbiType);
+                String prettyAbiType = AvdInfo.getPrettyAbiType(systemImages[i]);
+                mTagAbi.add(prettyAbiType);
                 if (!found) {
                     found = prettyAbiType.equals(selected);
                     if (found) {
-                        mAbi.select(i);
+                        mTagAbi.select(i);
                     }
                 }
             }
 
             mHaveSystemImage = systemImages.length > 0;
             if (!mHaveSystemImage) {
-                mAbi.add("No system images installed for this target.");
-                mAbi.select(0);
+                mTagAbi.add("No system images installed for this target.");
+                mTagAbi.select(0);
             } else if (systemImages.length == 1) {
-                mAbi.select(0);
+                mTagAbi.select(0);
             }
         }
     }
@@ -860,7 +869,7 @@ public class AvdCreationDialog extends GridDialog {
             return;
         }
 
-        if (mTarget.getSelectionIndex() < 0 || !mHaveSystemImage || mAbi.getSelectionIndex() < 0) {
+        if (mTarget.getSelectionIndex() < 0 || !mHaveSystemImage || mTagAbi.getSelectionIndex() < 0) {
             error = "No target selected";
             setPageValid(false, error, null);
             return;
@@ -877,17 +886,19 @@ public class AvdCreationDialog extends GridDialog {
                 // platform and it wouldn't have been loaded properly if the platform were
                 // missing so we don't need to double-check that part here.
 
-                String abiType = getSelectedAbiType(target);
+                Pair<IdDisplay, String> tagAbi = getSelectedAbiType();
+                IdDisplay tag = tagAbi.getFirst();
+                String abiType = tagAbi.getSecond();
                 if (abiType != null &&
                         !abiType.isEmpty() &&
-                        target.getParent().getSystemImage(abiType) == null) {
+                        target.getParent().getSystemImage(tag, abiType) == null) {
                     // We have a system-image requirement but there is no such system image
                     // loaded in the parent platform. This AVD won't run properly.
                     warnings.add(
                             String.format(
                                 "This AVD may not work unless you install the %1$s system image " +
                                 "for %2$s (%3$s) first.",
-                                abiType,
+                                AvdInfo.getPrettyAbiType(tag, abiType),
                                 target.getParent().getName(),
                                 target.getParent().getVersion().toString()));
                 }
@@ -1018,8 +1029,10 @@ public class AvdCreationDialog extends GridDialog {
             return false;
         }
 
-        // get the abi type
-        String abiType = getSelectedAbiType(target);
+        // get the tag & abi type
+        Pair<IdDisplay, String> tagAbi = getSelectedAbiType();
+        IdDisplay tag = tagAbi.getFirst();
+        String abiType = tagAbi.getSecond();
 
         // get the SD card data from the UI.
         String sdName = null;
@@ -1123,6 +1136,7 @@ public class AvdCreationDialog extends GridDialog {
         AvdInfo avdInfo = mAvdManager.createAvd(avdFolder,
                 avdName,
                 target,
+                tag,
                 abiType,
                 skinName,
                 sdName,
@@ -1141,20 +1155,19 @@ public class AvdCreationDialog extends GridDialog {
         return success;
     }
 
-    private String getSelectedAbiType(IAndroidTarget target) {
+    @NonNull
+    private Pair<IdDisplay,String> getSelectedAbiType() {
         String abiType = SdkConstants.ABI_ARMEABI;
-        ISystemImage[] systemImages = getSystemImages(target);
-        if (systemImages.length > 0) {
-            int abiIndex = mAbi.getSelectionIndex();
-            if (abiIndex >= 0) {
-                String prettyname = mAbi.getItem(abiIndex);
-                // Extract the abi type
-                int firstIndex = prettyname.indexOf("(");
-                int lastIndex = prettyname.indexOf(")");
-                abiType = prettyname.substring(firstIndex + 1, lastIndex);
+        Object appData = mTagAbi.getData(ABI_SYS_IMG_DATA_KEY);
+        if (appData instanceof ISystemImage[]) {
+            int abiIndex = mTagAbi.getSelectionIndex();
+            ISystemImage[] systemImages = (ISystemImage[]) appData;
+            if (abiIndex >= 0 && abiIndex < systemImages.length) {
+                ISystemImage selected = systemImages[abiIndex];
+                return Pair.of(selected.getTag(), selected.getAbiType());
             }
         }
-        return abiType;
+        return Pair.of(SystemImage.DEFAULT_TAG, abiType);
     }
 
     private void fillExistingAvdInfo(AvdInfo avd) {
@@ -1174,7 +1187,7 @@ public class AvdCreationDialog extends GridDialog {
             for (int i = 0; i < n; i++) {
                 if (target.equals(mCurrentTargets.get(mTarget.getItem(i)))) {
                     mTarget.select(i);
-                    reloadAbiTypeCombo();
+                    reloadTagAbiCombo();
                     break;
                 }
             }
@@ -1182,12 +1195,12 @@ public class AvdCreationDialog extends GridDialog {
 
         ISystemImage[] systemImages = getSystemImages(target);
         if (target != null && systemImages.length > 0) {
-            mAbi.setEnabled(systemImages.length > 1);
-            String abiType = AvdInfo.getPrettyAbiType(avd.getAbiType());
-            int n = mAbi.getItemCount();
+            mTagAbi.setEnabled(systemImages.length > 1);
+            String abiType = AvdInfo.getPrettyAbiType(avd.getTag(), avd.getAbiType());
+            int n = mTagAbi.getItemCount();
             for (int i = 0; i < n; i++) {
-                if (abiType.equals(mAbi.getItem(i))) {
-                    mAbi.select(i);
+                if (abiType.equals(mTagAbi.getItem(i))) {
+                    mTagAbi.select(i);
                     break;
                 }
             }
@@ -1315,7 +1328,7 @@ public class AvdCreationDialog extends GridDialog {
         // a likely default.
         if (mTarget.getItemCount() == 1) {
             mTarget.select(0);
-            reloadAbiTypeCombo();
+            reloadTagAbiCombo();
         }
 
         fillDeviceProperties(device);

@@ -21,12 +21,14 @@ import com.android.io.FileWrapper;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.ISystemImage;
+import com.android.sdklib.SystemImage;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdklib.internal.avd.AvdManager.AvdConflict;
 import com.android.sdklib.internal.avd.HardwareProperties;
 import com.android.sdklib.internal.avd.HardwareProperties.HardwareProperty;
 import com.android.sdklib.internal.project.ProjectProperties;
+import com.android.sdklib.repository.descriptors.IdDisplay;
 import com.android.sdklib.repository.local.LocalSdk;
 import com.android.sdkuilib.internal.repository.icons.ImageFactory;
 import com.android.sdkuilib.ui.GridDialog;
@@ -82,12 +84,11 @@ import java.util.regex.Matcher;
 /**
  * AVD creation or edit dialog.
  *
- * TODO:
- * - use SdkTargetSelector instead of Combo
- * - tooltips on widgets.
- *
+ * @deprecated Replaced by {@link AvdCreationDialog}
  */
 final class LegacyAvdEditDialog extends GridDialog {
+
+    private static final String ABI_SYS_IMG_DATA_KEY = "systemImagesData";  //$NON-NLS-1$
 
     private final AvdManager mAvdManager;
     private final TreeMap<String, IAndroidTarget> mCurrentTargets =
@@ -108,7 +109,7 @@ final class LegacyAvdEditDialog extends GridDialog {
     private Text mAvdName;
     private Combo mTargetCombo;
 
-    private Combo mAbiTypeCombo;
+    private Combo mTagAbiCombo;
     private String mAbiType;
 
     private Button mSdCardSizeRadio;
@@ -302,7 +303,7 @@ final class LegacyAvdEditDialog extends GridDialog {
             public void widgetSelected(SelectionEvent e) {
                 super.widgetSelected(e);
                 reloadSkinCombo();
-                reloadAbiTypeCombo();
+                reloadTagAbiCombo();
                 validatePage();
             }
         });
@@ -313,17 +314,17 @@ final class LegacyAvdEditDialog extends GridDialog {
         tooltip = "The CPU/ABI to use in the virtual device";
         label.setToolTipText(tooltip);
 
-         mAbiTypeCombo = new Combo(parent, SWT.READ_ONLY | SWT.DROP_DOWN);
-         mAbiTypeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-         mAbiTypeCombo.setToolTipText(tooltip);
-         mAbiTypeCombo.addSelectionListener(new SelectionAdapter() {
+         mTagAbiCombo = new Combo(parent, SWT.READ_ONLY | SWT.DROP_DOWN);
+         mTagAbiCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+         mTagAbiCombo.setToolTipText(tooltip);
+         mTagAbiCombo.addSelectionListener(new SelectionAdapter() {
          @Override
          public void widgetSelected(SelectionEvent e) {
                      super.widgetSelected(e);
                      validatePage();
                  }
          });
-         mAbiTypeCombo.setEnabled(false);
+         mTagAbiCombo.setEnabled(false);
 
         // --- sd card group
         label = new Label(parent, SWT.NONE);
@@ -740,7 +741,7 @@ final class LegacyAvdEditDialog extends GridDialog {
             for (int i = 0;i < n; i++) {
                 if (target.equals(mCurrentTargets.get(mTargetCombo.getItem(i)))) {
                     mTargetCombo.select(i);
-                    reloadAbiTypeCombo();
+                    reloadTagAbiCombo();
                     reloadSkinCombo();
                     break;
                 }
@@ -750,12 +751,12 @@ final class LegacyAvdEditDialog extends GridDialog {
         // select the abi type
         ISystemImage[] systemImages = getSystemImages(target);
         if (target != null && systemImages.length > 0) {
-            mAbiTypeCombo.setEnabled(systemImages.length > 1);
-            String abiType = AvdInfo.getPrettyAbiType(mEditAvdInfo.getAbiType());
-            int n = mAbiTypeCombo.getItemCount();
+            mTagAbiCombo.setEnabled(systemImages.length > 1);
+            String abiType = AvdInfo.getPrettyAbiType(mEditAvdInfo);
+            int n = mTagAbiCombo.getItemCount();
             for (int i = 0; i < n; i++) {
-                if (abiType.equals(mAbiTypeCombo.getItem(i))) {
-                    mAbiTypeCombo.select(i);
+                if (abiType.equals(mTagAbiCombo.getItem(i))) {
+                    mTagAbiCombo.select(i);
                     reloadSkinCombo();
                     break;
                 }
@@ -988,7 +989,7 @@ final class LegacyAvdEditDialog extends GridDialog {
     /**
     * Reload all the abi types in the selection list
     */
-    private void reloadAbiTypeCombo() {
+    private void reloadTagAbiCombo() {
        String selected = null;
        boolean found = false;
 
@@ -999,32 +1000,36 @@ final class LegacyAvdEditDialog extends GridDialog {
 
            ISystemImage[] systemImages = getSystemImages(target);
 
-           mAbiTypeCombo.setEnabled(systemImages.length > 1);
+           // keep a reference to the array into the combo app data field
+           // so that we can lookup the tag/abi later in getSelectedAbiType()
+           mTagAbiCombo.setData(ABI_SYS_IMG_DATA_KEY, systemImages);
+
+           mTagAbiCombo.setEnabled(systemImages.length > 1);
 
            // If user explicitly selected an ABI before, preserve that option
            // If user did not explicitly select before (only one option before)
            // force them to select
-           index = mAbiTypeCombo.getSelectionIndex();
-           if (index >= 0 && mAbiTypeCombo.getItemCount() > 1) {
-               selected = mAbiTypeCombo.getItem(index);
+           index = mTagAbiCombo.getSelectionIndex();
+           if (index >= 0 && mTagAbiCombo.getItemCount() > 1) {
+               selected = mTagAbiCombo.getItem(index);
            }
 
-           mAbiTypeCombo.removeAll();
+           mTagAbiCombo.removeAll();
 
            int i;
            for ( i = 0; i < systemImages.length ; i++ ) {
-               String prettyAbiType = AvdInfo.getPrettyAbiType(systemImages[i].getAbiType());
-               mAbiTypeCombo.add(prettyAbiType);
+               String prettyAbiType = AvdInfo.getPrettyAbiType(systemImages[i]);
+               mTagAbiCombo.add(prettyAbiType);
                if (!found) {
                    found = prettyAbiType.equals(selected);
                    if (found) {
-                       mAbiTypeCombo.select(i);
+                       mTagAbiCombo.select(i);
                    }
                }
            }
 
            if (systemImages.length == 1) {
-               mAbiTypeCombo.select(0);
+               mTagAbiCombo.select(0);
            }
        }
     }
@@ -1059,7 +1064,7 @@ final class LegacyAvdEditDialog extends GridDialog {
             String targetName = mTargetCombo.getItem(index);
             IAndroidTarget target = mCurrentTargets.get(targetName);
             ISystemImage[] systemImages = getSystemImages(target);
-            if (systemImages.length > 1 && mAbiTypeCombo.getSelectionIndex() < 0) {
+            if (systemImages.length > 1 && mTagAbiCombo.getSelectionIndex() < 0) {
                error = "An ABI type must be selected in order to create an AVD.";
             }
         }
@@ -1295,17 +1300,17 @@ final class LegacyAvdEditDialog extends GridDialog {
             return false;
         }
 
-        // get the abi type
+        // get the tag & abi type
+        IdDisplay tag = SystemImage.DEFAULT_TAG;
         mAbiType = SdkConstants.ABI_ARMEABI;
-        ISystemImage[] systemImages = getSystemImages(target);
-        if (systemImages.length > 0) {
-            int abiIndex = mAbiTypeCombo.getSelectionIndex();
-            if (abiIndex >= 0) {
-                String prettyname = mAbiTypeCombo.getItem(abiIndex);
-                //Extract the abi type
-                int firstIndex = prettyname.indexOf("(");
-                int lastIndex = prettyname.indexOf(")");
-                mAbiType = prettyname.substring(firstIndex+1, lastIndex);
+        Object appData = mTagAbiCombo.getData(ABI_SYS_IMG_DATA_KEY);
+        if (appData instanceof ISystemImage[]) {
+            int abiIndex = mTagAbiCombo.getSelectionIndex();
+            ISystemImage[] systemImages = (ISystemImage[]) appData;
+            if (abiIndex >= 0 && abiIndex < systemImages.length) {
+                ISystemImage systemImage = systemImages[abiIndex];
+                tag = systemImage.getTag();
+                mAbiType = systemImage.getAbiType();
             }
         }
 
@@ -1377,6 +1382,7 @@ final class LegacyAvdEditDialog extends GridDialog {
                 avdFolder,
                 avdName,
                 target,
+                tag,
                 mAbiType,
                 skinName,
                 sdName,

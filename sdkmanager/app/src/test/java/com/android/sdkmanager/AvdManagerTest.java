@@ -20,6 +20,7 @@ import com.android.SdkConstants;
 import com.android.io.FileWrapper;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.SdkManagerTestCase;
+import com.android.sdklib.SystemImage;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.project.ProjectProperties;
 
@@ -50,6 +51,7 @@ public class AvdManagerTest extends SdkManagerTestCase {
                 mAvdFolder,
                 this.getName(),
                 mTarget,
+                SystemImage.DEFAULT_TAG,
                 SdkConstants.ABI_ARMEABI,
                 null,   // skinName
                 null,   // sdName
@@ -81,6 +83,7 @@ public class AvdManagerTest extends SdkManagerTestCase {
                 mAvdFolder,
                 this.getName(),
                 mTarget,
+                SystemImage.DEFAULT_TAG,
                 SdkConstants.ABI_ARMEABI,
                 null,   // skinName
                 null,   // sdName

@@ -19,8 +19,8 @@ package com.android.sdkuilib.internal.widgets;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.internal.avd.AvdInfo;
-import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus;
+import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdkuilib.ui.GridDataBuilder;
 import com.android.sdkuilib.ui.GridLayoutBuilder;
 import com.android.sdkuilib.ui.SwtBaseDialog;
@@ -65,7 +65,7 @@ final class AvdDetailsDialog extends SwtBaseDialog {
 
         if (mAvdInfo != null) {
             displayValue(c, "Name:", mAvdInfo.getName());
-            displayValue(c, "CPU/ABI:", AvdInfo.getPrettyAbiType(mAvdInfo.getAbiType()));
+            displayValue(c, "CPU/ABI:", AvdInfo.getPrettyAbiType(mAvdInfo));
 
             displayValue(c, "Path:", mAvdInfo.getDataFolderPath());
 

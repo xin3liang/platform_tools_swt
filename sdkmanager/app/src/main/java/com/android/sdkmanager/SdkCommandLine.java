@@ -85,6 +85,7 @@ class SdkCommandLine extends CommandLineParser {
     public static final String KEY_SNAPSHOT         = "snapshot";                   //$NON-NLS-1$
     public static final String KEY_COMPACT          = "compact";                    //$NON-NLS-1$
     public static final String KEY_EOL_NULL         = "null";                       //$NON-NLS-1$
+    public static final String KEY_TAG              = "tag";                        //$NON-NLS-1$
     public static final String KEY_ABI              = "abi";                        //$NON-NLS-1$
     public static final String KEY_ACCOUNT          = "account";                    //$NON-NLS-1$
     public static final String KEY_KEYSTORE         = "keystore";                   //$NON-NLS-1$
@@ -222,8 +223,12 @@ class SdkCommandLine extends CommandLineParser {
                 VERB_CREATE, OBJECT_AVD, "a", KEY_SNAPSHOT,                         //$NON-NLS-1$
                 "Place a snapshots file in the AVD, to enable persistence.", false);
         define(Mode.STRING, false,
-                VERB_CREATE, OBJECT_AVD, "b", KEY_ABI,                           //$NON-NLS-1$
+                VERB_CREATE, OBJECT_AVD, "b", KEY_ABI,                              //$NON-NLS-1$
                 "The ABI to use for the AVD. The default is to auto-select the ABI if the platform has only one ABI for its system images.",
+                null);
+        define(Mode.STRING, false,
+                VERB_CREATE, OBJECT_AVD, "g", KEY_TAG,                              //$NON-NLS-1$
+                "The sys-img tag to use for the AVD. The default is to auto-select if the platform has only one tag for its system images.",
                 null);
 
         // --- delete avd ---
@@ -602,6 +607,10 @@ class SdkCommandLine extends CommandLineParser {
     /** Helper to retrieve the --abi value. */
     public String getParamAbi() {
         return ((String) getValue(null, null, KEY_ABI));
+    }
+    /** Helper to retrieve the --tag value. */
+    public String getParamTag() {
+        return ((String) getValue(null, null, KEY_TAG));
     }
 
     /** Helper to retrieve the --proxy-host value. */

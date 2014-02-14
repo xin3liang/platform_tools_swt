@@ -67,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -966,22 +967,22 @@ public class Main {
     }
 
     /**
-     * Displays the skins valid for the given target.
+     * Displays the skins names valid for the given target.
      */
     @VisibleForTesting(visibility=Visibility.PRIVATE)
     void displaySkinList(IAndroidTarget target, String message) {
-        String[] skins = target.getSkins();
-        String defaultSkin = target.getDefaultSkin();
+        File[] skins = target.getSkins();
+        File defaultSkin = target.getDefaultSkin();
         mSdkLog.info(message);
         if (skins != null) {
             boolean first = true;
-            for (String skin : skins) {
+            for (File skin : skins) {
                 if (first == false) {
                     mSdkLog.info(", ");
                 } else {
                     first = false;
                 }
-                mSdkLog.info(skin);
+                mSdkLog.info(skin.getName());
 
                 if (skin.equals(defaultSkin)) {
                     mSdkLog.info(" (default)");
@@ -1169,26 +1170,26 @@ public class Main {
 
             // Validate skin is either default (empty) or NNNxMMM or a valid skin name.
             Map<String, String> skinHardwareConfig = null;
-            String skin = mSdkCommandLine.getParamSkin();
-            if (skin != null && skin.length() == 0) {
-                skin = null;
+            File skinFolder = null;
+            String skinName = mSdkCommandLine.getParamSkin();
+            if (skinName != null && skinName.length() == 0) {
+                skinName = null;
             }
 
-            if (skin != null && target != null) {
+            if (skinName != null && target != null) {
                 boolean valid = false;
                 // Is it a know skin name for this target?
-                for (String s : target.getSkins()) {
-                    if (skin.equalsIgnoreCase(s)) {
-                        skin = s;  // Make skin names case-insensitive.
+                for (File skin : target.getSkins()) {
+                    if (skin.getName().equalsIgnoreCase(skinName)) {
+                        skinFolder = skin;
+                        skinName = skinName.toLowerCase(Locale.US);  // names are case-insensitive.
                         valid = true;
 
                         // get the hardware properties for this skin
-                        File skinFolder = avdManager.getSkinPath(skin, target);
-                        FileWrapper skinHardwareFile = new FileWrapper(skinFolder,
-                                AvdManager.HARDWARE_INI);
-                        if (skinHardwareFile.isFile()) {
-                            skinHardwareConfig = ProjectProperties.parsePropertyFile(
-                                    skinHardwareFile, mSdkLog);
+                        FileWrapper hwIni = new FileWrapper(skin, AvdManager.HARDWARE_INI);
+                        if (hwIni.isFile()) {
+                            skinHardwareConfig =
+                                ProjectProperties.parsePropertyFile( hwIni, mSdkLog);
                         }
                         break;
                     }
@@ -1196,14 +1197,18 @@ public class Main {
 
                 // Is it NNNxMMM?
                 if (!valid) {
-                    valid = AvdManager.NUMERIC_SKIN_SIZE.matcher(skin).matches();
+                    valid = AvdManager.NUMERIC_SKIN_SIZE.matcher(skinName).matches();
                 }
 
                 if (!valid) {
                     displaySkinList(target, "Valid skins: ");
-                    errorAndExit("'%s' is not a valid skin name or size (NNNxMMM)", skin);
+                    errorAndExit("'%s' is not a valid skin name or size (NNNxMMM)", skinName);
                     return;
                 }
+
+                // Note: at this point either skinFolder is not null
+                // or skinName is a valid NNNxMMM pattern
+                // or they are both null.
             }
 
             IdDisplay tag = SystemImage.DEFAULT_TAG;
@@ -1259,7 +1264,8 @@ public class Main {
                     target,
                     tag,
                     abiType,
-                    skin,
+                    skinFolder,
+                    skinName,
                     mSdkCommandLine.getParamSdCard(),
                     hardwareConfig,
                     mSdkCommandLine.getFlagSnapshot(),

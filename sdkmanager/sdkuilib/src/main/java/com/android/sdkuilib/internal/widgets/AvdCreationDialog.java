@@ -871,7 +871,7 @@ public class AvdCreationDialog extends GridDialog {
             }
 
             // path of sdk/system-images
-            String sdkSysImgPath = new File(mAvdManager.getLocalSdk().getLocation(),
+            String sdkSysImgPath = new File(mAvdManager.getSdkManager().getLocation(),
                                             SdkConstants.FD_SYSTEM_IMAGES).getAbsolutePath();
 
             for (File skin : target.getSkins()) {
@@ -1409,7 +1409,7 @@ public class AvdCreationDialog extends GridDialog {
             // the AVD .ini skin path is relative to the SDK folder *or* is a numeric size.
             String skinIniPath = props.get(AvdManager.AVD_INI_SKIN_PATH);
             if (skinIniPath != null) {
-                File skinFolder = new File(mAvdManager.getLocalSdk().getLocation(), skinIniPath);
+                File skinFolder = new File(mAvdManager.getSdkManager().getLocation(), skinIniPath);
 
                 for (int i = 0; i < mCurrentSkinData.size(); i++) {
                     if (mCurrentSkinData.get(i).hasPath() &&

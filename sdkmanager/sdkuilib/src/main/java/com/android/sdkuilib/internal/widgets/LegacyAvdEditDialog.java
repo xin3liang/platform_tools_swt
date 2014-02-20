@@ -1392,6 +1392,7 @@ final class LegacyAvdEditDialog extends GridDialog {
                 skinName,
                 sdName,
                 mProperties,
+                null, // bootProps
                 snapshot,
                 force,
                 mEditAvdInfo != null, //edit existing

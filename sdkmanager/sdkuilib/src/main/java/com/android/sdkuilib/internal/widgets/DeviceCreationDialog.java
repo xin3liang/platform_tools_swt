@@ -33,6 +33,7 @@ import com.android.sdklib.devices.Camera;
 import com.android.sdklib.devices.CameraLocation;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
+import com.android.sdklib.devices.DeviceManager.DeviceFilter;
 import com.android.sdklib.devices.Hardware;
 import com.android.sdklib.devices.Multitouch;
 import com.android.sdklib.devices.Network;
@@ -143,7 +144,7 @@ public class DeviceCreationDialog extends GridDialog {
         mImageFactory = imageFactory;
         mDevice = device;
         mManager = manager;
-        mUserDevices = mManager.getDevices(DeviceManager.USER_DEVICES);
+        mUserDevices = mManager.getDevices(DeviceFilter.USER);
     }
 
     /**

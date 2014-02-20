@@ -93,7 +93,8 @@ public class SdkManagerTest extends SdkManagerTestCase {
                 null,   // skinFolder
                 null,   // skinName
                 null,   // sdName
-                null,   // properties
+                null,   // hardware properties
+                null,   // bootProps
                 false,  // createSnapshot
                 false,  // removePrevious
                 false,  // editExisting
@@ -124,8 +125,9 @@ public class SdkManagerTest extends SdkManagerTestCase {
                 null,   // skinFolder
                 null,   // skinName
                 null,   // sdName
-                null,   // properties
-                true,  // createSnapshot
+                null,   // hardware properties
+                null,   // bootProps
+                true,   // createSnapshot
                 false,  // removePrevious
                 false,  // editExisting
                 getLog());

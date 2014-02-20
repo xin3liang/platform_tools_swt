@@ -23,9 +23,11 @@ import com.android.sdklib.SdkManagerTestCase;
 import com.android.sdklib.SystemImage;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.project.ProjectProperties;
+import com.google.common.collect.Maps;
 
 import java.io.File;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class AvdManagerTest extends SdkManagerTestCase {
 
@@ -56,7 +58,8 @@ public class AvdManagerTest extends SdkManagerTestCase {
                 null,   // skinFolder
                 null,   // skinName
                 null,   // sdName
-                null,   // properties
+                null,   // hardware properties
+                null,   // bootProps
                 false,  // createSnapshot
                 false,  // removePrevious
                 false,  // editExisting
@@ -68,6 +71,7 @@ public class AvdManagerTest extends SdkManagerTestCase {
                 new File(mAvdFolder, "config.ini").exists());
         Map<String, String> map = ProjectProperties.parsePropertyFile(
                 new FileWrapper(mAvdFolder, "config.ini"), getLog());
+        assertFalse(new File(mAvdFolder, "boot.prop").exists());
         assertEquals("HVGA", map.get("skin.name"));
         assertEquals("platforms/v0_0/skins/HVGA", map.get("skin.path").replace(File.separatorChar, '/'));
         assertEquals("platforms/v0_0/images/", map.get("image.sysdir.1").replace(File.separatorChar, '/'));
@@ -79,7 +83,6 @@ public class AvdManagerTest extends SdkManagerTestCase {
     }
 
     public void testCreateAvdWithSnapshot() {
-
         getAvdManager().createAvd(
                 mAvdFolder,
                 this.getName(),
@@ -89,7 +92,8 @@ public class AvdManagerTest extends SdkManagerTestCase {
                 null,   // skinFolder
                 null,   // skinName
                 null,   // sdName
-                null,   // properties
+                null,   // hardware properties
+                null,   // bootProps
                 true,   // createSnapshot
                 false,  // removePrevious
                 false,  // editExisting
@@ -102,5 +106,38 @@ public class AvdManagerTest extends SdkManagerTestCase {
         Map<String, String> map = ProjectProperties.parsePropertyFile(
                 new FileWrapper(mAvdFolder, "config.ini"), getLog());
         assertEquals("true", map.get("snapshot.present"));
+        assertFalse(new File(mAvdFolder, "boot.prop").exists());
+    }
+
+    public void testCreateAvdWithBootProps() {
+
+        Map<String, String> expected = Maps.newTreeMap();
+        expected.put("ro.build.display.id", "sdk-eng 4.3 JB_MR2 774058 test-keys");
+        expected.put("ro.board.platform",   "");
+        expected.put("ro.build.tags",       "test-keys");
+
+        getAvdManager().createAvd(
+                mAvdFolder,
+                this.getName(),
+                mTarget,
+                SystemImage.DEFAULT_TAG,
+                SdkConstants.ABI_ARMEABI,
+                null,   // skinFolder
+                null,   // skinName
+                null,   // sdName
+                null,   // hardware properties
+                expected,
+                false,  // createSnapshot
+                false,  // removePrevious
+                false,  // editExisting
+                getLog());
+
+        assertEquals("P Created AVD '" + this.getName() + "' based on Android 0.0, ARM (armeabi) processor\n",
+                getLog().toString());
+        assertTrue(new File(mAvdFolder, "boot.prop").exists());
+        Map<String, String> actual = ProjectProperties.parsePropertyFile(
+                new FileWrapper(mAvdFolder, "boot.prop"), getLog());
+        // use a tree map to make sure test order is consistent
+        assertEquals(expected.toString(), new TreeMap<String, String>(actual).toString());
     }
 }

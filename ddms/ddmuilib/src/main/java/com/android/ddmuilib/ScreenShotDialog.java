@@ -125,10 +125,12 @@ public class ScreenShotDialog extends Dialog {
                 // so to preserve the current rotation we must call getRotated()
                 // the same number of times the user has done it manually.
                 // TODO: improve the RawImage class.
-                for (int i=0; i < mRotateCount; i++) {
-                    mRawImage = mRawImage.getRotated();
+                if (mRawImage != null) {
+                    for (int i = 0; i < mRotateCount; i++) {
+                        mRawImage = mRawImage.getRotated();
+                    }
+                    updateImageDisplay(shell);
                 }
-                updateImageDisplay(shell);
             }
         });
 

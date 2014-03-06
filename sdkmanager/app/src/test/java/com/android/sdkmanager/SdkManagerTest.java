@@ -57,8 +57,12 @@ public class SdkManagerTest extends SdkManagerTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        makeSystemImageFolder(TARGET_DIR_NAME_0, "tag-1", "x86");
-        makeSystemImageFolder(TARGET_DIR_NAME_0, "tag-1", "armeabi");
+
+        // add 2 tag/abi folders with a new skin each
+        File siX86 = makeSystemImageFolder(TARGET_DIR_NAME_0, "tag-1", "x86");
+        makeFakeSkin(siX86, "Tag1X86Skin");
+        File siArm = makeSystemImageFolder(TARGET_DIR_NAME_0, "tag-1", "armeabi");
+        makeFakeSkin(siArm, "Tag1ArmSkin");
 
         mTarget = getSdkManager().getTargets()[0];
         mAvdFolder = AvdInfo.getDefaultAvdFolder(getAvdManager(), getName());
@@ -74,7 +78,7 @@ public class SdkManagerTest extends SdkManagerTestCase {
         main.setLogger(getLog());
         getLog().clear();
         main.displayAvdList(getAvdManager());
-        assertEquals("[P Available Android Virtual Devices:\n]", getLog().toString());
+        assertEquals("P Available Android Virtual Devices:\n", getLog().toString());
     }
 
     public void testDisplayAvdList_OneNonSnapshot() {
@@ -86,6 +90,7 @@ public class SdkManagerTest extends SdkManagerTestCase {
                 mTarget,
                 SystemImage.DEFAULT_TAG,
                 SdkConstants.ABI_ARMEABI,
+                null,   // skinFolder
                 null,   // skinName
                 null,   // sdName
                 null,   // properties
@@ -97,13 +102,12 @@ public class SdkManagerTest extends SdkManagerTestCase {
         getLog().clear();
         main.displayAvdList(getAvdManager());
         assertEquals(
-                "[P Available Android Virtual Devices:\n"
-                + ", P     Name: " + this.getName() + "\n"
-                + ", P     Path: " + mAvdFolder + "\n"
-                + ", P   Target: Android 0.0 (API level 0)\n"
-                + ", P  Tag/ABI: default/armeabi\n"
-                + ", P     Skin: HVGA\n"
-                + "]",
+                "P Available Android Virtual Devices:\n" +
+                "P     Name: " + this.getName() + "\n" +
+                "P     Path: " + mAvdFolder + "\n" +
+                "P   Target: Android 0.0 (API level 0)\n" +
+                "P  Tag/ABI: default/armeabi\n" +
+                "P     Skin: HVGA\n",
                 getLog().toString());
     }
 
@@ -117,6 +121,7 @@ public class SdkManagerTest extends SdkManagerTestCase {
                 mTarget,
                 SystemImage.DEFAULT_TAG,
                 SdkConstants.ABI_ARMEABI,
+                null,   // skinFolder
                 null,   // skinName
                 null,   // sdName
                 null,   // properties
@@ -128,14 +133,13 @@ public class SdkManagerTest extends SdkManagerTestCase {
         getLog().clear();
         main.displayAvdList(getAvdManager());
         assertEquals(
-                "[P Available Android Virtual Devices:\n"
-                + ", P     Name: " + this.getName() + "\n"
-                + ", P     Path: " + mAvdFolder + "\n"
-                + ", P   Target: Android 0.0 (API level 0)\n"
-                + ", P  Tag/ABI: default/armeabi\n"
-                + ", P     Skin: HVGA\n"
-                + ", P Snapshot: true\n"
-                + "]",
+                "P Available Android Virtual Devices:\n" +
+                "P     Name: " + this.getName() + "\n" +
+                "P     Path: " + mAvdFolder + "\n" +
+                "P   Target: Android 0.0 (API level 0)\n" +
+                "P  Tag/ABI: default/armeabi\n" +
+                "P     Skin: HVGA\n" +
+                "P Snapshot: true\n",
                 getLog().toString());
     }
 
@@ -146,16 +150,15 @@ public class SdkManagerTest extends SdkManagerTestCase {
         getLog().clear();
         main.displayTargetList();
         assertEquals(
-                "[P Available Android targets:\n" +
-                ", P ----------\n" +
-                ", P id: 1 or \"android-0\"\n" +
-                ", P      Name: Android 0.0\n" +
-                ", P      Type: Platform\n" +
-                ", P      API level: 0\n" +
-                ", P      Revision: 1\n" +
-                ", P      Skins: , P \n" +
-                ", P  Tag/ABIs : , P default/armeabi, P , , P tag-1/armeabi, P , , P tag-1/x86, P \n" +
-                "]",
+                "P Available Android targets:\n" +
+                "P ----------\n" +
+                "P id: 1 or \"android-0\"\n" +
+                "P      Name: Android 0.0\n" +
+                "P      Type: Platform\n" +
+                "P      API level: 0\n" +
+                "P      Revision: 1\n" +
+                "P      Skins: HVGA (default), Tag1ArmSkin, Tag1X86Skin\n" +
+                "P  Tag/ABIs : default/armeabi, tag-1/armeabi, tag-1/x86\n",
                 getLog().toString());
     }
 
@@ -164,10 +167,9 @@ public class SdkManagerTest extends SdkManagerTestCase {
         main.setLogger(getLog());
         main.setSdkManager(getSdkManager());
         getLog().clear();
-        main.displayTagAbiList(mTarget, "message");
+        main.displayTagAbiList(mTarget, "Tag/ABIs: ");
         assertEquals(
-                "[P message, P default/armeabi, P , , P tag-1/armeabi, P , , P tag-1/x86, P \n" +
-                "]",
+                "P Tag/ABIs: default/armeabi, tag-1/armeabi, tag-1/x86\n",
                 getLog().toString());
     }
 
@@ -176,10 +178,9 @@ public class SdkManagerTest extends SdkManagerTestCase {
         main.setLogger(getLog());
         main.setSdkManager(getSdkManager());
         getLog().clear();
-        main.displaySkinList(mTarget, "message");
+        main.displaySkinList(mTarget, "Skins: ");
         assertEquals(
-                "[P message, P \n" +
-                "]",
+                "P Skins: HVGA (default), Tag1ArmSkin, Tag1X86Skin\n",
                 getLog().toString());
     }
 

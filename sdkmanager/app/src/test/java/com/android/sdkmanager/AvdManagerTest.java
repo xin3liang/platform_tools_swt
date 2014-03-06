@@ -53,6 +53,7 @@ public class AvdManagerTest extends SdkManagerTestCase {
                 mTarget,
                 SystemImage.DEFAULT_TAG,
                 SdkConstants.ABI_ARMEABI,
+                null,   // skinFolder
                 null,   // skinName
                 null,   // sdName
                 null,   // properties
@@ -61,7 +62,7 @@ public class AvdManagerTest extends SdkManagerTestCase {
                 false,  // editExisting
                 getLog());
 
-        assertEquals("[P Created AVD '" + this.getName() + "' based on Android 0.0, ARM (armeabi) processor\n]",
+        assertEquals("P Created AVD '" + this.getName() + "' based on Android 0.0, ARM (armeabi) processor\n",
                 getLog().toString());
         assertTrue("Expected config.ini in " + mAvdFolder,
                 new File(mAvdFolder, "config.ini").exists());
@@ -85,6 +86,7 @@ public class AvdManagerTest extends SdkManagerTestCase {
                 mTarget,
                 SystemImage.DEFAULT_TAG,
                 SdkConstants.ABI_ARMEABI,
+                null,   // skinFolder
                 null,   // skinName
                 null,   // sdName
                 null,   // properties
@@ -93,7 +95,7 @@ public class AvdManagerTest extends SdkManagerTestCase {
                 false,  // editExisting
                 getLog());
 
-        assertEquals("[P Created AVD '" + this.getName() + "' based on Android 0.0, ARM (armeabi) processor\n]",
+        assertEquals("P Created AVD '" + this.getName() + "' based on Android 0.0, ARM (armeabi) processor\n",
                 getLog().toString());
         assertTrue("Expected snapshots.img in " + mAvdFolder,
                 new File(mAvdFolder, "snapshots.img").exists());

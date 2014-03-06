@@ -903,7 +903,7 @@ public final class AvdSelector {
     private void onEdit() {
         AvdInfo avdInfo = getTableSelection();
         GridDialog dlg;
-        if(!avdInfo.getDeviceName().isEmpty()) {
+        if (!avdInfo.getDeviceName().isEmpty()) {
             dlg = new AvdCreationDialog(mTable.getShell(),
                     mAvdManager,
                     mImageFactory,

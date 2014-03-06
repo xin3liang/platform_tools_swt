@@ -50,6 +50,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 
+import java.io.File;
+
 /**
  * This is an intermediate version of the {@link AvdManagerPage}
  * wrapped in its own standalone window for use from the SDK Manager 2.
@@ -94,7 +96,7 @@ public class AvdManagerWindowImpl1 {
         mContext = context;
         mSwtUpdaterData = new SwtUpdaterData(osSdkRoot, sdkLog);
         mOwnUpdaterData = true;
-        mDeviceManager = DeviceManager.createInstance(osSdkRoot, sdkLog);
+        mDeviceManager = DeviceManager.createInstance(new File(osSdkRoot), sdkLog);
     }
 
     /**
@@ -116,7 +118,7 @@ public class AvdManagerWindowImpl1 {
         mContext = context;
         mSwtUpdaterData = swtUpdaterData;
         mOwnUpdaterData = false;
-        mDeviceManager = DeviceManager.createInstance(mSwtUpdaterData.getOsSdkRoot(),
+        mDeviceManager = DeviceManager.createInstance(new File(mSwtUpdaterData.getOsSdkRoot()),
                                                       mSwtUpdaterData.getSdkLog());
     }
 

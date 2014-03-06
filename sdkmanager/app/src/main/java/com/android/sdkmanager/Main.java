@@ -27,6 +27,7 @@ import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.IAndroidTarget.IOptionalLibrary;
 import com.android.sdklib.ISystemImage;
 import com.android.sdklib.SdkManager;
+import com.android.sdklib.SystemImage;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdklib.internal.avd.HardwareProperties;
@@ -43,6 +44,8 @@ import com.android.sdklib.internal.repository.packages.ToolPackage;
 import com.android.sdklib.internal.repository.updater.SdkUpdaterNoWindow;
 import com.android.sdklib.repository.SdkAddonConstants;
 import com.android.sdklib.repository.SdkRepoConstants;
+import com.android.sdklib.repository.descriptors.IdDisplay;
+import com.android.sdklib.repository.local.LocalSysImgPkgInfo;
 import com.android.sdkuilib.internal.widgets.MessageBoxLog;
 import com.android.sdkuilib.repository.AvdManagerWindow;
 import com.android.sdkuilib.repository.AvdManagerWindow.AvdInvocationContext;
@@ -63,6 +66,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -949,8 +953,8 @@ public class Main {
             }
 
             // get the target skins & ABIs
-            displaySkinList(target, "     Skins: ");
-            displayAbiList (target, "     ABIs : ");
+            displaySkinList  (target, "     Skins: ");
+            displayTagAbiList(target, " Tag/ABIs : ");
 
             if (target.getUsbVendorId() != IAndroidTarget.NO_USB_ID) {
                 mSdkLog.info("     Adds USB support for devices (Vendor: 0x%04X)\n",
@@ -990,10 +994,10 @@ public class Main {
     }
 
     /**
-     * Displays the ABIs valid for the given target.
+     * Displays the tags & ABIs valid for the given target.
      */
     @VisibleForTesting(visibility=Visibility.PRIVATE)
-    void displayAbiList(IAndroidTarget target, String message) {
+    void displayTagAbiList(IAndroidTarget target, String message) {
         ISystemImage[] systemImages = target.getSystemImages();
         mSdkLog.info(message);
         if (systemImages.length > 0) {
@@ -1004,7 +1008,7 @@ public class Main {
                 } else {
                     first = false;
                 }
-                mSdkLog.info(si.getAbiType());
+                mSdkLog.info("%s/%s", si.getTag().getId(), si.getAbiType());
             }
             mSdkLog.info("\n");
         } else {
@@ -1055,7 +1059,7 @@ public class Main {
                 mSdkLog.info("          Based on Android %s (API level %s)\n",
                         target.getVersionName(), target.getVersion().getApiString());
             }
-            mSdkLog.info("     ABI: %s\n", info.getAbiType());
+            mSdkLog.info(" Tag/ABI: %s/%s\n", info.getTag().getId(), info.getAbiType());
 
             // display some extra values.
             Map<String, String> properties = info.getProperties();
@@ -1202,6 +1206,24 @@ public class Main {
                 }
             }
 
+            IdDisplay tag = SystemImage.DEFAULT_TAG;
+            String cmdTag = mSdkCommandLine.getParamAbi();
+            if (target != null && (cmdTag == null || cmdTag.length() == 0)) {
+                ISystemImage[] systemImages = target.getSystemImages();
+                if (systemImages != null && systemImages.length > 0) {
+                    Set<String> tags = new HashSet<String>();
+                    for (ISystemImage systemImage : systemImages) {
+                        tags.add(systemImage.getTag().getId());
+                    }
+                    if (tags.size() == 1) {
+                        cmdTag = tags.iterator().next();
+                    }
+                }
+            }
+            if (cmdTag != null && cmdTag.length() > 0 && !cmdTag.equals(tag.getId())) {
+                tag = new IdDisplay(cmdTag, LocalSysImgPkgInfo.tagIdToDisplay(cmdTag));
+            }
+
             String abiType = mSdkCommandLine.getParamAbi();
             if (target != null && (abiType == null || abiType.length() == 0)) {
                 ISystemImage[] systemImages = target.getSystemImages();
@@ -1210,7 +1232,7 @@ public class Main {
                     abiType = systemImages[0].getAbiType();
                     mSdkLog.info("Auto-selecting single ABI %1$s\n", abiType);
                 } else {
-                    displayAbiList(target, "Valid ABIs: ");
+                    displayTagAbiList(target, "Valid ABIs: ");
                     errorAndExit("This platform has more than one ABI. Please specify one using --%1$s.",
                             SdkCommandLine.KEY_ABI);
                 }
@@ -1235,6 +1257,7 @@ public class Main {
             AvdInfo newAvdInfo = avdManager.createAvd(avdFolder,
                     avdName,
                     target,
+                    tag,
                     abiType,
                     skin,
                     mSdkCommandLine.getParamSdCard(),

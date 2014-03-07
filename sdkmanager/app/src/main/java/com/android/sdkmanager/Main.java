@@ -18,6 +18,7 @@ package com.android.sdkmanager;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.annotations.VisibleForTesting;
 import com.android.annotations.VisibleForTesting.Visibility;
 import com.android.io.FileWrapper;
@@ -110,8 +111,25 @@ public class Main {
 
     /** Used by tests to set the sdk manager. */
     @VisibleForTesting(visibility=Visibility.PRIVATE)
-    void setSdkManager(SdkManager sdkManager) {
-        mSdkManager = sdkManager;
+    void setupForTest(@Nullable SdkManager sdkManager,
+                      @Nullable ILogger logger,
+                      @Nullable SdkCommandLine cmdLineParser,
+                      @Nullable String...args) {
+        if (logger != null) {
+            setLogger(logger);
+        }
+        if (cmdLineParser != null) {
+            mSdkCommandLine = cmdLineParser;
+        }
+        if (args != null) {
+            if (mSdkCommandLine == null) {
+                mSdkCommandLine = new SdkCommandLine(logger);
+            }
+            mSdkCommandLine.parseArgs(args);
+        }
+        if (sdkManager != null) {
+            mSdkManager = sdkManager;
+        }
     }
 
     /**
@@ -181,6 +199,11 @@ public class Main {
     /** For testing */
     public void setLogger(ILogger logger) {
         mSdkLog = logger;
+    }
+
+    @VisibleForTesting(visibility=Visibility.PRIVATE)
+    protected ILogger getLogger() {
+        return mSdkLog;
     }
 
     /**
@@ -253,7 +276,8 @@ public class Main {
     /**
      * Actually do an action...
      */
-    private void doAction() {
+    @VisibleForTesting(visibility=Visibility.PRIVATE)
+    void doAction() {
 
         if (mSdkCommandLine.hasClearCache()) {
             DownloadCache d = new DownloadCache(Strategy.SERVE_CACHE);
@@ -1212,35 +1236,84 @@ public class Main {
             }
 
             IdDisplay tag = SystemImage.DEFAULT_TAG;
-            String cmdTag = mSdkCommandLine.getParamAbi();
-            if (target != null && (cmdTag == null || cmdTag.length() == 0)) {
+            String abiType = mSdkCommandLine.getParamAbi();
+            String cmdTag = mSdkCommandLine.getParamTag();
+
+            if (abiType != null && abiType.indexOf('/') != -1) {
+                String[] segments = abiType.split("/");
+                if (segments.length == 2) {
+                    if (cmdTag == null) {
+                        cmdTag = segments[0];
+                    } else if (!cmdTag.equals(segments[0])) {
+                        errorAndExit("--%1$s %2$s conflicts with --%3$s %4$s.",
+                                SdkCommandLine.KEY_TAG,
+                                cmdTag,
+                                SdkCommandLine.KEY_ABI,
+                                abiType);
+                    }
+                    abiType = segments[1];
+                } else {
+                    errorAndExit("Invalid --%1$s %2$s: expected format 'abi' or 'tag/abi'.",
+                            SdkCommandLine.KEY_ABI,
+                            abiType);
+                }
+            }
+
+            // if no tag was specified, "default" is implied
+            if (cmdTag == null || cmdTag.length() == 0) {
+                cmdTag = tag.getId();
+            } else {
+                tag = new IdDisplay(cmdTag, LocalSysImgPkgInfo.tagIdToDisplay(cmdTag));
+            }
+            assert cmdTag != null;
+
+            if (target != null) {
                 ISystemImage[] systemImages = target.getSystemImages();
                 if (systemImages != null && systemImages.length > 0) {
+                    // Collect all possible tags for the selected target
                     Set<String> tags = new HashSet<String>();
                     for (ISystemImage systemImage : systemImages) {
                         tags.add(systemImage.getTag().getId());
                     }
-                    if (tags.size() == 1) {
-                        cmdTag = tags.iterator().next();
+
+                    if (!tags.contains(cmdTag)) {
+                        errorAndExit("Invalid --%1$s %2$s for the selected target.",
+                                SdkCommandLine.KEY_TAG,
+                                cmdTag);
                     }
                 }
             }
-            if (cmdTag != null && cmdTag.length() > 0 && !cmdTag.equals(tag.getId())) {
-                tag = new IdDisplay(cmdTag, LocalSysImgPkgInfo.tagIdToDisplay(cmdTag));
-            }
 
-            String abiType = mSdkCommandLine.getParamAbi();
-            if (target != null && (abiType == null || abiType.length() == 0)) {
+            if (target != null) {
                 ISystemImage[] systemImages = target.getSystemImages();
-                if (systemImages != null && systemImages.length == 1) {
-                    // Auto-select the single ABI available
-                    abiType = systemImages[0].getAbiType();
-                    mSdkLog.info("Auto-selecting single ABI %1$s\n", abiType);
-                } else {
-                    displayTagAbiList(target, "Valid ABIs: ");
-                    errorAndExit("This platform has more than one ABI. Please specify one using --%1$s.",
-                            SdkCommandLine.KEY_ABI);
+                if (systemImages != null) {
+                    if (abiType == null || abiType.length() == 0) {
+                        if (systemImages.length == 1) {
+                            // Auto-select the single ABI available
+                            abiType = systemImages[0].getAbiType();
+                            mSdkLog.info("Auto-selecting single ABI %1$s\n", abiType);
+                        } else {
+                            displayTagAbiList(target, "Valid ABIs: ");
+                            errorAndExit("This platform has more than one ABI. Please specify one using --%1$s.",
+                                    SdkCommandLine.KEY_ABI);
+                        }
+                    } else {
+                        boolean found = false;
+                        for (ISystemImage systemImage : systemImages) {
+                            if (systemImage.getAbiType().equals(abiType)) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            displayTagAbiList(target, "Valid ABIs: ");
+                            errorAndExit("Invalid --%1$s %2$s for the selected target.",
+                                    SdkCommandLine.KEY_ABI,
+                                    abiType);
+                        }
+                    }
                 }
+
             }
 
             Map<String, String> hardwareConfig = null;
@@ -1549,7 +1622,8 @@ public class Main {
      * @param buffer
      * @throws IOException
      */
-    private String readLine(byte[] buffer) throws IOException {
+    @VisibleForTesting(visibility=Visibility.PRIVATE)
+    protected String readLine(byte[] buffer) throws IOException {
         int count = System.in.read(buffer);
 
         // is the input longer than the buffer?
@@ -1636,7 +1710,12 @@ public class Main {
 
     private void errorAndExit(String format, Object...args) {
         mSdkLog.error(null, format, args);
-        System.exit(1);
+        exit(1);
+    }
+
+    @VisibleForTesting(visibility=Visibility.PRIVATE)
+    protected void exit(int code) {
+        System.exit(code);
     }
 
     /**

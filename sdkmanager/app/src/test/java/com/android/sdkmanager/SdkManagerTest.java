@@ -48,6 +48,10 @@ import junit.framework.AssertionFailedError;
 /**
  * Tests the SDK Manager command-line tool using the temp fake SDK
  * created by {@link SdkManagerTestCase}.
+ * <p/>
+ * These tests directly access the internal methods of the SDK or AVD
+ * manager as the Main should invoke them.
+ * @see SdkManagerTest2 SdkManagerTest2 for command-line "black box" tests
  */
 public class SdkManagerTest extends SdkManagerTestCase {
 
@@ -147,8 +151,7 @@ public class SdkManagerTest extends SdkManagerTestCase {
 
     public void testDisplayTargetList() {
         Main main = new Main();
-        main.setLogger(getLog());
-        main.setSdkManager(getSdkManager());
+        main.setupForTest(getSdkManager(), getLog(), null);
         getLog().clear();
         main.displayTargetList();
         assertEquals(
@@ -166,8 +169,7 @@ public class SdkManagerTest extends SdkManagerTestCase {
 
     public void testDisplayTagAbiList() {
         Main main = new Main();
-        main.setLogger(getLog());
-        main.setSdkManager(getSdkManager());
+        main.setupForTest(getSdkManager(), getLog(), null);
         getLog().clear();
         main.displayTagAbiList(mTarget, "Tag/ABIs: ");
         assertEquals(
@@ -177,8 +179,7 @@ public class SdkManagerTest extends SdkManagerTestCase {
 
     public void testDisplaySkinList() {
         Main main = new Main();
-        main.setLogger(getLog());
-        main.setSdkManager(getSdkManager());
+        main.setupForTest(getSdkManager(), getLog(), null);
         getLog().clear();
         main.displaySkinList(mTarget, "Skins: ");
         assertEquals(
@@ -189,9 +190,8 @@ public class SdkManagerTest extends SdkManagerTestCase {
     public void testSdkManagerHasChanged() throws IOException {
         try {
             Main main = new Main();
-            main.setLogger(getLog());
             SdkManager sdkman = getSdkManager();
-            main.setSdkManager(sdkman);
+            main.setupForTest(getSdkManager(), getLog(), null);
             getLog().clear();
 
             assertFalse(sdkman.hasChanged(getLog()));
@@ -335,9 +335,8 @@ public class SdkManagerTest extends SdkManagerTestCase {
 
     public void testLocalFileDownload() throws IOException, CanceledByUserException {
         Main main = new Main();
-        main.setLogger(getLog());
         SdkManager sdkman = getSdkManager();
-        main.setSdkManager(sdkman);
+        main.setupForTest(getSdkManager(), getLog(), null);
         getLog().clear();
 
         IAndroidTarget target = sdkman.getTargets()[0];

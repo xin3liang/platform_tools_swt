@@ -131,25 +131,25 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
         assertEquals(
                 "P Available Android Virtual Devices:\n" +
                 "P     Name: avd-for-tag1\n" +
-                "P     Path: @AVD\\avd-for-tag1.avd\n" +
+                "P     Path: @AVD/avd-for-tag1.avd\n" +
                 "P   Target: Android 0.0 (API level 0)\n" +
                 "P  Tag/ABI: tag-1/armeabi\n" +
                 "P     Skin: HVGA\n" +
                 "P ---------\n" +
                 "P     Name: avd-for-tag2\n" +
-                "P     Path: @AVD\\avd-for-tag2.avd\n" +
+                "P     Path: @AVD/avd-for-tag2.avd\n" +
                 "P   Target: Android 0.0 (API level 0)\n" +
                 "P  Tag/ABI: tag-1/armeabi\n" +
                 "P     Skin: HVGA\n" +
                 "P ---------\n" +
                 "P     Name: my-avd\n" +
-                "P     Path: @AVD\\my-avd.avd\n" +
+                "P     Path: @AVD/my-avd.avd\n" +
                 "P   Target: Android 0.0 (API level 0)\n" +
                 "P  Tag/ABI: default/armeabi\n" +
                 "P     Skin: HVGA\n" +
                 "P ---------\n" +
                 "P     Name: my-avd2\n" +
-                "P     Path: @AVD\\my-avd2.avd\n" +
+                "P     Path: @AVD/my-avd2.avd\n" +
                 "P   Target: Android 0.0 (API level 0)\n" +
                 "P  Tag/ABI: default/armeabi\n" +
                 "P     Skin: HVGA\n",
@@ -289,6 +289,8 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 osPath = getAvdManager().getBaseAvdFolder();
                 str = str.replace(osPath, "@AVD");
             } catch (AndroidLocationException ignore) {}
+
+            str = str.replace(File.separatorChar, '/');
         }
 
         return str;

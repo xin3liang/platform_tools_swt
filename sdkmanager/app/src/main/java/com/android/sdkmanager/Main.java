@@ -66,6 +66,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -1050,6 +1051,14 @@ public class Main {
     void displayAvdList(AvdManager avdManager) {
 
         AvdInfo[] avds = avdManager.getValidAvds();
+
+        // Sort the AVD list by name, to make it stable on different operating systems.
+        Arrays.sort(avds, new Comparator<AvdInfo>() {
+            @Override
+            public int compare(AvdInfo a1, AvdInfo a2) {
+                return a1.getName().compareToIgnoreCase(a2.getName());
+            }
+        });
 
         // Compact output, suitable for scripts.
         if (mSdkCommandLine != null && mSdkCommandLine.getFlagCompact()) {

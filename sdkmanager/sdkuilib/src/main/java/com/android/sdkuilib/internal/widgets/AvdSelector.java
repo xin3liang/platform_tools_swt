@@ -20,8 +20,6 @@ import com.android.SdkConstants;
 import com.android.annotations.Nullable;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.android.sdklib.IAndroidTarget;
-import com.android.sdklib.devices.Device;
-import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus;
 import com.android.sdklib.internal.avd.AvdManager;
@@ -68,10 +66,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Formatter;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 
 /**
@@ -1016,46 +1011,19 @@ public final class AvdSelector {
                 false /*logErrorsOnly*/);
         }
 
-        boolean success = true;
-
         if (avdInfo.getStatus() == AvdStatus.ERROR_IMAGE_DIR) {
             // delete the AVD
             try {
                 mAvdManager.updateAvd(avdInfo, log);
-                refresh(false /*reload*/);
             } catch (IOException e) {
                 log.error(e, null);
-                success = false;
             }
+            refresh(false /*reload*/);
         } else if (avdInfo.getStatus() == AvdStatus.ERROR_DEVICE_CHANGED) {
-            // Overwrite the properties derived from the device and nothing else
-            Map<String, String> properties = new HashMap<String, String>(avdInfo.getProperties());
-
-            DeviceManager devMan  = DeviceManager.createInstance(new File(mOsSdkPath), mSdkLog);
-            List<Device>  devices = devMan.getDevices(DeviceManager.ALL_DEVICES);
-            String name = properties.get(AvdManager.AVD_INI_DEVICE_NAME);
-            String manufacturer = properties.get(AvdManager.AVD_INI_DEVICE_MANUFACTURER);
-
-            if (properties != null && devices != null && name != null && manufacturer != null) {
-                for (Device d : devices) {
-                    if (d.getName().equals(name) && d.getManufacturer().equals(manufacturer)) {
-                        properties.putAll(DeviceManager.getHardwareProperties(d));
-                        try {
-                            mAvdManager.updateAvd(avdInfo, properties, AvdStatus.OK, log);
-                        } catch (IOException e) {
-                            log.error(e,null);
-                            success = false;
-                        }
-                    }
-                }
-            } else {
-                log.error(null, "Base device information incomplete or missing.");
-                success = false;
-            }
-
-            // display the result
-            if (log instanceof MessageBoxLog) {
-                ((MessageBoxLog) log).displayResult(success);
+            try {
+                mAvdManager.updateDeviceChanged(avdInfo, log);
+            } catch (IOException e) {
+                log.error(e, null);
             }
             refresh(false /*reload*/);
         } else if (avdInfo.getStatus() == AvdStatus.ERROR_DEVICE_MISSING) {

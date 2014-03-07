@@ -360,7 +360,8 @@ public class DeviceManagerPage extends Composite
                     mDeviceManager.getDevices(DeviceFilter.USER)));
             disposables.addAll(fillDevices(table, boldFont, false,
                     mDeviceManager.getDevices(EnumSet.of(DeviceFilter.DEFAULT,
-                                                         DeviceFilter.VENDOR))));
+                                                         DeviceFilter.VENDOR,
+                                                         DeviceFilter.SYSTEM_IMAGES))));
         } finally {
             mDisableRefresh = false;
         }
@@ -477,14 +478,21 @@ public class DeviceManagerPage extends Composite
                     return s1.compareTo(s2);
                 }});
         } else {
-            // Sort non-user devices by descending "pretty name"
-            // TODO revisit. Doesn't perform as well as expected.
+            // Sort non-user devices by ascending "pretty name"
+            // with named-devices before those that use a numeric size.
             Collections.sort(devices, new Comparator<Device>() {
                 @Override
                 public int compare(Device d1, Device d2) {
                     String s1 = getPrettyName(d1, true /*leadZeroes*/);
                     String s2 = getPrettyName(d2, true /*leadZeroes*/);
-                    return s2.compareTo(s1);
+                    if (s1.length() > 1 && s2.length() > 1) {
+                        int i1 = Character.isDigit(s1.charAt(0)) ? 1 : 0;
+                        int i2 = Character.isDigit(s2.charAt(0)) ? 1 : 0;
+                        if (i1 != i2) {
+                            return i1 - i2;
+                        }
+                    }
+                    return s1.compareTo(s2);
                 }});
         }
 
@@ -582,7 +590,7 @@ public class DeviceManagerPage extends Composite
     private static final String NEXUS   = "Nexus";     //$NON-NLS-1$
     private static final String GENERIC = "Generic";   //$NON-NLS-1$
     private static Pattern PATTERN = Pattern.compile(
-            "(\\d+\\.?\\d*)in (.+?)( \\(.*Nexus.*\\))?"); //$NON-NLS-1$
+            "(\\d+\\.?\\d*)(?:in|\") (.+?)( \\(.*Nexus.*\\))?"); //$NON-NLS-1$
     /**
      * Returns a pretty name for the device.
      *

@@ -54,8 +54,13 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
 
     // ------ tests
 
-    public void testAvdTargets() {
-        runCmdLine("list", "targets");
+    public void testListTargets() {
+        runCmdLine("list", "targets", "--compact");
+        assertEquals(
+                "P android-0\n",
+                getLog().toString());
+
+        runCmdLine("list", "target");
         assertEquals(
                 "P Available Android targets:\n" +
                 "P ----------\n" +
@@ -67,19 +72,149 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 "P      Skins: HVGA (default), Tag1ArmSkin, Tag1X86Skin\n" +
                 "P  Tag/ABIs : default/armeabi, tag-1/armeabi, tag-1/x86\n",
                 getLog().toString());
-
-        runCmdLine("list", "targets", "--compact");
-        assertEquals(
-                "P android-0\n",
-                getLog().toString());
     }
 
-    public void testAvdList_Empty() {
+    public void testListAvds() {
+        runCmdLine("list", "avds", "--compact");
+        assertEquals("", getLog().toString());
+
         runCmdLine("list", "avd");
         assertEquals("P Available Android Virtual Devices:\n", getLog().toString());
+    }
 
-        runCmdLine("list", "avd", "--compact");
-        assertEquals("", getLog().toString());
+    public void testListDevices() {
+        runCmdLine("list", "device", "--compact");
+        assertEquals(
+                "P Galaxy Nexus\n" +
+                "P MockDevice-tag-1\n" +
+                "P MockDevice-tag-1\n" +
+                "P Nexus 10\n" +
+                "P Nexus 4\n" +
+                "P Nexus 5\n" +
+                "P Nexus 7 2013\n" +
+                "P Nexus 7\n" +
+                "P Nexus One\n" +
+                "P Nexus S\n" +
+                "P 2.7in QVGA\n" +
+                "P 2.7in QVGA slider\n" +
+                "P 3.2in HVGA slider (ADP1)\n" +
+                "P 3.2in QVGA (ADP2)\n" +
+                "P 3.3in WQVGA\n" +
+                "P 3.4\" WQVGA\n" +
+                "P 3.7 FWVGA slider\n" +
+                "P 3.7in WVGA (Nexus One)\n" +
+                "P 4in WVGA (Nexus S)\n" +
+                "P 4.65in 720p (Galaxy Nexus)\n" +
+                "P 4.7in WXGA\n" +
+                "P 5.1in WVGA\n" +
+                "P 5.4in FWVGA\n" +
+                "P 7in WSVGA (Tablet)\n" +
+                "P 10.1in WXGA (Tablet)\n",
+                getLog().toString());
+
+        runCmdLine("list", "devices");
+        assertEquals(
+                "P Available devices definitions:\n" +
+                "P id: 0 or \"Galaxy Nexus\"\n" +
+                "P     Name: Galaxy Nexus\n" +
+                "P     OEM : Google\n" +
+                "P ---------\n" +
+                "P id: 1 or \"MockDevice-tag-1\"\n" +
+                "P     Name: Mock Tag 1 Device Name\n" +
+                "P     OEM : Mock Tag 1 OEM\n" +
+                "P ---------\n" +
+                "P id: 2 or \"MockDevice-tag-1\"\n" +
+                "P     Name: Mock Tag 1 Device Name\n" +
+                "P     OEM : Mock Tag 1 OEM\n" +
+                "P ---------\n" +
+                "P id: 3 or \"Nexus 10\"\n" +
+                "P     Name: Nexus 10\n" +
+                "P     OEM : Google\n" +
+                "P ---------\n" +
+                "P id: 4 or \"Nexus 4\"\n" +
+                "P     Name: Nexus 4\n" +
+                "P     OEM : Google\n" +
+                "P ---------\n" +
+                "P id: 5 or \"Nexus 5\"\n" +
+                "P     Name: Nexus 5\n" +
+                "P     OEM : Google\n" +
+                "P ---------\n" +
+                "P id: 6 or \"Nexus 7 2013\"\n" +
+                "P     Name: Nexus 7\n" +
+                "P     OEM : Google\n" +
+                "P ---------\n" +
+                "P id: 7 or \"Nexus 7\"\n" +
+                "P     Name: Nexus 7 (2012)\n" +
+                "P     OEM : Google\n" +
+                "P ---------\n" +
+                "P id: 8 or \"Nexus One\"\n" +
+                "P     Name: Nexus One\n" +
+                "P     OEM : Google\n" +
+                "P ---------\n" +
+                "P id: 9 or \"Nexus S\"\n" +
+                "P     Name: Nexus S\n" +
+                "P     OEM : Google\n" +
+                "P ---------\n" +
+                "P id: 10 or \"2.7in QVGA\"\n" +
+                "P     Name: 2.7\" QVGA\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 11 or \"2.7in QVGA slider\"\n" +
+                "P     Name: 2.7\" QVGA slider\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 12 or \"3.2in HVGA slider (ADP1)\"\n" +
+                "P     Name: 3.2\" HVGA slider (ADP1)\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 13 or \"3.2in QVGA (ADP2)\"\n" +
+                "P     Name: 3.2\" QVGA (ADP2)\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 14 or \"3.3in WQVGA\"\n" +
+                "P     Name: 3.3\" WQVGA\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 15 or \"3.4\" WQVGA\"\n" +
+                "P     Name: 3.4in WQVGA\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 16 or \"3.7 FWVGA slider\"\n" +
+                "P     Name: 3.7\" FWVGA slider\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 17 or \"3.7in WVGA (Nexus One)\"\n" +
+                "P     Name: 3.7\" WVGA (Nexus One)\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 18 or \"4in WVGA (Nexus S)\"\n" +
+                "P     Name: 4\" WVGA (Nexus S)\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 19 or \"4.65in 720p (Galaxy Nexus)\"\n" +
+                "P     Name: 4.65\" 720p (Galaxy Nexus)\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 20 or \"4.7in WXGA\"\n" +
+                "P     Name: 4.7\" WXGA\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 21 or \"5.1in WVGA\"\n" +
+                "P     Name: 5.1\" WVGA\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 22 or \"5.4in FWVGA\"\n" +
+                "P     Name: 5.4\" FWVGA\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 23 or \"7in WSVGA (Tablet)\"\n" +
+                "P     Name: 7\" WSVGA (Tablet)\n" +
+                "P     OEM : Generic\n" +
+                "P ---------\n" +
+                "P id: 24 or \"10.1in WXGA (Tablet)\"\n" +
+                "P     Name: 10.1\" WXGA (Tablet)\n" +
+                "P     OEM : Generic\n",
+                getLog().toString());
     }
 
     public void testCreateAvd() {
@@ -127,6 +262,57 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 "Created AVD 'avd-for-tag2' based on Android 0.0, Tag 1 ARM (armeabi) processor\n",
                 getLog().toString());
 
+        runCmdLine("create", "avd",
+                "--target", "android-0",
+                "--name",   "device-tag1",
+                "--tag",    "tag-1",
+                "--abi",    "armeabi",
+                "--device", "MockDevice-tag-1");
+        assertEquals(
+                "P Created AVD 'device-tag1' based on Android 0.0, Tag 1 ARM (armeabi) processor,\n" +
+                "with the following hardware config:\n" +
+                "hw.accelerometer=no\n" +
+                "hw.audioInput=yes\n" +
+                "hw.battery=yes\n" +
+                "hw.dPad=no\n" +
+                "hw.device.hash2=MD5:7e046a6244489b7deeca681ab5a76cb3\n" +
+                "hw.device.manufacturer=Mock Tag 1 OEM\n" +
+                "hw.device.name=MockDevice-tag-1\n" +
+                "hw.gps=no\n" +
+                "hw.keyboard=yes\n" +
+                "hw.lcd.density=240\n" +
+                "hw.mainKeys=no\n" +
+                "hw.sdCard=no\n" +
+                "hw.sensors.orientation=no\n" +
+                "hw.sensors.proximity=no\n" +
+                "hw.trackBall=no\n",
+                getLog().toString());
+
+        runCmdLine("create", "avd",
+                "--target", "android-0",
+                "--name",   "gn-avd",
+                "--device", "0",
+                "--abi",    "armeabi");
+        assertEquals(
+                "P Created AVD 'gn-avd' based on Android 0.0, ARM (armeabi) processor,\n" +
+                "with the following hardware config:\n" +
+                "hw.accelerometer=yes\n" +
+                "hw.audioInput=yes\n" +
+                "hw.battery=yes\n" +
+                "hw.dPad=no\n" +
+                "hw.device.hash2=MD5:6930e145748b87e87d3f40cabd140a41\n" +
+                "hw.device.manufacturer=Google\n" +
+                "hw.device.name=Galaxy Nexus\n" +
+                "hw.gps=yes\n" +
+                "hw.keyboard=no\n" +
+                "hw.lcd.density=320\n" +
+                "hw.mainKeys=no\n" +
+                "hw.sdCard=no\n" +
+                "hw.sensors.orientation=yes\n" +
+                "hw.sensors.proximity=yes\n" +
+                "hw.trackBall=no\n",
+                getLog().toString());
+
         runCmdLine("list", "avd");
         assertEquals(
                 "P Available Android Virtual Devices:\n" +
@@ -140,6 +326,20 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 "P     Path: @AVD/avd-for-tag2.avd\n" +
                 "P   Target: Android 0.0 (API level 0)\n" +
                 "P  Tag/ABI: tag-1/armeabi\n" +
+                "P     Skin: HVGA\n" +
+                "P ---------\n" +
+                "P     Name: device-tag1\n" +
+                "P   Device: MockDevice-tag-1 (Mock Tag 1 OEM)\n" +
+                "P     Path: @AVD/device-tag1.avd\n" +
+                "P   Target: Android 0.0 (API level 0)\n" +
+                "P  Tag/ABI: tag-1/armeabi\n" +
+                "P     Skin: HVGA\n" +
+                "P ---------\n" +
+                "P     Name: gn-avd\n" +
+                "P   Device: Galaxy Nexus (Google)\n" +
+                "P     Path: @AVD/gn-avd.avd\n" +
+                "P   Target: Android 0.0 (API level 0)\n" +
+                "P  Tag/ABI: default/armeabi\n" +
                 "P     Skin: HVGA\n" +
                 "P ---------\n" +
                 "P     Name: my-avd\n" +

@@ -65,7 +65,6 @@ import org.eclipse.swt.widgets.TableItem;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -467,34 +466,7 @@ public class DeviceManagerPage extends Composite
 
         // We need the list to be be modifiable so that we can sort it.
         devices = new ArrayList<Device>(devices);
-
-        if (isUser) {
-            // Just sort user devices by alphabetical name. They will show up at the top.
-            Collections.sort(devices, new Comparator<Device>() {
-                @Override
-                public int compare(Device d1, Device d2) {
-                    String s1 = d1 == null ? "" : d1.getName();
-                    String s2 = d2 == null ? "" : d2.getName();
-                    return s1.compareTo(s2);
-                }});
-        } else {
-            // Sort non-user devices by ascending "pretty name"
-            // with named-devices before those that use a numeric size.
-            Collections.sort(devices, new Comparator<Device>() {
-                @Override
-                public int compare(Device d1, Device d2) {
-                    String s1 = getPrettyName(d1, true /*leadZeroes*/);
-                    String s2 = getPrettyName(d2, true /*leadZeroes*/);
-                    if (s1.length() > 1 && s2.length() > 1) {
-                        int i1 = Character.isDigit(s1.charAt(0)) ? 1 : 0;
-                        int i2 = Character.isDigit(s2.charAt(0)) ? 1 : 0;
-                        if (i1 != i2) {
-                            return i1 - i2;
-                        }
-                    }
-                    return s1.compareTo(s2);
-                }});
-        }
+        Collections.sort(devices, Device.getDisplayComparator());
 
         // Generate a list of the AVD names using these devices
         Map<Device, List<String>> device2avdMap = new HashMap<Device, List<String>>();

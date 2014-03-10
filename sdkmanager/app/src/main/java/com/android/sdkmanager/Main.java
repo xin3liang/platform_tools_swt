@@ -29,6 +29,8 @@ import com.android.sdklib.IAndroidTarget.IOptionalLibrary;
 import com.android.sdklib.ISystemImage;
 import com.android.sdklib.SdkManager;
 import com.android.sdklib.SystemImage;
+import com.android.sdklib.devices.Device;
+import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdklib.internal.avd.HardwareProperties;
@@ -66,9 +68,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -300,9 +304,13 @@ public class Main {
             } else if (SdkCommandLine.OBJECT_SDK.equals(directObject)) {
                 displayRemoteSdkListNoUI();
 
+            } else if (SdkCommandLine.OBJECT_DEVICE.equals(directObject)) {
+                displayDeviceList();
+
             } else {
                 displayTargetList();
                 displayAvdList();
+                displayDeviceList();
             }
 
         } else if (SdkCommandLine.VERB_CREATE.equals(verb)) {
@@ -1080,6 +1088,17 @@ public class Main {
                 mSdkLog.info("---------\n");
             }
             mSdkLog.info("    Name: %s\n", info.getName());
+
+            String deviceName  = info.getProperties().get(AvdManager.AVD_INI_DEVICE_NAME);
+            String deviceMfctr = info.getProperties().get(AvdManager.AVD_INI_DEVICE_MANUFACTURER);
+            if (deviceName != null) {
+                mSdkLog.info("  Device: %s", deviceName);
+                if (deviceMfctr != null) {
+                    mSdkLog.info(" (%s)", deviceMfctr);
+                }
+                mSdkLog.info("\n");
+            }
+
             mSdkLog.info("    Path: %s\n", info.getDataFolderPath());
 
             // get the target of the AVD
@@ -1148,6 +1167,49 @@ public class Main {
             displayAvdList(avdManager);
         } catch (AndroidLocationException e) {
             errorAndExit(e.getMessage());
+        }
+    }
+
+    /**
+     * Displays the list of available devices.
+     */
+    private void displayDeviceList() {
+
+        DeviceManager devman = DeviceManager.createInstance(
+                mSdkManager.getLocalSdk().getLocation(), mSdkLog);
+
+        List<Device> devices = new ArrayList<Device>(devman.getDevices(DeviceManager.ALL_DEVICES));
+        Collections.sort(devices, Device.getDisplayComparator());
+
+
+        // Compact output, suitable for scripts.
+        if (mSdkCommandLine != null && mSdkCommandLine.getFlagCompact()) {
+            char eol = mSdkCommandLine.getFlagEolNull() ? '\0' : '\n';
+
+            for (int index = 0 ; index < devices.size() ; index++) {
+                Device device = devices.get(index);
+                mSdkLog.info("%1$s%2$c", device.getId(), eol);
+            }
+
+            return;
+        }
+
+        // Longer more human-readable output
+
+        mSdkLog.info("Available devices definitions:\n");
+
+        for (int index = 0 ; index < devices.size() ; index++) {
+            Device device = devices.get(index);
+            if (index > 0) {
+                mSdkLog.info("---------\n");
+            }
+            mSdkLog.info("id: %1$d or \"%2$s\"\n", index, device.getId());
+            mSdkLog.info("    Name: %s\n", device.getDisplayName());
+            mSdkLog.info("    OEM : %s\n", device.getManufacturer());
+            String tag = device.getTagId();
+            if (tag != null) {
+                mSdkLog.info("    Tag : %s\n", tag);
+            }
         }
     }
 
@@ -1322,15 +1384,52 @@ public class Main {
                         }
                     }
                 }
-
             }
 
-            Map<String, String> hardwareConfig = null;
-            if (target != null && target.isPlatform()) {
+            Device device = null;
+            String deviceParam = mSdkCommandLine.getParamDevice();
+            if (deviceParam != null) {
+                DeviceManager devman = DeviceManager.createInstance(
+                        mSdkManager.getLocalSdk().getLocation(), mSdkLog);
+
+                List<Device> devices = new ArrayList<Device>(devman.getDevices(DeviceManager.ALL_DEVICES));
+                Collections.sort(devices, Device.getDisplayComparator());
+
+                int index = -1;
                 try {
-                    hardwareConfig = promptForHardware(target, skinHardwareConfig);
-                } catch (IOException e) {
-                    errorAndExit(e.getMessage());
+                    index = Integer.parseInt(deviceParam);
+                } catch (NumberFormatException ignore) {}
+
+                if (index >= 0 && index < devices.size()) {
+                    device = devices.get(index);
+                } else {
+                    for (Device d : devices) {
+                        if (deviceParam.equals(d.getId())) {
+                            device = d;
+                            break;
+                        }
+                    }
+                }
+
+                if (device == null) {
+                    errorAndExit("No device found matching --%1$s %2$s.",
+                            SdkCommandLine.KEY_DEVICE,
+                            deviceParam);
+                }
+            }
+
+
+            Map<String, String> hardwareConfig = null;
+            if (device != null) {
+                // Don't ask user for customized hardware config if a device was selected
+                hardwareConfig = DeviceManager.getHardwareProperties(device);
+            } else {
+                if (target != null && target.isPlatform()) {
+                    try {
+                        hardwareConfig = promptForHardware(target, skinHardwareConfig);
+                    } catch (IOException e) {
+                        errorAndExit(e.getMessage());
+                    }
                 }
             }
 
@@ -1350,7 +1449,7 @@ public class Main {
                     skinName,
                     mSdkCommandLine.getParamSdCard(),
                     hardwareConfig,
-                    null, // bootProps
+                    device == null ? null : device.getBootProps(),
                     mSdkCommandLine.getFlagSnapshot(),
                     removePrevious,
                     false, //edit existing

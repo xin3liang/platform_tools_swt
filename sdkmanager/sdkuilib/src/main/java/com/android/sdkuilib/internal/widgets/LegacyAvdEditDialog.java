@@ -966,8 +966,8 @@ final class LegacyAvdEditDialog extends GridDialog {
                 mSkinCombo.add(String.format("Default (%s)", target.getDefaultSkin()));
 
                 index = -1;
-                for (String skin : target.getSkins()) {
-                    mSkinCombo.add(skin);
+                for (File skin : target.getSkins()) {
+                    mSkinCombo.add(skin.getName());
                     if (!found) {
                         index++;
                         found = skin.equals(selected);
@@ -1225,7 +1225,10 @@ final class LegacyAvdEditDialog extends GridDialog {
         if (skinIndex < 0) {
             return;
         } else if (skinIndex == 0) { // default skin for the target
-            skinName = target.getDefaultSkin();
+            File skin = target.getDefaultSkin();
+            if (skin != null) {
+                skinName = skin.getName();
+            }
         } else {
             skinName = mSkinCombo.getItem(skinIndex);
         }
@@ -1384,6 +1387,7 @@ final class LegacyAvdEditDialog extends GridDialog {
                 target,
                 tag,
                 mAbiType,
+                null, //skinFolder
                 skinName,
                 sdName,
                 mProperties,

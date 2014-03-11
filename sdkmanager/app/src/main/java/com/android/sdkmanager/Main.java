@@ -1268,6 +1268,7 @@ public class Main {
                     skinName,
                     mSdkCommandLine.getParamSdCard(),
                     hardwareConfig,
+                    null, // bootProps
                     mSdkCommandLine.getFlagSnapshot(),
                     removePrevious,
                     false, //edit existing

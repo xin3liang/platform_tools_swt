@@ -668,9 +668,9 @@ public final class AvdSelector {
                 Rectangle r = table.getClientArea();
                 column0.setWidth(r.width * 20 / 100); // 20%
                 column1.setWidth(r.width * 30 / 100); // 30%
-                column2.setWidth(r.width * 15 / 100); // 15%
-                column3.setWidth(r.width * 15 / 100); // 15%
-                column4.setWidth(r.width * 20 / 100); // 22%
+                column2.setWidth(r.width * 10 / 100); // 10%
+                column3.setWidth(r.width * 10 / 100); // 10%
+                column4.setWidth(r.width * 30 / 100); // 30%
             }
         });
     }
@@ -808,7 +808,7 @@ public final class AvdSelector {
                         item.setText(1, target.getFullName());
                         item.setText(2, target.getVersionName());
                         item.setText(3, target.getVersion().getApiString());
-                        item.setText(4, AvdInfo.getPrettyAbiType(avd.getAbiType()));
+                        item.setText(4, AvdInfo.getPrettyAbiType(avd));
                     } else {
                         item.setText(1, "?");
                         item.setText(2, "?");

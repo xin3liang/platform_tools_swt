@@ -52,6 +52,8 @@ class SdkCommandLine extends CommandLineParser {
     public static final String OBJECT_AVDS           = "avds";                      //$NON-NLS-1$
     public static final String OBJECT_TARGET         = "target";                    //$NON-NLS-1$
     public static final String OBJECT_TARGETS        = "targets";                   //$NON-NLS-1$
+    public static final String OBJECT_DEVICE         = "device";                    //$NON-NLS-1$
+    public static final String OBJECT_DEVICES        = "devices";                   //$NON-NLS-1$
     public static final String OBJECT_PROJECT        = "project";                   //$NON-NLS-1$
     public static final String OBJECT_TEST_PROJECT   = "test-project";              //$NON-NLS-1$
     public static final String OBJECT_UITEST_PROJECT = "uitest-project";            //$NON-NLS-1$
@@ -95,6 +97,7 @@ class SdkCommandLine extends CommandLineParser {
     public static final String KEY_CLEAR_CACHE      = "clear-cache";                //$NON-NLS-1$
     public static final String KEY_GRADLE           = "gradle";                     //$NON-NLS-1$
     public static final String KEY_GRADLE_VERSION   = "gradle-version";             //$NON-NLS-1$
+    public static final String KEY_DEVICE           = "device";                     //$NON-NLS-1$
     // This flag is not yet supported in Tools R22.
     // public static final String KEY_ACCEPT_LICENSE   = "accept-license";             //$NON-NLS-1$
 
@@ -129,6 +132,9 @@ class SdkCommandLine extends CommandLineParser {
             { VERB_LIST, OBJECT_TARGET,
                 "Lists existing targets.",
                 OBJECT_TARGETS },
+            { VERB_LIST, OBJECT_DEVICE,
+                "Lists existing devices.",
+                OBJECT_DEVICES },
             { VERB_LIST, OBJECT_SDK,
                 "Lists remote SDK repository." },
 
@@ -199,6 +205,18 @@ class SdkCommandLine extends CommandLineParser {
                 "Terminates lines with \\0 instead of \\n (e.g. for xargs -0) Only used by --" + KEY_COMPACT + ".",
                 false);
 
+        // --- list devices ---
+
+        define(Mode.BOOLEAN, false,
+                VERB_LIST, OBJECT_DEVICE, "c", KEY_COMPACT,                         //$NON-NLS-1$
+                "Compact output (suitable for scripts)", false);
+
+        define(Mode.BOOLEAN, false,
+                VERB_LIST, OBJECT_DEVICE, "0", KEY_EOL_NULL,                        //$NON-NLS-1$
+                "Terminates lines with \\0 instead of \\n (e.g. for xargs -0) Only used by --" + KEY_COMPACT + ".",
+                false);
+
+
         // --- create avd ---
 
         define(Mode.STRING, false,
@@ -229,6 +247,10 @@ class SdkCommandLine extends CommandLineParser {
         define(Mode.STRING, false,
                 VERB_CREATE, OBJECT_AVD, "g", KEY_TAG,                              //$NON-NLS-1$
                 "The sys-img tag to use for the AVD. The default is to auto-select if the platform has only one tag for its system images.",
+                null);
+        define(Mode.STRING, false,
+                VERB_CREATE, OBJECT_AVD, "d", KEY_DEVICE,                           //$NON-NLS-1$
+                "The optional device definition to use. Can be a device index or id.",
                 null);
 
         // --- delete avd ---
@@ -608,9 +630,15 @@ class SdkCommandLine extends CommandLineParser {
     public String getParamAbi() {
         return ((String) getValue(null, null, KEY_ABI));
     }
+
     /** Helper to retrieve the --tag value. */
     public String getParamTag() {
         return ((String) getValue(null, null, KEY_TAG));
+    }
+
+    /** Helper to retrieve the --device value. */
+    public String getParamDevice() {
+        return ((String) getValue(null, null, KEY_DEVICE));
     }
 
     /** Helper to retrieve the --proxy-host value. */

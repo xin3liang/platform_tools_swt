@@ -18,6 +18,7 @@ package com.android.sdkuilib.internal.repository.ui;
 
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
+import com.android.sdklib.devices.DeviceManager.DeviceFilter;
 import com.android.sdklib.devices.DeviceManager.DevicesChangedListener;
 import com.android.sdklib.devices.Hardware;
 import com.android.sdklib.devices.Screen;
@@ -65,6 +66,7 @@ import org.eclipse.swt.widgets.TableItem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -355,10 +357,10 @@ public class DeviceManagerPage extends Composite
         try {
             mDisableRefresh = true;
             disposables.addAll(fillDevices(table, boldFont, true,
-                    mDeviceManager.getDevices(DeviceManager.USER_DEVICES)));
+                    mDeviceManager.getDevices(DeviceFilter.USER)));
             disposables.addAll(fillDevices(table, boldFont, false,
-                    mDeviceManager.getDevices(DeviceManager.DEFAULT_DEVICES |
-                                              DeviceManager.VENDOR_DEVICES)));
+                    mDeviceManager.getDevices(EnumSet.of(DeviceFilter.DEFAULT,
+                                                         DeviceFilter.VENDOR))));
         } finally {
             mDisableRefresh = false;
         }

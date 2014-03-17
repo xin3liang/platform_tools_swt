@@ -36,15 +36,18 @@ import junit.framework.AssertionFailedError;
  */
 public class SdkManagerTest2 extends SdkManagerTestCase {
 
+    private File mFolderSiX86;
+    private File mFolderSiArm;
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
 
         // add 2 tag/abi folders with a new skin each
-        File siX86 = makeSystemImageFolder(TARGET_DIR_NAME_0, "tag-1", "x86");
-        makeFakeSkin(siX86, "Tag1X86Skin");
-        File siArm = makeSystemImageFolder(TARGET_DIR_NAME_0, "tag-1", "armeabi");
-        makeFakeSkin(siArm, "Tag1ArmSkin");
+        mFolderSiX86 = makeSystemImageFolder(TARGET_DIR_NAME_0, "tag-1", "x86");
+        makeFakeSkin(mFolderSiX86, "Tag1X86Skin");
+        mFolderSiArm = makeSystemImageFolder(TARGET_DIR_NAME_0, "tag-1", "armeabi");
+        makeFakeSkin(mFolderSiArm, "Tag1ArmSkin");
     }
 
     @Override
@@ -398,6 +401,63 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 "--name",   "my-avd",
                 "--tag",    "tag-1",
                 "--abi",    "not-an-abi");
+    }
+
+    public void testMissingTagSysImg() {
+        // setup installed a "tag-1" system image above. Create an AVD using it.
+        runCmdLine("create", "avd",
+                "--target", "android-0",
+                "--name",   "device-tag1",
+                "--tag",    "tag-1",
+                "--abi",    "armeabi",
+                "--device", "MockDevice-tag-1");
+        assertEquals(
+                "P Created AVD 'device-tag1' based on Android 0.0, Tag 1 ARM (armeabi) processor,\n" +
+                "with the following hardware config:\n" +
+                "hw.accelerometer=no\n" +
+                "hw.audioInput=yes\n" +
+                "hw.battery=yes\n" +
+                "hw.dPad=no\n" +
+                "hw.device.hash2=MD5:7e046a6244489b7deeca681ab5a76cb3\n" +
+                "hw.device.manufacturer=Mock Tag 1 OEM\n" +
+                "hw.device.name=MockDevice-tag-1\n" +
+                "hw.gps=no\n" +
+                "hw.keyboard=yes\n" +
+                "hw.lcd.density=240\n" +
+                "hw.mainKeys=no\n" +
+                "hw.sdCard=no\n" +
+                "hw.sensors.orientation=no\n" +
+                "hw.sensors.proximity=no\n" +
+                "hw.trackBall=no\n",
+                getLog().toString());
+
+        // listing AVDs shows the new one.
+        runCmdLine("list", "avd");
+        assertEquals(
+                "P Available Android Virtual Devices:\n" +
+                "P     Name: device-tag1\n" +
+                "P   Device: MockDevice-tag-1 (Mock Tag 1 OEM)\n" +
+                "P     Path: @AVD/device-tag1.avd\n" +
+                "P   Target: Android 0.0 (API level 0)\n" +
+                "P  Tag/ABI: tag-1/armeabi\n" +
+                "P     Skin: HVGA\n",
+                sanitizePaths(getLog().toString()));
+
+        // delete the tag-1 system images (2 ABIs)
+        deleteDir(mFolderSiArm);
+        deleteDir(mFolderSiX86);
+
+        // listing AVDs shows the AVD as invalid.
+        runCmdLine("list", "avd");
+        assertEquals(
+                "P Available Android Virtual Devices:\n" +
+                "P \n" +
+                "The following Android Virtual Devices could not be loaded:\n" +
+                "P     Name: device-tag1\n" +
+                "P     Path: @AVD/device-tag1.avd\n" +
+                "P    Error: Missing system image for Tag 1 armeabi Android 0.0. Run 'android update avd -n device-tag1'\n",
+                sanitizePaths(getLog().toString()));
+
     }
 
     // ------ helpers

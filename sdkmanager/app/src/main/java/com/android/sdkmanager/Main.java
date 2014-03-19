@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -109,6 +110,7 @@ public class Main {
     private SdkCommandLine mSdkCommandLine;
     /** The working directory, either null or set to an existing absolute canonical directory. */
     private File mWorkDir;
+    private AvdManager mAvdManager;
 
     public static void main(String[] args) {
         new Main().run(args);
@@ -276,6 +278,22 @@ public class Main {
         if (mSdkManager == null) {
             errorAndExit("Unable to parse SDK content.");
         }
+    }
+
+    /**
+     * Lazily creates and returns an instance of the AVD Manager.
+     * The same instance is reused later.
+     *
+     * @return A non-null AVD Manager instance.
+     * @throws AndroidLocationException
+     */
+    @NonNull
+    @VisibleForTesting(visibility=Visibility.PRIVATE)
+    protected AvdManager getAvdManager() throws AndroidLocationException {
+        if (mAvdManager == null) {
+            mAvdManager = AvdManager.getInstance(mSdkManager.getLocalSdk(), mSdkLog);
+        }
+        return mAvdManager;
     }
 
     /**
@@ -1163,7 +1181,7 @@ public class Main {
      */
     private void displayAvdList() {
         try {
-            AvdManager avdManager = AvdManager.getInstance(mSdkManager.getLocalSdk(), mSdkLog);
+            AvdManager avdManager = getAvdManager();
             displayAvdList(avdManager);
         } catch (AndroidLocationException e) {
             errorAndExit(e.getMessage());
@@ -1230,7 +1248,7 @@ public class Main {
 
         try {
             boolean removePrevious = mSdkCommandLine.getFlagForce();
-            AvdManager avdManager = AvdManager.getInstance(mSdkManager.getLocalSdk(), mSdkLog);
+            AvdManager avdManager = getAvdManager();
 
             String avdName = mSdkCommandLine.getParamName();
 
@@ -1419,14 +1437,17 @@ public class Main {
             }
 
 
-            Map<String, String> hardwareConfig = null;
+            Map<String, String> hardwareConfig = new TreeMap<String, String>();
             if (device != null) {
                 // Don't ask user for customized hardware config if a device was selected
                 hardwareConfig = DeviceManager.getHardwareProperties(device);
             } else {
                 if (target != null && target.isPlatform()) {
                     try {
-                        hardwareConfig = promptForHardware(target, skinHardwareConfig);
+                        Map<String, String> prompted = promptForHardware(target, skinHardwareConfig);
+                        if (prompted != null) {
+                            hardwareConfig.putAll(prompted);
+                        }
                     } catch (IOException e) {
                         errorAndExit(e.getMessage());
                     }
@@ -1437,6 +1458,10 @@ public class Main {
             AvdInfo oldAvdInfo = null;
             if (removePrevious) {
                 oldAvdInfo = avdManager.getAvd(avdName, false /*validAvdOnly*/);
+            }
+
+            if (mSdkCommandLine.getParamSdCard() != null) {
+                hardwareConfig.put(HardwareProperties.HW_SDCARD, HardwareProperties.BOOLEAN_YES);
             }
 
             @SuppressWarnings("unused") // newAvdInfo is never read, yet useful for debugging
@@ -1455,6 +1480,10 @@ public class Main {
                     false, //edit existing
                     mSdkLog);
 
+            if (newAvdInfo == null) {
+                errorAndExit("AVD not created.");
+            }
+
         } catch (AndroidLocationException e) {
             errorAndExit(e.getMessage());
         }
@@ -1467,7 +1496,7 @@ public class Main {
     private void deleteAvd() {
         try {
             String avdName = mSdkCommandLine.getParamName();
-            AvdManager avdManager = AvdManager.getInstance(mSdkManager.getLocalSdk(), mSdkLog);
+            AvdManager avdManager = getAvdManager();
             AvdInfo info = avdManager.getAvd(avdName, false /*validAvdOnly*/);
 
             if (info == null) {
@@ -1487,7 +1516,7 @@ public class Main {
     private void moveAvd() {
         try {
             String avdName = mSdkCommandLine.getParamName();
-            AvdManager avdManager = AvdManager.getInstance(mSdkManager.getLocalSdk(), mSdkLog);
+            AvdManager avdManager = getAvdManager();
             AvdInfo info = avdManager.getAvd(avdName, true /*validAvdOnly*/);
 
             if (info == null) {
@@ -1583,7 +1612,7 @@ public class Main {
     private void updateAvd() {
         try {
             String avdName = mSdkCommandLine.getParamName();
-            AvdManager avdManager = AvdManager.getInstance(mSdkManager.getLocalSdk(), mSdkLog);
+            AvdManager avdManager = getAvdManager();
             avdManager.updateAvd(avdName, mSdkLog);
         } catch (AndroidLocationException e) {
             errorAndExit(e.getMessage());
@@ -1616,8 +1645,10 @@ public class Main {
      * Prompts the user to setup a hardware config for a Platform-based AVD.
      * @throws IOException
      */
-    private Map<String, String> promptForHardware(IAndroidTarget createTarget,
-            Map<String, String> skinHardwareConfig) throws IOException {
+    @Nullable
+    private Map<String, String> promptForHardware(
+                @NonNull  IAndroidTarget createTarget,
+                @Nullable Map<String, String> skinHardwareConfig) throws IOException {
         byte[] readLineBuffer = new byte[256];
         String result;
         String defaultAnswer = "no";

@@ -17,8 +17,10 @@
 package com.android.sdkmanager;
 
 
+import com.android.SdkConstants;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.android.sdklib.SdkManagerTestCase;
+import com.android.sdklib.internal.avd.AvdManager;
 import com.android.utils.ILogger;
 
 import java.io.File;
@@ -57,7 +59,7 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
 
     // ------ tests
 
-    public void testListTargets() {
+    public void testListTargets() throws Exception {
         runCmdLine("list", "targets", "--compact");
         assertEquals(
                 "P android-0\n",
@@ -77,7 +79,7 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 getLog().toString());
     }
 
-    public void testListAvds() {
+    public void testListAvds() throws Exception {
         runCmdLine("list", "avds", "--compact");
         assertEquals("", getLog().toString());
 
@@ -85,7 +87,7 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
         assertEquals("P Available Android Virtual Devices:\n", getLog().toString());
     }
 
-    public void testListDevices() {
+    public void testListDevices() throws Exception {
         runCmdLine("list", "device", "--compact");
         assertEquals(
                 "P Galaxy Nexus\n" +
@@ -220,7 +222,7 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 getLog().toString());
     }
 
-    public void testCreateAvd() {
+    public void testCreateAvd() throws Exception {
         runCmdLine("list", "avd");
         assertEquals("P Available Android Virtual Devices:\n", getLog().toString());
 
@@ -316,6 +318,33 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 "hw.trackBall=no\n",
                 getLog().toString());
 
+        runCmdLine("create", "avd",
+                "--target", "android-0",
+                "--name",   "gn-sdcard",
+                "--device", "0",
+                "--abi",    "armeabi",
+                "--sdcard", "1023G");
+        assertEquals(
+                "P [EXEC] @SDK/tools/mksdcard 1023G @AVD/gn-sdcard.avd/sdcard.img\n" +
+                "P Created AVD 'gn-sdcard' based on Android 0.0, ARM (armeabi) processor,\n" +
+                "with the following hardware config:\n" +
+                "hw.accelerometer=yes\n" +
+                "hw.audioInput=yes\n" +
+                "hw.battery=yes\n" +
+                "hw.dPad=no\n" +
+                "hw.device.hash2=MD5:6930e145748b87e87d3f40cabd140a41\n" +
+                "hw.device.manufacturer=Google\n" +
+                "hw.device.name=Galaxy Nexus\n" +
+                "hw.gps=yes\n" +
+                "hw.keyboard=no\n" +
+                "hw.lcd.density=320\n" +
+                "hw.mainKeys=no\n" +
+                "hw.sdCard=yes\n" +
+                "hw.sensors.orientation=yes\n" +
+                "hw.sensors.proximity=yes\n" +
+                "hw.trackBall=no\n",
+                sanitizePaths(getLog().toString()));
+
         runCmdLine("list", "avd");
         assertEquals(
                 "P Available Android Virtual Devices:\n" +
@@ -345,6 +374,14 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 "P  Tag/ABI: default/armeabi\n" +
                 "P     Skin: HVGA\n" +
                 "P ---------\n" +
+                "P     Name: gn-sdcard\n" +
+                "P   Device: Galaxy Nexus (Google)\n" +
+                "P     Path: @AVD/gn-sdcard.avd\n" +
+                "P   Target: Android 0.0 (API level 0)\n" +
+                "P  Tag/ABI: default/armeabi\n" +
+                "P     Skin: HVGA\n" +
+                "P   Sdcard: 1023G\n" +
+                "P ---------\n" +
                 "P     Name: my-avd\n" +
                 "P     Path: @AVD/my-avd.avd\n" +
                 "P   Target: Android 0.0 (API level 0)\n" +
@@ -359,7 +396,7 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 sanitizePaths(getLog().toString()));
     }
 
-    public void testCreateAvd_Errors() {
+    public void testCreateAvd_Errors() throws Exception {
         expectExitOnError("E The parameter --target must be defined for action 'create avd'",
                 "create", "avd",
                 "--name",   "my-avd",
@@ -401,9 +438,33 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 "--name",   "my-avd",
                 "--tag",    "tag-1",
                 "--abi",    "not-an-abi");
+
+        expectExitOnError("E SD Card size must be in the range 9 MiB..1023 GiB",
+                "create", "avd",
+                "--target", "android-0",
+                "--name",   "gn-sdcard",
+                "--device", "0",
+                "--abi",    "armeabi",
+                "--sdcard", "8M");
+
+        expectExitOnError("E SD Card size must be in the range 9 MiB..1023 GiB",
+                "create", "avd",
+                "--target", "android-0",
+                "--name",   "gn-sdcard",
+                "--device", "0",
+                "--abi",    "armeabi",
+                "--sdcard", "1024G");
+
+        expectExitOnError("E 'abcd' is not recognized as a valid sdcard value",
+                "create", "avd",
+                "--target", "android-0",
+                "--name",   "gn-sdcard",
+                "--device", "0",
+                "--abi",    "armeabi",
+                "--sdcard", "abcd");
     }
 
-    public void testMissingTagSysImg() {
+    public void testMissingTagSysImg() throws Exception {
         // setup installed a "tag-1" system image above. Create an AVD using it.
         runCmdLine("create", "avd",
                 "--target", "android-0",
@@ -481,7 +542,7 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
      * A test-specific implementation of {@link Main} that calls
      * {@link Assert#fail()} instead of {@link System#exit(int)}.
      */
-    private static class ExitMain extends Main {
+    private class ExitMain extends Main {
         @Override
         protected void exit(int code) {
             fail("Main.exit(" + code + ") reached. Log:\n" + getLogger().toString());
@@ -498,13 +559,19 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
             fail("Unexpected Main.readLine call. Log:\n" + log);
             return null; // not reached
         }
+
+        @Override
+        protected AvdManager getAvdManager() throws AndroidLocationException {
+            return SdkManagerTest2.this.getAvdManager();
+        }
     }
 
     /**
      * Creates a {@link Main}, set it up with an {@code SdkManager} and a logger,
      * parses the given command-line arguments and executes the action.
      */
-    private Main runCmdLine(String...args) {
+    private Main runCmdLine(String...args) throws Exception {
+        super.createSdkAvdManagers();
         Main main = new ExitMain();
         main.setupForTest(getSdkManager(), getLog(), new ExitSdkCommandLine(getLog()), args);
         getLog().clear();
@@ -519,7 +586,7 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
      * Invokes {@link #runCmdLine(String...)} with the given command-line arguments
      * and checks the log results to make sure the log output contains the expected string.
      */
-    private void expectExitOnError(String expected, String...args) {
+    private void expectExitOnError(String expected, String...args) throws Exception {
         boolean failedAsExpected = false;
         boolean failedToFailed = false;
         try {
@@ -551,6 +618,7 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
             } catch (AndroidLocationException ignore) {}
 
             str = str.replace(File.separatorChar, '/');
+            str = str.replace(SdkConstants.mkSdCardCmdName(), "mksdcard");
         }
 
         return str;

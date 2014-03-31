@@ -24,7 +24,6 @@ import com.android.resources.Density;
 import com.android.resources.ScreenSize;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.ISystemImage;
-import com.android.sdklib.SdkManager;
 import com.android.sdklib.SystemImage;
 import com.android.sdklib.devices.Camera;
 import com.android.sdklib.devices.CameraLocation;
@@ -509,9 +508,9 @@ public class AvdCreationDialog extends GridDialog {
     private void initializeDevices() {
         assert mDevice != null;
 
-        SdkManager sdkManager = mAvdManager.getSdkManager();
-        String location = sdkManager.getLocation();
-        if (sdkManager != null && location != null) {
+        LocalSdk localSdk = mAvdManager.getLocalSdk();
+        File location = localSdk.getLocation();
+        if (location != null) {
             DeviceManager deviceManager = DeviceManager.createInstance(location, mSdkLog);
             List<Device>  deviceList    = deviceManager.getDevices(DeviceManager.ALL_DEVICES);
 
@@ -757,9 +756,9 @@ public class AvdCreationDialog extends GridDialog {
         index = -1;
 
         List<IAndroidTarget> targetData = new ArrayList<IAndroidTarget>();
-        SdkManager sdkManager = mAvdManager.getSdkManager();
-        if (sdkManager != null) {
-            for (IAndroidTarget target : sdkManager.getTargets()) {
+        LocalSdk localSdk = mAvdManager.getLocalSdk();
+        if (localSdk != null) {
+            for (IAndroidTarget target : localSdk.getTargets()) {
                 String name;
                 if (target.isPlatform()) {
                     name = String.format("%s - API Level %s",
@@ -899,7 +898,7 @@ public class AvdCreationDialog extends GridDialog {
             }
 
             // path of sdk/system-images
-            String sdkSysImgPath = new File(mAvdManager.getSdkManager().getLocation(),
+            String sdkSysImgPath = new File(mAvdManager.getLocalSdk().getLocation(),
                                             SdkConstants.FD_SYSTEM_IMAGES).getAbsolutePath();
 
             for (File skin : target.getSkins()) {
@@ -1434,7 +1433,7 @@ public class AvdCreationDialog extends GridDialog {
             // the AVD .ini skin path is relative to the SDK folder *or* is a numeric size.
             String skinIniPath = props.get(AvdManager.AVD_INI_SKIN_PATH);
             if (skinIniPath != null) {
-                File skinFolder = new File(mAvdManager.getSdkManager().getLocation(), skinIniPath);
+                File skinFolder = new File(mAvdManager.getLocalSdk().getLocation(), skinIniPath);
 
                 for (int i = 0; i < mCurrentSkinData.size(); i++) {
                     if (mCurrentSkinData.get(i).hasPath() &&

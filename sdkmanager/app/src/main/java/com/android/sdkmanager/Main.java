@@ -291,7 +291,7 @@ public class Main {
     @VisibleForTesting(visibility=Visibility.PRIVATE)
     protected AvdManager getAvdManager() throws AndroidLocationException {
         if (mAvdManager == null) {
-            mAvdManager = AvdManager.getInstance(mSdkManager, mSdkLog);
+            mAvdManager = AvdManager.getInstance(mSdkManager.getLocalSdk(), mSdkLog);
         }
         return mAvdManager;
     }
@@ -1194,7 +1194,7 @@ public class Main {
     private void displayDeviceList() {
 
         DeviceManager devman = DeviceManager.createInstance(
-                mSdkManager.getLocation(), mSdkLog);
+                mSdkManager.getLocalSdk().getLocation(), mSdkLog);
 
         List<Device> devices = new ArrayList<Device>(devman.getDevices(DeviceManager.ALL_DEVICES));
         Collections.sort(devices, Device.getDisplayComparator());
@@ -1408,7 +1408,7 @@ public class Main {
             String deviceParam = mSdkCommandLine.getParamDevice();
             if (deviceParam != null) {
                 DeviceManager devman = DeviceManager.createInstance(
-                        mSdkManager.getLocation(), mSdkLog);
+                        mSdkManager.getLocalSdk().getLocation(), mSdkLog);
 
                 List<Device> devices = new ArrayList<Device>(devman.getDevices(DeviceManager.ALL_DEVICES));
                 Collections.sort(devices, Device.getDisplayComparator());

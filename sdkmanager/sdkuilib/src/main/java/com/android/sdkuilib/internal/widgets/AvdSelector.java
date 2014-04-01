@@ -82,7 +82,7 @@ public final class AvdSelector {
     private final DisplayMode mDisplayMode;
 
     private AvdManager mAvdManager;
-    private final String mOsSdkPath;
+    private final String mOsSdkPath;    // TODO consider converting to File later
 
     private Table mTable;
     private Button mDeleteButton;
@@ -1068,8 +1068,12 @@ public final class AvdSelector {
             return;
         }
 
-        AvdStartDialog dialog = new AvdStartDialog(mTable.getShell(), avdInfo, mOsSdkPath,
-                mController, mSdkLog);
+        AvdStartDialog dialog = new AvdStartDialog(
+                mTable.getShell(),
+                avdInfo,
+                new File(mOsSdkPath),
+                mController,
+                mSdkLog);
         if (dialog.open() == Window.OK) {
             String path = mOsSdkPath + File.separator
                     + SdkConstants.OS_SDK_TOOLS_FOLDER

@@ -21,7 +21,6 @@ import com.android.io.FileWrapper;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.ISystemImage;
-import com.android.sdklib.SdkManager;
 import com.android.sdklib.SystemImage;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
@@ -233,12 +232,12 @@ final class LegacyAvdEditDialog extends GridDialog {
 
         File hardwareDefs = null;
 
-        SdkManager sdkMan = avdManager.getSdkManager();
-        if (sdkMan != null) {
-            String sdkPath = sdkMan.getLocation();
+        LocalSdk localSdk = avdManager.getLocalSdk();
+        if (localSdk != null) {
+            File sdkPath = localSdk.getLocation();
             if (sdkPath != null) {
-                hardwareDefs = new File (sdkPath + File.separator +
-                        SdkConstants.OS_SDK_TOOLS_LIB_FOLDER, SdkConstants.FN_HARDWARE_INI);
+                hardwareDefs = new File(new File(sdkPath, SdkConstants.OS_SDK_TOOLS_LIB_FOLDER),
+                                                          SdkConstants.FN_HARDWARE_INI);
             }
         }
 
@@ -914,9 +913,9 @@ final class LegacyAvdEditDialog extends GridDialog {
         boolean found = false;
         index = -1;
 
-        SdkManager sdkManager = mAvdManager.getSdkManager();
-        if (sdkManager != null) {
-            for (IAndroidTarget target : sdkManager.getTargets()) {
+        LocalSdk localSdk = mAvdManager.getLocalSdk();
+        if (localSdk != null) {
+            for (IAndroidTarget target : localSdk.getTargets()) {
                 String name;
                 if (target.isPlatform()) {
                     name = String.format("%s - API Level %s",

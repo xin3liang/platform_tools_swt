@@ -105,7 +105,7 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 "P 3.2in HVGA slider (ADP1)\n" +
                 "P 3.2in QVGA (ADP2)\n" +
                 "P 3.3in WQVGA\n" +
-                "P 3.4\" WQVGA\n" +
+                "P 3.4in WQVGA\n" +
                 "P 3.7 FWVGA slider\n" +
                 "P 3.7in WVGA (Nexus One)\n" +
                 "P 4in WVGA (Nexus S)\n" +
@@ -180,8 +180,8 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
                 "P     Name: 3.3\" WQVGA\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 15 or \"3.4\" WQVGA\"\n" +
-                "P     Name: 3.4in WQVGA\n" +
+                "P id: 15 or \"3.4in WQVGA\"\n" +
+                "P     Name: 3.4\" WQVGA\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
                 "P id: 16 or \"3.7 FWVGA slider\"\n" +

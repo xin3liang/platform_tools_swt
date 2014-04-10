@@ -59,18 +59,18 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
         // the fake locally-installed SDK.
         String actual = pageImpl.getMockTreeDisplay();
         assertEquals(
-                "[]    Tools                      |  |            |          \n" +
-                " L_[] Android SDK Tools          |  |      1.0.1 | Installed\n" +
-                " L_[] Android SDK Platform-tools |  |     17.1.2 | Installed\n" +
-                " L_[] Android SDK Build-tools    |  |      3.0.1 | Installed\n" +
-                " L_[] Android SDK Build-tools    |  |          3 | Installed\n" +
-                "[]    Tools (Preview Channel)    |  |            |          \n" +
-                " L_[] Android SDK Build-tools    |  | 18.3.4 rc5 | Installed\n" +
-                "[]    Android 0.0 (API 0)        |  |            |          \n" +
-                " L_[] SDK Platform               |  |          1 | Installed\n" +
-                " L_[] Tag 1 System Image         |  |          0 | Installed\n" +
-                " L_[] Sources for Android SDK    |  |          0 | Installed\n" +
-                "[]    Extras                     |  |            |          ",
+                "[]    Tools                           |  |            |          \n" +
+                " L_[] Android SDK Tools               |  |      1.0.1 | Installed\n" +
+                " L_[] Android SDK Platform-tools      |  |     17.1.2 | Installed\n" +
+                " L_[] Android SDK Build-tools         |  |      3.0.1 | Installed\n" +
+                " L_[] Android SDK Build-tools         |  |          3 | Installed\n" +
+                "[]    Tools (Preview Channel)         |  |            |          \n" +
+                " L_[] Android SDK Build-tools         |  | 18.3.4 rc5 | Installed\n" +
+                "[]    Android 0.0 (API 0)             |  |            |          \n" +
+                " L_[] SDK Platform                    |  |          1 | Installed\n" +
+                " L_[] Sys-Img v0 for (Tag 1, armeabi) |  |          0 | Installed\n" +
+                " L_[] Sources for Android SDK         |  |          0 | Installed\n" +
+                "[]    Extras                          |  |            |          ",
                 actual);
 
         assertEquals(
@@ -79,6 +79,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
         assertEquals(
                 "[<https://dl-ssl.google.com/android/repository/addons_list-1.xml : 1>, " +
                  "<https://dl-ssl.google.com/android/repository/addons_list-2.xml : 1>, " +
+                 "<https://dl-ssl.google.com/android/repository/repository-10.xml : 2>, " +
                  "<https://dl-ssl.google.com/android/repository/repository-5.xml : 2>, " +
                  "<https://dl-ssl.google.com/android/repository/repository-6.xml : 2>, " +
                  "<https://dl-ssl.google.com/android/repository/repository-7.xml : 2>, " +
@@ -97,27 +98,28 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
 
         actual = pageImpl.getMockTreeDisplay();
         assertEquals(
-                "[]    Tools                      |  |            |                              \n" +
-                " L_[] Android SDK Tools          |  |      1.0.1 | Update available: rev. 20.0.3\n" +
-                " L_[] Android SDK Platform-tools |  |     17.1.2 | Update available: rev. 18    \n" +
-                " L_[] Android SDK Build-tools    |  |         18 | Not installed                \n" +
-                " L_[] Android SDK Build-tools    |  |      3.0.1 | Installed                    \n" +
-                " L_[] Android SDK Build-tools    |  |          3 | Installed                    \n" +
-                "[]    Tools (Preview Channel)    |  |            |                              \n" +
+                "[]    Tools                           |  |            |                              \n" +
+                " L_[] Android SDK Tools               |  |      1.0.1 | Update available: rev. 20.0.3\n" +
+                " L_[] Android SDK Platform-tools      |  |     17.1.2 | Update available: rev. 18    \n" +
+                " L_[] Android SDK Build-tools         |  |         18 | Not installed                \n" +
+                " L_[] Android SDK Build-tools         |  |      3.0.1 | Installed                    \n" +
+                " L_[] Android SDK Build-tools         |  |          3 | Installed                    \n" +
+                "[]    Tools (Preview Channel)         |  |            |                              \n" +
                 // Note: locally installed previews are always shown, even when enable previews is false.
-                " L_[] Android SDK Build-tools    |  | 18.3.4 rc5 | Installed                    \n" +
-                "[]    Android 0.0 (API 0)        |  |            |                              \n" +
-                " L_[] SDK Platform               |  |          1 | Installed                    \n" +
-                " L_[] Tag 1 System Image         |  |          0 | Installed                    \n" +
-                " L_[] Sources for Android SDK    |  |          0 | Installed                    \n" +
-                "[]    Extras                     |  |            |                              ",
+                " L_[] Android SDK Build-tools         |  | 18.3.4 rc5 | Installed                    \n" +
+                "[]    Android 0.0 (API 0)             |  |            |                              \n" +
+                " L_[] SDK Platform                    |  |          1 | Installed                    \n" +
+                " L_[] Sys-Img v0 for (Tag 1, armeabi) |  |          0 | Installed                    \n" +
+                " L_[] Sources for Android SDK         |  |          0 | Installed                    \n" +
+                "[]    Extras                          |  |            |                              ",
                 actual);
 
         assertEquals(
                 "[]",  // there are no direct downloads till we try to install.
                 Arrays.toString(cache.getDirectHits()));
         assertEquals(
-                "[<https://dl-ssl.google.com/android/repository/repository-5.xml : 1>, " +
+                "[<https://dl-ssl.google.com/android/repository/repository-10.xml : 1>, " +
+                 "<https://dl-ssl.google.com/android/repository/repository-5.xml : 1>, " +
                  "<https://dl-ssl.google.com/android/repository/repository-6.xml : 1>, " +
                  "<https://dl-ssl.google.com/android/repository/repository-7.xml : 1>, " +
                  "<https://dl-ssl.google.com/android/repository/repository-8.xml : 1>, " +
@@ -137,26 +139,27 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
 
         actual = pageImpl.getMockTreeDisplay();
         assertEquals(
-                "[]    Tools                      |  |            |                              \n" +
-                " L_[] Android SDK Tools          |  |      1.0.1 | Update available: rev. 20.0.3\n" +
-                " L_[] Android SDK Platform-tools |  |     17.1.2 | Update available: rev. 18    \n" +
-                " L_[] Android SDK Build-tools    |  |         18 | Not installed                \n" +
-                " L_[] Android SDK Build-tools    |  |      3.0.1 | Installed                    \n" +
-                " L_[] Android SDK Build-tools    |  |          3 | Installed                    \n" +
-                "[]    Tools (Preview Channel)    |  |            |                              \n" +
-                " L_[] Android SDK Build-tools    |  | 18.3.4 rc5 | Installed                    \n" +
-                "[]    Android 0.0 (API 0)        |  |            |                              \n" +
-                " L_[] SDK Platform               |  |          1 | Installed                    \n" +
-                " L_[] Tag 1 System Image         |  |          0 | Installed                    \n" +
-                " L_[] Sources for Android SDK    |  |          0 | Installed                    \n" +
-                "[]    Extras                     |  |            |                              ",
+                "[]    Tools                           |  |            |                              \n" +
+                " L_[] Android SDK Tools               |  |      1.0.1 | Update available: rev. 20.0.3\n" +
+                " L_[] Android SDK Platform-tools      |  |     17.1.2 | Update available: rev. 18    \n" +
+                " L_[] Android SDK Build-tools         |  |         18 | Not installed                \n" +
+                " L_[] Android SDK Build-tools         |  |      3.0.1 | Installed                    \n" +
+                " L_[] Android SDK Build-tools         |  |          3 | Installed                    \n" +
+                "[]    Tools (Preview Channel)         |  |            |                              \n" +
+                " L_[] Android SDK Build-tools         |  | 18.3.4 rc5 | Installed                    \n" +
+                "[]    Android 0.0 (API 0)             |  |            |                              \n" +
+                " L_[] SDK Platform                    |  |          1 | Installed                    \n" +
+                " L_[] Sys-Img v0 for (Tag 1, armeabi) |  |          0 | Installed                    \n" +
+                " L_[] Sources for Android SDK         |  |          0 | Installed                    \n" +
+                "[]    Extras                          |  |            |                              ",
                 actual);
 
         assertEquals(
                 "[]",  // there are no direct downloads till we try to install.
                 Arrays.toString(cache.getDirectHits()));
         assertEquals(
-                "[<https://dl-ssl.google.com/android/repository/repository-5.xml : 1>, " +
+               "[<https://dl-ssl.google.com/android/repository/repository-10.xml : 1>, " +
+                "<https://dl-ssl.google.com/android/repository/repository-5.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository-6.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository-7.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository-8.xml : 1>, " +
@@ -176,26 +179,27 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
 
         actual = pageImpl.getMockTreeDisplay();
         assertEquals(
-                "[]    Tools                      |  |            |                                   \n" +
-                " L_[] Android SDK Tools          |  |      1.0.1 | Update available: rev. 20.0.3     \n" +
-                " L_[] Android SDK Platform-tools |  |     17.1.2 | Update available: rev. 18         \n" +
-                " L_[] Android SDK Build-tools    |  |         18 | Not installed                     \n" +
-                " L_[] Android SDK Build-tools    |  |      3.0.1 | Installed                         \n" +
-                " L_[] Android SDK Build-tools    |  |          3 | Installed                         \n" +
-                "[]    Tools (Preview Channel)    |  |            |                                   \n" +
-                " L_[] Android SDK Build-tools    |  | 18.3.4 rc5 | Update available: rev. 18.3.4 rc15\n" +
-                "[]    Android 0.0 (API 0)        |  |            |                                   \n" +
-                " L_[] SDK Platform               |  |          1 | Installed                         \n" +
-                " L_[] Tag 1 System Image         |  |          0 | Installed                         \n" +
-                " L_[] Sources for Android SDK    |  |          0 | Installed                         \n" +
-                "[]    Extras                     |  |            |                                   ",
+                "[]    Tools                           |  |            |                                   \n" +
+                " L_[] Android SDK Tools               |  |      1.0.1 | Update available: rev. 20.0.3     \n" +
+                " L_[] Android SDK Platform-tools      |  |     17.1.2 | Update available: rev. 18         \n" +
+                " L_[] Android SDK Build-tools         |  |         18 | Not installed                     \n" +
+                " L_[] Android SDK Build-tools         |  |      3.0.1 | Installed                         \n" +
+                " L_[] Android SDK Build-tools         |  |          3 | Installed                         \n" +
+                "[]    Tools (Preview Channel)         |  |            |                                   \n" +
+                " L_[] Android SDK Build-tools         |  | 18.3.4 rc5 | Update available: rev. 18.3.4 rc15\n" +
+                "[]    Android 0.0 (API 0)             |  |            |                                   \n" +
+                " L_[] SDK Platform                    |  |          1 | Installed                         \n" +
+                " L_[] Sys-Img v0 for (Tag 1, armeabi) |  |          0 | Installed                         \n" +
+                " L_[] Sources for Android SDK         |  |          0 | Installed                         \n" +
+                "[]    Extras                          |  |            |                                   ",
                 actual);
 
         assertEquals(
                 "[]",  // there are no direct downloads till we try to install.
                 Arrays.toString(cache.getDirectHits()));
         assertEquals(
-                "[<https://dl-ssl.google.com/android/repository/repository-5.xml : 1>, " +
+               "[<https://dl-ssl.google.com/android/repository/repository-10.xml : 1>, " +
+                "<https://dl-ssl.google.com/android/repository/repository-5.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository-6.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository-7.xml : 1>, " +
                 "<https://dl-ssl.google.com/android/repository/repository-8.xml : 1>, " +
@@ -207,7 +211,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
     private void setupToolsXml1(MockDownloadCache cache) throws Exception {
         String repoXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<sdk:sdk-repository xmlns:sdk=\"http://schemas.android.com/sdk/android/repository/8\" " +
+            "<sdk:sdk-repository xmlns:sdk=\"http://schemas.android.com/sdk/android/repository/10\" " +
             "                    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
             "<sdk:license id=\"android-sdk-license\" type=\"text\">Blah blah blah.</sdk:license>\n" +
             "\n" +
@@ -284,6 +288,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
             "</sdk:platform-tool>\n" +
             "\n" +
             "<sdk:tool>\n" +
+            "    <sdk:list-display>Tools 20 (list display string)</sdk:list-display>\n" +
             "    <sdk:revision>\n" +
             "        <sdk:major>20</sdk:major>\n" +
             "        <sdk:minor>0</sdk:minor>\n" +

@@ -1393,7 +1393,7 @@ public class AvdCreationDialog extends GridDialog {
 
             String gpuEmulation = props.get(AvdManager.AVD_INI_GPU_EMULATION);
             mGpuEmulation.setSelection(gpuEmulation != null &&
-                    gpuEmulation.equals(HardwareProperties.BOOLEAN_VALUES[0]));
+                    gpuEmulation.equals(HardwareProperties.BOOLEAN_YES));
 
             String sdcard = props.get(AvdManager.AVD_INI_SDCARD_PATH);
             if (sdcard != null && sdcard.length() > 0) {

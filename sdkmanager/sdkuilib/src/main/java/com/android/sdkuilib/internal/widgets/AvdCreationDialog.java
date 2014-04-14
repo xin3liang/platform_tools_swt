@@ -1005,8 +1005,12 @@ public class AvdCreationDialog extends GridDialog {
             return;
         }
 
-        if (!mCurrentSystemImages.isEmpty() && getSelectedTagAbi() == null) {
-            error = "No CPU/ABI selected";
+        if (mCurrentSystemImages.isEmpty()) {
+            error = "No CPU/ABI system image available for this target";
+            setPageValid(false, error, null);
+            return;
+        } else if (getSelectedTagAbi() == null) {
+            error = "No CPU/ABI system image selected";
             setPageValid(false, error, null);
             return;
         }

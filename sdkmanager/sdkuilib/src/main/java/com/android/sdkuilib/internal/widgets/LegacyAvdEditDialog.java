@@ -632,7 +632,7 @@ final class LegacyAvdEditDialog extends GridDialog {
                         break;
                     case BOOLEAN:
                         index = (Integer)value;
-                        mProperties.put((String)element, HardwareProperties.BOOLEAN_VALUES[index]);
+                        mProperties.put((String)element, HardwareProperties.getBooleanValue(index));
                         break;
                     case STRING_ENUM:
                     case INTEGER_ENUM:
@@ -687,7 +687,10 @@ final class LegacyAvdEditDialog extends GridDialog {
                         return new TextCellEditor(hardwareTable);
                     case BOOLEAN:
                         return new ComboBoxCellEditor(hardwareTable,
-                                HardwareProperties.BOOLEAN_VALUES,
+                                new String[] {
+                                    HardwareProperties.getBooleanValue(0),
+                                    HardwareProperties.getBooleanValue(1),
+                                },
                                 SWT.READ_ONLY | SWT.DROP_DOWN);
                     case STRING_ENUM:
                     case INTEGER_ENUM:

@@ -23,6 +23,7 @@ import com.android.sdklib.internal.repository.updater.ISettingsPage;
 import com.android.sdklib.repository.SdkRepoConstants;
 import com.android.sdkuilib.internal.repository.MockSwtUpdaterData;
 
+import java.io.File;
 import java.util.Arrays;
 
 public class SdkManagerUpgradeTest extends SdkManagerTestCase {
@@ -42,6 +43,8 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
      */
     public void testPackagesPage1() throws Exception {
         SdkManager sdkman = getSdkManager();
+        File siArm = makeSystemImageFolder(TARGET_DIR_NAME_0, "tag-1", "armeabi");
+        makeFakeSkin(siArm, "Tag1ArmSkin");
 
         MockSwtUpdaterData updaterData = new MockSwtUpdaterData(sdkman);
         MockDownloadCache cache = (MockDownloadCache) updaterData.getDownloadCache();
@@ -65,6 +68,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 " L_[] Android SDK Build-tools    |  | 18.3.4 rc5 | Installed\n" +
                 "[]    Android 0.0 (API 0)        |  |            |          \n" +
                 " L_[] SDK Platform               |  |          1 | Installed\n" +
+                " L_[] Tag 1 System Image         |  |          0 | Installed\n" +
                 " L_[] Sources for Android SDK    |  |          0 | Installed\n" +
                 "[]    Extras                     |  |            |          ",
                 actual);
@@ -104,6 +108,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 " L_[] Android SDK Build-tools    |  | 18.3.4 rc5 | Installed                    \n" +
                 "[]    Android 0.0 (API 0)        |  |            |                              \n" +
                 " L_[] SDK Platform               |  |          1 | Installed                    \n" +
+                " L_[] Tag 1 System Image         |  |          0 | Installed                    \n" +
                 " L_[] Sources for Android SDK    |  |          0 | Installed                    \n" +
                 "[]    Extras                     |  |            |                              ",
                 actual);
@@ -142,6 +147,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 " L_[] Android SDK Build-tools    |  | 18.3.4 rc5 | Installed                    \n" +
                 "[]    Android 0.0 (API 0)        |  |            |                              \n" +
                 " L_[] SDK Platform               |  |          1 | Installed                    \n" +
+                " L_[] Tag 1 System Image         |  |          0 | Installed                    \n" +
                 " L_[] Sources for Android SDK    |  |          0 | Installed                    \n" +
                 "[]    Extras                     |  |            |                              ",
                 actual);
@@ -180,6 +186,7 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
                 " L_[] Android SDK Build-tools    |  | 18.3.4 rc5 | Update available: rev. 18.3.4 rc15\n" +
                 "[]    Android 0.0 (API 0)        |  |            |                                   \n" +
                 " L_[] SDK Platform               |  |          1 | Installed                         \n" +
+                " L_[] Tag 1 System Image         |  |          0 | Installed                         \n" +
                 " L_[] Sources for Android SDK    |  |          0 | Installed                         \n" +
                 "[]    Extras                     |  |            |                                   ",
                 actual);

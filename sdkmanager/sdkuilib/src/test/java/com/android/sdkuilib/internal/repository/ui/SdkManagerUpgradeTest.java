@@ -220,17 +220,20 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
             "        <sdk:major>18</sdk:major>\n" +
             "    </sdk:revision>\n" +
             "    <sdk:archives>\n" +
-            "        <sdk:archive arch=\"any\" os=\"windows\">\n" +
+            "        <sdk:archive>\n" +
+            "            <sdk:host-os>windows</sdk:host-os>\n" +
             "            <sdk:size>11159472</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">6028258d8f2fba14d8b40c3cf507afa0289aaa13</sdk:checksum>\n" +
             "            <sdk:url>platform-tools_r18-windows.zip</sdk:url>\n" +
             "        </sdk:archive>\n" +
-            "        <sdk:archive arch=\"any\" os=\"linux\">\n" +
+            "        <sdk:archive>\n" +
+            "            <sdk:host-os>linux</sdk:host-os>\n" +
             "            <sdk:size>10985068</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">6e2bc329c9485eb383172cbc2cde8b0c0cd1843f</sdk:checksum>\n" +
             "            <sdk:url>platform-tools_r18-linux.zip</sdk:url>\n" +
             "        </sdk:archive>\n" +
-            "        <sdk:archive arch=\"any\" os=\"macosx\">\n" +
+            "        <sdk:archive>\n" +
+            "            <sdk:host-os>macosx</sdk:host-os>\n" +
             "            <sdk:size>11342461</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">4a015090c6a209fc33972acdbc65745e0b3c08b9</sdk:checksum>\n" +
             "            <sdk:url>platform-tools_r18-macosx.zip</sdk:url>\n" +
@@ -246,17 +249,20 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
             "        <sdk:preview>15</sdk:preview>\n" +
             "    </sdk:revision>\n" +
             "    <sdk:archives>\n" +
-            "        <sdk:archive arch=\"any\" os=\"windows\">\n" +
+            "        <sdk:archive>\n" +
+            "            <sdk:host-os>windows</sdk:host-os>\n" +
             "            <sdk:size>11159472</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">6028258d8f2fba14d8b40c3cf507afa0289aaa13</sdk:checksum>\n" +
             "            <sdk:url>platform-tools_r18-windows.zip</sdk:url>\n" +
             "        </sdk:archive>\n" +
-            "        <sdk:archive arch=\"any\" os=\"linux\">\n" +
+            "        <sdk:archive>\n" +
+            "            <sdk:host-os>linux</sdk:host-os>\n" +
             "            <sdk:size>10985068</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">6e2bc329c9485eb383172cbc2cde8b0c0cd1843f</sdk:checksum>\n" +
             "            <sdk:url>platform-tools_r18-linux.zip</sdk:url>\n" +
             "        </sdk:archive>\n" +
-            "        <sdk:archive arch=\"any\" os=\"macosx\">\n" +
+            "        <sdk:archive>\n" +
+            "            <sdk:host-os>macosx</sdk:host-os>\n" +
             "            <sdk:size>11342461</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">4a015090c6a209fc33972acdbc65745e0b3c08b9</sdk:checksum>\n" +
             "            <sdk:url>platform-tools_r18-macosx.zip</sdk:url>\n" +
@@ -269,17 +275,20 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
             "        <sdk:major>18</sdk:major>\n" +
             "    </sdk:revision>\n" +
             "    <sdk:archives>\n" +
-            "        <sdk:archive arch=\"any\" os=\"windows\">\n" +
+            "        <sdk:archive>\n" +
+            "            <sdk:host-os>windows</sdk:host-os>\n" +
             "            <sdk:size>11159472</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">6028258d8f2fba14d8b40c3cf507afa0289aaa13</sdk:checksum>\n" +
             "            <sdk:url>platform-tools_r18-windows.zip</sdk:url>\n" +
             "        </sdk:archive>\n" +
-            "        <sdk:archive arch=\"any\" os=\"linux\">\n" +
+            "        <sdk:archive>\n" +
+            "            <sdk:host-os>linux</sdk:host-os>\n" +
             "            <sdk:size>10985068</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">6e2bc329c9485eb383172cbc2cde8b0c0cd1843f</sdk:checksum>\n" +
             "            <sdk:url>platform-tools_r18-linux.zip</sdk:url>\n" +
             "        </sdk:archive>\n" +
-            "        <sdk:archive arch=\"any\" os=\"macosx\">\n" +
+            "        <sdk:archive>\n" +
+            "            <sdk:host-os>macosx</sdk:host-os>\n" +
             "            <sdk:size>11342461</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">4a015090c6a209fc33972acdbc65745e0b3c08b9</sdk:checksum>\n" +
             "            <sdk:url>platform-tools_r18-macosx.zip</sdk:url>\n" +
@@ -298,17 +307,20 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
             "        <sdk:major>18</sdk:major>\n" +
             "    </sdk:min-platform-tools-rev>\n" +
             "    <sdk:archives>\n" +
-            "        <sdk:archive arch=\"any\" os=\"windows\">\n" +
+            "        <sdk:archive>\n" +
+            "            <sdk:host-os>windows</sdk:host-os>\n" +
             "            <sdk:size>90272048</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">54fb94168e631e211910f88aa40c532205730dd4</sdk:checksum>\n" +
             "            <sdk:url>tools_r20.0.3-windows.zip</sdk:url>\n" +
             "        </sdk:archive>\n" +
-            "        <sdk:archive arch=\"any\" os=\"linux\">\n" +
+            "        <sdk:archive>\n" +
+            "            <sdk:host-os>linux</sdk:host-os>\n" +
             "            <sdk:size>82723559</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">09bc633b406ae81981e3a0db19426acbb01ef219</sdk:checksum>\n" +
             "            <sdk:url>tools_r20.0.3-linux.zip</sdk:url>\n" +
             "        </sdk:archive>\n" +
-            "        <sdk:archive arch=\"any\" os=\"macosx\">\n" +
+            "        <sdk:archive>\n" +
+            "            <sdk:host-os>macosx</sdk:host-os>\n" +
             "            <sdk:size>58197071</sdk:size>\n" +
             "            <sdk:checksum type=\"sha1\">09cee5ff3226277a6f0c07dcd29cba4ffc2e1da4</sdk:checksum>\n" +
             "            <sdk:url>tools_r20.0.3-macosx.zip</sdk:url>\n" +

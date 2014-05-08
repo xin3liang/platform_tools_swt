@@ -2,21 +2,26 @@ group = 'com.android.tools'
 archivesBaseName = 'sdkmanager'
 
 dependencies {
-    compile project(':sdkuilib')
-    compile "com.android.tools:common:$version"
-    compile "com.android.tools:sdklib:$version"
+    compile project(':swt:sdkmanager:sdkuilib')
+    compile project(':common')
+    compile project(':sdklib')
 
-    testCompile "com.android.tools:sdklib-test:$version"
+    testCompile project(':sdklib-test')
     testCompile 'junit:junit:3.8.1'
 }
 
-shipping {
-    launcherScripts = ['etc/android', 'etc/android.bat']
+sdk {
+    linux {
+       path('etc/android')  { executable true }
+    }
+    mac {
+       path('etc/android')  { executable true }
+    }
+    windows {
+       path 'etc/android.bat'
+    }
 }
 
-// include swt for compilation
-sourceSets.main.compileClasspath += configurations.swt
-
 // configure the manifest of the buildDistributionJar task.
-buildDistributionJar.manifest.attributes("Main-Class": "com.android.sdkmanager.Main")
+sdkJar.manifest.attributes("Main-Class": "com.android.sdkmanager.Main")
 

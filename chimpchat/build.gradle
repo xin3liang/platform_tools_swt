@@ -2,13 +2,11 @@ group = 'com.android.tools'
 archivesBaseName = 'chimpchat'
 
 dependencies {
-    compile project(':hierarchyviewer2lib')
-    compile "com.android.tools:sdklib:$version"
-    compile "com.android.tools.ddms:ddmlib:$version"
+    compile project(':swt:hierarchyviewer2:hierarchyviewer2lib')
+    compile project(':sdklib')
+    compile project(':ddmlib')
 
     testCompile 'junit:junit:3.8.1'
 }
 
-// include swt for compilation
-sourceSets.main.compileClasspath += configurations.swt
-
+apply from: "$rootDir/buildSrc/base/baseVersion.gradle"

@@ -2,14 +2,10 @@ group = 'com.android.tools'
 archivesBaseName = 'hierarchyviewer2lib'
 
 dependencies {
-    compile project(':ddmuilib')
-    compile "com.android.tools.ddms:ddmlib:$version"
+    compile project(':swt:ddms:ddmuilib')
+    compile project(':ddmlib')
     compile 'com.google.guava:guava:15.0'
 }
-
-// include swt for compilation
-sourceSets.main.compileClasspath += configurations.swt
-
 
 sourceSets {
     main.resources.srcDir 'src/main/java'

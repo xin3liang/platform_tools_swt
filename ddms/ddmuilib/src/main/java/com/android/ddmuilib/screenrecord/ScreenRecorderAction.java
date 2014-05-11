@@ -76,6 +76,7 @@ public class ScreenRecorderAction {
                 @Override
                 public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException {
+                    int timeInSecond = 0;
                     monitor.beginTask("Recording...", IProgressMonitor.UNKNOWN);
 
                     while (true) {
@@ -84,9 +85,14 @@ public class ScreenRecorderAction {
                             break;
                         }
 
+                        // update recording time in second
+                        monitor.subTask(String.format("Recording...%d seconds elapsed", timeInSecond++);
+
                         // If not, check if user has cancelled
                         if (monitor.isCanceled()) {
                             receiver.cancel();
+
+                            monitor.subTask("Stopping...");
 
                             // wait for an additional second to make sure that the command
                             // completed and screenrecorder finishes writing the output

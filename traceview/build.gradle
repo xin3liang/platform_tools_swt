@@ -2,17 +2,22 @@ group = 'com.android.tools'
 archivesBaseName = 'traceview'
 
 dependencies {
-    compile project(':sdkstats')
-    compile "com.android.tools:common:$version"
+    compile project(':swt:sdkstats')
+    compile project(':common')
 }
 
-shipping {
-    launcherScripts = ['etc/traceview', 'etc/traceview.bat']
+sdk {
+    linux {
+       path('etc/traceview')  { executable true }
+    }
+    mac {
+       path('etc/traceview')  { executable true }
+    }
+    windows {
+       path 'etc/traceview.bat'
+    }
 }
-
-// include swt for compilation
-sourceSets.main.compileClasspath += configurations.swt
 
 // configure the manifest of the buildDistributionJar task.
-buildDistributionJar.manifest.attributes("Main-Class": "com.android.traceview.MainWindow")
+sdkJar.manifest.attributes("Main-Class": "com.android.traceview.MainWindow")
 

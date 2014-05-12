@@ -2,8 +2,7 @@ group = 'com.android.tools'
 archivesBaseName = 'swtmenubar'
 
 dependencies {
-    compile "com.android.tools:sdklib:$version"
-    compile 'com.android.external.eclipse:org-eclipse-jface:3.6.2'
+    compile project(':sdklib')
 
     testCompile 'junit:junit:3.8.1'
 }

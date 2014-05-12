@@ -2,20 +2,26 @@ group = 'com.android.tools.ddms'
 archivesBaseName = 'ddms'
 
 dependencies {
-    compile project(':ddmuilib')
-    compile project(':sdkstats')
-    compile project(':swtmenubar')
-    compile "com.android.tools:common:$version"
-    compile "com.android.tools.ddms:ddmlib:$version"
+    compile project(':swt:ddms:ddmuilib')
+    compile project(':swt:sdkstats')
+    compile project(':swt:swtmenubar')
+    compile project(':common')
+    compile project(':ddmlib')
 }
 
-shipping {
-    launcherScripts = ['etc/ddms', 'etc/ddms.bat']
+sdk {
+    linux {
+       path('etc/ddms') { executable true }
+    }
+    mac {
+       path('etc/ddms') { executable true }
+    }
+    windows {
+       path 'etc/ddms.bat'
+    }
 }
 
-// include swt for compilation
-sourceSets.main.compileClasspath += configurations.swt
 
 // configure the manifest of the buildDistributionJar task.
-buildDistributionJar.manifest.attributes("Main-Class": "com.android.ddms.Main")
+sdkJar.manifest.attributes("Main-Class": "com.android.ddms.Main")
 

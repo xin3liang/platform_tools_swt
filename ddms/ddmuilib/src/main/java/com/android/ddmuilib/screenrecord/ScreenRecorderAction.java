@@ -86,7 +86,7 @@ public class ScreenRecorderAction {
                         }
 
                         // update recording time in second
-                        monitor.subTask(String.format("Recording...%d seconds elapsed", timeInSecond++);
+                        monitor.subTask(String.format("Recording...%d seconds elapsed", timeInSecond++));
 
                         // If not, check if user has cancelled
                         if (monitor.isCanceled()) {

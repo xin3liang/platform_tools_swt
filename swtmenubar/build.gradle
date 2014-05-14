@@ -2,7 +2,7 @@ group = 'com.android.tools'
 archivesBaseName = 'swtmenubar'
 
 dependencies {
-    compile project(':sdklib')
+    compile project(':base:sdklib')
 
     testCompile 'junit:junit:3.8.1'
 }

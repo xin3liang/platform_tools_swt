@@ -2,19 +2,19 @@ group = 'com.android.tools'
 archivesBaseName = 'traceview'
 
 dependencies {
+    compile project(':base:common')
     compile project(':swt:sdkstats')
-    compile project(':common')
 }
 
 sdk {
     linux {
-       path('etc/traceview')  { executable true }
+       item('etc/traceview')  { executable true }
     }
     mac {
-       path('etc/traceview')  { executable true }
+       item('etc/traceview')  { executable true }
     }
     windows {
-       path 'etc/traceview.bat'
+       item 'etc/traceview.bat'
     }
 }
 

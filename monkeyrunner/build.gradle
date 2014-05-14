@@ -2,11 +2,11 @@ group = 'com.android.tools'
 archivesBaseName = 'monkeyrunner'
 
 dependencies {
+    compile project(':base:common')
+    compile project(':base:sdklib')
+    compile project(':base:ddmlib')
     compile project(':swt:chimpchat')
-    compile project(':swt:hierarchyviewer2:hierarchyviewer2lib')
-    compile project(':common')
-    compile project(':sdklib')
-    compile project(':ddmlib')
+    compile project(':swt:hierarchyviewer2lib')
 
     // Specific prebuilts and external libs used by mr.
     compile 'com.google.jsilver:jsilver:1.0.0'
@@ -22,13 +22,13 @@ sourceSets {
 
 sdk {
     linux {
-       path('etc/monkeyrunner')  { executable true }
+       item('etc/monkeyrunner')  { executable true }
     }
     mac {
-       path('etc/monkeyrunner')  { executable true }
+       item('etc/monkeyrunner')  { executable true }
     }
     windows {
-       path 'etc/monkeyrunner.bat'
+       item 'etc/monkeyrunner.bat'
     }
 }
 

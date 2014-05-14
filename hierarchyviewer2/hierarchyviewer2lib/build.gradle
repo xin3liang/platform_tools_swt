@@ -2,8 +2,9 @@ group = 'com.android.tools'
 archivesBaseName = 'hierarchyviewer2lib'
 
 dependencies {
-    compile project(':swt:ddms:ddmuilib')
-    compile project(':ddmlib')
+    compile project(':base:ddmlib')
+    compile project(':swt:ddmuilib')
+
     compile 'com.google.guava:guava:15.0'
 }
 

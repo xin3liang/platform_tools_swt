@@ -2,23 +2,23 @@ group = 'com.android.tools'
 archivesBaseName = 'sdkmanager'
 
 dependencies {
-    compile project(':swt:sdkmanager:sdkuilib')
-    compile project(':common')
-    compile project(':sdklib')
+    compile project(':base:common')
+    compile project(':base:sdklib')
+    compile project(':swt:sdkuilib')
 
-    testCompile project(':sdklib-test')
+    testCompile project(':base:sdklib-test')
     testCompile 'junit:junit:3.8.1'
 }
 
 sdk {
     linux {
-       path('etc/android')  { executable true }
+       item('etc/android')  { executable true }
     }
     mac {
-       path('etc/android')  { executable true }
+       item('etc/android')  { executable true }
     }
     windows {
-       path 'etc/android.bat'
+       item 'etc/android.bat'
     }
 }
 

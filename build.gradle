@@ -1,3 +1,5 @@
+apply from: "$rootDir/buildSrc/base/baseJava.gradle"
+
 // this applied only to swt/* projects
 subprojects { Project project ->
     // only configure leaf projects.
@@ -26,15 +28,15 @@ apply plugin: 'sdk-files'
 
 sdk {
     linux {
-        path("$rootProject.projectDir/../prebuilts/tools/linux-x86/swt/swt.jar")    { into 'lib/x86' }
-        path("$rootProject.projectDir/../prebuilts/tools/linux-x86_64/swt/swt.jar") { into 'lib/x86_64' }
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/linux-x86/swt/swt.jar")    { into 'lib/x86' }
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/linux-x86_64/swt/swt.jar") { into 'lib/x86_64' }
     }
     mac {
-        path("$rootProject.projectDir/../prebuilts/tools/darwin-x86/swt/swt.jar")    { into 'lib/x86' }
-        path("$rootProject.projectDir/../prebuilts/tools/darwin-x86_64/swt/swt.jar") { into 'lib/x86_64' }
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/darwin-x86/swt/swt.jar")    { into 'lib/x86' }
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/darwin-x86_64/swt/swt.jar") { into 'lib/x86_64' }
     }
     windows {
-        path("$rootProject.projectDir/../prebuilts/tools/windows/swt/swt.jar")        { into 'lib/x86' }
-        path("$rootProject.projectDir/../prebuilts/tools/windows-x86_64/swt/swt.jar") { into 'lib/x86_64' }
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/windows/swt/swt.jar")        { into 'lib/x86' }
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/windows-x86_64/swt/swt.jar") { into 'lib/x86_64' }
     }
 }

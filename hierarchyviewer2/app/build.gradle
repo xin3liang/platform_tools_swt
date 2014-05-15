@@ -2,23 +2,23 @@ group = 'com.android.tools'
 archivesBaseName = 'hierarchyviewer2'
 
 dependencies {
-    compile project(':swt:ddms:ddmuilib')
-    compile project(':swt:hierarchyviewer2:hierarchyviewer2lib')
+    compile project(':base:common')
+    compile project(':base:sdklib')
+    compile project(':base:ddmlib')
+    compile project(':swt:ddmuilib')
+    compile project(':swt:hierarchyviewer2lib')
     compile project(':swt:swtmenubar')
-    compile project(':common')
-    compile project(':sdklib')
-    compile project(':ddmlib')
 }
 
 sdk {
     linux {
-       path('etc/hierarchyviewer')  { executable true }
+       item('etc/hierarchyviewer')  { executable true }
     }
     mac {
-       path('etc/hierarchyviewer')  { executable true }
+       item('etc/hierarchyviewer')  { executable true }
     }
     windows {
-       path 'etc/hierarchyviewer.bat'
+       item 'etc/hierarchyviewer.bat'
     }
 }
 

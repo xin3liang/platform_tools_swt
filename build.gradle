@@ -1,10 +1,9 @@
-apply from: "$rootDir/buildSrc/base/baseJava.gradle"
-
 // this applied only to swt/* projects
 subprojects { Project project ->
     // only configure leaf projects.
     if (!project.getSubprojects().isEmpty()) return
 
+    apply from: "$rootDir/buildSrc/base/baseJava.gradle"
     apply plugin: 'sdk-java-lib'
 
     // configuration for swt dependency since the packaged jar is platform dependent

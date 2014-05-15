@@ -2,7 +2,7 @@ group = 'com.android.tools'
 archivesBaseName = 'uiautomatorviewer'
 
 dependencies {
-    compile project(':ddmlib')
+    compile project(':base:ddmlib')
 }
 
 sourceSets {
@@ -11,13 +11,13 @@ sourceSets {
 
 sdk {
     linux {
-       path('etc/uiautomatorviewer')  { executable true }
+       item('etc/uiautomatorviewer')  { executable true }
     }
     mac {
-       path('etc/uiautomatorviewer')  { executable true }
+       item('etc/uiautomatorviewer')  { executable true }
     }
     windows {
-       path 'etc/uiautomatorviewer.bat'
+       item 'etc/uiautomatorviewer.bat'
     }
 }
 

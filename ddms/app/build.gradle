@@ -2,22 +2,22 @@ group = 'com.android.tools.ddms'
 archivesBaseName = 'ddms'
 
 dependencies {
-    compile project(':swt:ddms:ddmuilib')
+    compile project(':base:common')
+    compile project(':base:ddmlib')
+    compile project(':swt:ddmuilib')
     compile project(':swt:sdkstats')
     compile project(':swt:swtmenubar')
-    compile project(':common')
-    compile project(':ddmlib')
 }
 
 sdk {
     linux {
-       path('etc/ddms') { executable true }
+       item('etc/ddms') { executable true }
     }
     mac {
-       path('etc/ddms') { executable true }
+       item('etc/ddms') { executable true }
     }
     windows {
-       path 'etc/ddms.bat'
+       item 'etc/ddms.bat'
     }
 }
 

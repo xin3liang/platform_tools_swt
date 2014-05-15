@@ -2,7 +2,7 @@ group = 'com.android.tools.ddms'
 archivesBaseName = 'ddmuilib'
 
 dependencies {
-    compile project(':ddmlib')
+    compile project(':base:ddmlib')
     compile 'jfree:jfreechart:1.0.9'
     compile 'jfree:jfreechart-swt:1.0.9'
 

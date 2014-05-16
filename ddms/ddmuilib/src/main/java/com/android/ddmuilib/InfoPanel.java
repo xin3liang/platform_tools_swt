@@ -41,6 +41,8 @@ public class InfoPanel extends TablePanel {
         "Process ID:",
         "Supports Profiling Control:",
         "Supports HPROF Control:",
+        "ABI Flavor:",
+        "JVM Flags:",
     };
     private static final int ENT_DDM_AWARE          = 0;
     private static final int ENT_APP_DESCR          = 1;
@@ -48,6 +50,8 @@ public class InfoPanel extends TablePanel {
     private static final int ENT_PROCESS_ID         = 3;
     private static final int ENT_SUPPORTS_PROFILING = 4;
     private static final int ENT_SUPPORTS_HPROF     = 5;
+    private static final int ENT_ABI_FLAVOR         = 6;
+    private static final int ENT_JVM_FLAGS          = 7;
 
     /**
      * Create our control(s).
@@ -184,6 +188,14 @@ public class InfoPanel extends TablePanel {
             } else {
                 item.setText(1, "No");
             }
+
+            item = mTable.getItem(ENT_ABI_FLAVOR);
+            String abi = cd.getAbi();
+            item.setText(1, abi == null ? "" : abi);
+
+            item = mTable.getItem(ENT_JVM_FLAGS);
+            String jvmFlags = cd.getJvmFlags();
+            item.setText(1, jvmFlags == null ? "" : jvmFlags);
         }
 
         mCol2.pack();

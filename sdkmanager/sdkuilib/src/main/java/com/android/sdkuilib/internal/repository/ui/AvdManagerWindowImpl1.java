@@ -181,18 +181,19 @@ public class AvdManagerWindowImpl1 {
     }
 
     private void createContents() {
-
         mTabFolder = new TabFolder(mShell, SWT.NONE);
         GridDataBuilder.create(mTabFolder).fill().grab().hSpan(2);
 
         // avd tab
         TabItem avdTabItem = new TabItem(mTabFolder, SWT.NONE);
         avdTabItem.setText("Android Virtual Devices");
+        avdTabItem.setToolTipText(avdTabItem.getText());
         createAvdTab(mTabFolder, avdTabItem);
 
         // device tab
         TabItem devTabItem = new TabItem(mTabFolder, SWT.NONE);
         devTabItem.setText("Device Definitions");
+        devTabItem.setToolTipText(devTabItem.getText());
         createDeviceTab(mTabFolder, devTabItem);
     }
 

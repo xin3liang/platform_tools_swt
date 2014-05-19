@@ -16,6 +16,8 @@
 
 package com.android.sdkuilib.internal.repository.icons;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.sdklib.internal.repository.archives.Archive;
 import com.android.sdklib.internal.repository.packages.Package;
 import com.android.sdklib.internal.repository.sources.SdkSource;
@@ -42,23 +44,66 @@ public class ImageFactory {
     private final Display mDisplay;
     private final Map<String, Image> mImages = new HashMap<String, Image>();
 
-    public ImageFactory(Display display) {
+    /**
+     * Filter an image when it's loaded by
+     * {@link ImageFactory#getImageByName(String, String, Filter)}.
+     */
+    public interface Filter {
+        /**
+         * Invoked by {@link ImageFactory#getImageByName(String, String, Filter)} when
+         * a non-null {@link Image} object has been loaded. The filter should create a
+         * new image, modifying it as needed. <br/>
+         * If no modification is necessary, the filter can simply return the source image.  <br/>
+         * The result will be cached and returned by {@link ImageFactory}.
+         * <p/>
+         *
+         * @param source A non-null source image.
+         * @return Either the source or a new, potentially modified, image.
+         */
+        @NonNull public Image filter(@NonNull Image source);
+    }
+
+    public ImageFactory(@NonNull Display display) {
         mDisplay = display;
     }
 
     /**
      * Loads an image given its filename (with its extension).
-     * Might return null if the image cannot be loaded.
-     * The image is cached. Successive calls will return the <em>same</em> object.
+     * Might return null if the image cannot be loaded.  <br/>
+     * The image is cached. Successive calls will return the <em>same</em> object. <br/>
+     * The image is automatically disposed when {@link ImageFactory} is disposed.
      *
      * @param imageName The filename (with extension) of the image to load.
      * @return A new or existing {@link Image}. The caller must NOT dispose the image (the
      *  image will disposed by {@link #dispose()}). The returned image can be null if the
      *  expected file is missing.
      */
-    public Image getImageByName(String imageName) {
+    @Nullable
+    public Image getImageByName(@NonNull String imageName) {
+        return getImageByName(imageName, imageName, null);
+    }
 
-        Image image = mImages.get(imageName);
+
+    /**
+     * Loads an image given its filename (with its extension), caches it using the given
+     * {@code KeyName} name and optionally applies a filter to it.
+     * Might return null if the image cannot be loaded.
+     * The image is cached. Successive calls using {@code KeyName} will return the <em>same</em>
+     * object directly (the filter is not re-applied in this case.) <br/>
+     * The image is automatically disposed when {@link ImageFactory} is disposed.
+     * <p/>
+     *
+     * @param imageName The filename (with extension) of the image to load.
+     * @return A new or existing {@link Image}. The caller must NOT dispose the image (the
+     *  image will disposed by {@link #dispose()}). The returned image is null if the
+     *  expected file is missing.
+     */
+    @Nullable
+    public Image getImageByName(@NonNull String imageName,
+                                @NonNull String keyName,
+                                @Nullable Filter filter) {
+
+        Image image = mImages.get(keyName);
         if (image != null) {
             return image;
         }
@@ -67,6 +112,13 @@ public class ImageFactory {
         if (stream != null) {
             try {
                 image = new Image(mDisplay, stream);
+                if (image != null && filter != null) {
+                    Image image2 = filter.filter(image);
+                    if (image2 != image && !image.isDisposed()) {
+                        image.dispose();
+                    }
+                    image = image2;
+                }
             } catch (SWTException e) {
                 // ignore
             } catch (IllegalArgumentException e) {
@@ -75,7 +127,7 @@ public class ImageFactory {
         }
 
         // Store the image in the hash, even if this failed. If it fails now, it will fail later.
-        mImages.put(imageName, image);
+        mImages.put(keyName, image);
 
         return image;
     }
@@ -89,7 +141,8 @@ public class ImageFactory {
      *  image will disposed by {@link #dispose()}). The returned image can be null if the
      *  object is of an unknown type.
      */
-    public Image getImageForObject(Object object) {
+    @Nullable
+    public Image getImageForObject(@Nullable Object object) {
 
         if (object == null) {
             return null;

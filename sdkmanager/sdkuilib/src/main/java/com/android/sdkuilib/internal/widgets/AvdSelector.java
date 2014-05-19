@@ -17,27 +17,34 @@
 package com.android.sdkuilib.internal.widgets;
 
 import com.android.SdkConstants;
+import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.android.sdklib.IAndroidTarget;
+import com.android.sdklib.SystemImage;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus;
 import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdklib.internal.repository.ITask;
 import com.android.sdklib.internal.repository.ITaskMonitor;
 import com.android.sdklib.internal.repository.updater.SettingsController;
-import com.android.utils.GrabProcessOutput;
-import com.android.utils.GrabProcessOutput.IProcessOutput;
-import com.android.utils.GrabProcessOutput.Wait;
+import com.android.sdklib.repository.descriptors.IdDisplay;
 import com.android.sdkuilib.internal.repository.icons.ImageFactory;
+import com.android.sdkuilib.internal.repository.icons.ImageFactory.Filter;
 import com.android.sdkuilib.internal.repository.ui.AvdManagerWindowImpl1;
 import com.android.sdkuilib.internal.tasks.ProgressTask;
 import com.android.sdkuilib.repository.AvdManagerWindow.AvdInvocationContext;
 import com.android.sdkuilib.ui.GridDialog;
+import com.android.utils.GrabProcessOutput;
+import com.android.utils.GrabProcessOutput.IProcessOutput;
+import com.android.utils.GrabProcessOutput.Wait;
 import com.android.utils.ILogger;
 import com.android.utils.NullLogger;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.DecorationOverlayIcon;
+import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
@@ -102,7 +109,6 @@ public final class AvdSelector {
     private boolean mIsEnabled = true;
 
     private ImageFactory mImageFactory;
-    private Image mOkImage;
     private Image mBrokenImage;
     private Image mInvalidImage;
 
@@ -223,8 +229,7 @@ public final class AvdSelector {
 
         // get some bitmaps.
         mImageFactory = new ImageFactory(parent.getDisplay());
-        mOkImage = mImageFactory.getImageByName("accept_icon16.png");
-        mBrokenImage = mImageFactory.getImageByName("broken_16.png");
+        mBrokenImage = mImageFactory.getImageByName("warning_icon16.png");
         mInvalidImage = mImageFactory.getImageByName("reject_icon16.png");
 
         // Layout has 2 columns
@@ -259,7 +264,7 @@ public final class AvdSelector {
         if (displayMode == DisplayMode.MANAGER) {
             mNewButton = new Button(buttons, SWT.PUSH | SWT.FLAT);
             mNewButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            mNewButton.setText("New...");
+            mNewButton.setText("Create...");
             mNewButton.setToolTipText("Creates a new AVD.");
             mNewButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -267,7 +272,24 @@ public final class AvdSelector {
                     onNew();
                 }
             });
+        }
 
+
+        mStartButton = new Button(buttons, SWT.PUSH | SWT.FLAT);
+        mStartButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        mStartButton.setText("Start...");
+        mStartButton.setToolTipText("Starts the selected AVD.");
+        mStartButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                onStart();
+            }
+        });
+
+        @SuppressWarnings("unused")
+        Label spacing = new Label(buttons, SWT.NONE);
+
+        if (displayMode == DisplayMode.MANAGER) {
             mEditButton = new Button(buttons, SWT.PUSH | SWT.FLAT);
             mEditButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             mEditButton.setText("Edit...");
@@ -276,17 +298,6 @@ public final class AvdSelector {
                 @Override
                 public void widgetSelected(SelectionEvent arg0) {
                     onEdit();
-                }
-            });
-
-            mDeleteButton = new Button(buttons, SWT.PUSH | SWT.FLAT);
-            mDeleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            mDeleteButton.setText("Delete...");
-            mDeleteButton.setToolTipText("Deletes the selected AVD.");
-            mDeleteButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent arg0) {
-                    onDelete();
                 }
             });
 
@@ -301,8 +312,16 @@ public final class AvdSelector {
                 }
             });
 
-            Label l = new Label(buttons, SWT.SEPARATOR | SWT.HORIZONTAL);
-            l.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            mDeleteButton = new Button(buttons, SWT.PUSH | SWT.FLAT);
+            mDeleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            mDeleteButton.setText("Delete...");
+            mDeleteButton.setToolTipText("Deletes the selected AVD.");
+            mDeleteButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent arg0) {
+                    onDelete();
+                }
+            });
         }
 
         mDetailsButton = new Button(buttons, SWT.PUSH | SWT.FLAT);
@@ -313,17 +332,6 @@ public final class AvdSelector {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
                 onDetails();
-            }
-        });
-
-        mStartButton = new Button(buttons, SWT.PUSH | SWT.FLAT);
-        mStartButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        mStartButton.setText("Start...");
-        mStartButton.setToolTipText("Starts the selected AVD.");
-        mStartButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent arg0) {
-                onStart();
             }
         });
 
@@ -360,17 +368,10 @@ public final class AvdSelector {
                     NUM_COL, 1));
             legend.setFont(group.getFont());
 
-            new Label(legend, SWT.NONE).setImage(mOkImage);
-            new Label(legend, SWT.NONE).setText("A valid Android Virtual Device.");
             new Label(legend, SWT.NONE).setImage(mBrokenImage);
-            new Label(legend, SWT.NONE).setText(
-                    "A repairable Android Virtual Device.");
+            new Label(legend, SWT.NONE).setText("A repairable Android Virtual Device.");
             new Label(legend, SWT.NONE).setImage(mInvalidImage);
-            Label l = new Label(legend, SWT.NONE);
-            l.setText("An Android Virtual Device that failed to load. Click 'Details' to see the error.");
-            GridData gd;
-            l.setLayoutData(gd = new GridData(GridData.FILL_HORIZONTAL));
-            gd.horizontalSpan = 3;
+            new Label(legend, SWT.NONE).setText("An Android Virtual Device that failed to load. Click 'Details' to see the error.");
         }
 
         // create the table columns
@@ -795,8 +796,13 @@ public final class AvdSelector {
                     item.setText(0, avd.getName());
                     if (mDisplayMode == DisplayMode.MANAGER) {
                         AvdStatus status = avd.getStatus();
-                        item.setImage(0, status == AvdStatus.OK ? mOkImage :
-                            isAvdRepairable(status) ? mBrokenImage : mInvalidImage);
+
+                        boolean isOk = status == AvdStatus.OK;
+                        boolean isRepair = isAvdRepairable(status);
+                        boolean isInvalid = !isOk && !isRepair;
+
+                        Image img = getTagImage(avd.getTag(), isOk, isRepair, isInvalid);
+                        item.setImage(0,  img);
                     }
                     IAndroidTarget target = avd.getTarget();
                     if (target != null) {
@@ -827,6 +833,38 @@ public final class AvdSelector {
             item.setText(2, "--");
             item.setText(3, "--");
         }
+    }
+
+    @NonNull
+    private Image getTagImage(IdDisplay tag,
+                              final boolean isOk,
+                              final boolean isRepair,
+                              final boolean isInvalid) {
+        if (tag == null) {
+            tag = SystemImage.DEFAULT_TAG;
+        }
+
+        String fname = String.format("tag_%s_32.png", tag.getId());
+        String kname = String.format("%d%d%d_%s", (isOk ? 1 : 0),
+                                                  (isRepair ? 1 : 0),
+                                                  (isInvalid ? 1 : 0),
+                                                  fname);
+        return mImageFactory.getImageByName(fname, kname, new Filter() {
+            @Override
+            public Image filter(Image source) {
+                // We don't need an overlay for good AVDs.
+                if (isOk) {
+                    return source;
+                }
+
+                Image overlayImg = isRepair ? mBrokenImage : mInvalidImage;
+                ImageDescriptor overlayDesc = ImageDescriptor.createFromImage(overlayImg);
+
+                DecorationOverlayIcon overlaid =
+                        new DecorationOverlayIcon(source, overlayDesc, IDecoration.BOTTOM_RIGHT);
+                return overlaid.createImage();
+            }
+        });
     }
 
     /**
@@ -895,6 +933,7 @@ public final class AvdSelector {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void onEdit() {
         AvdInfo avdInfo = getTableSelection();
         GridDialog dlg;

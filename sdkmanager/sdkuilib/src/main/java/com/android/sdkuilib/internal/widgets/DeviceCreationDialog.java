@@ -68,6 +68,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import java.util.List;
+import java.util.Map;
 
 public class DeviceCreationDialog extends GridDialog {
 
@@ -911,6 +912,12 @@ public class DeviceCreationDialog extends GridDialog {
             Device.Builder builder = new Device.Builder();
             builder.setManufacturer("User");
             builder.setName(mDeviceName.getText());
+
+            builder.setTagId(mDevice.getTagId());
+            for (Map.Entry<String, String> entry : mDevice.getBootProps().entrySet()) {
+                builder.addBootProp(entry.getKey(), entry.getValue());
+            }
+
             builder.addSoftware(mSoftware);
             Screen s = mHardware.getScreen();
             double diagonal = Double.parseDouble(mDiagonalLength.getText());

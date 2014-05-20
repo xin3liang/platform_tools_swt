@@ -27,15 +27,33 @@ apply plugin: 'sdk-files'
 
 sdk {
     linux {
-        item("$rootProject.projectDir.parentFile/prebuilts/tools/linux-x86/swt/swt.jar")    { into 'lib/x86' }
-        item("$rootProject.projectDir.parentFile/prebuilts/tools/linux-x86_64/swt/swt.jar") { into 'lib/x86_64' }
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/linux-x86/swt/swt.jar") {
+            into 'lib/x86'
+            notice "$rootProject.projectDir.parentFile/prebuilts/tools/linux-x86/swt/NOTICE"
+        }
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/linux-x86_64/swt/swt.jar") {
+            into 'lib/x86_64'
+            notice "$rootProject.projectDir.parentFile/prebuilts/tools/linux-x86_64/swt/NOTICE"
+        }
     }
     mac {
-        item("$rootProject.projectDir.parentFile/prebuilts/tools/darwin-x86/swt/swt.jar")    { into 'lib/x86' }
-        item("$rootProject.projectDir.parentFile/prebuilts/tools/darwin-x86_64/swt/swt.jar") { into 'lib/x86_64' }
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/darwin-x86/swt/swt.jar") {
+            into 'lib/x86'
+            notice "$rootProject.projectDir.parentFile/prebuilts/tools/darwin-x86/swt/NOTICE"
+        }
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/darwin-x86_64/swt/swt.jar") {
+            into 'lib/x86_64'
+            notice "$rootProject.projectDir.parentFile/prebuilts/tools/darwin-x86_64/swt/NOTICE"
+        }
     }
     windows {
-        item("$rootProject.projectDir.parentFile/prebuilts/tools/windows/swt/swt.jar")        { into 'lib/x86' }
-        item("$rootProject.projectDir.parentFile/prebuilts/tools/windows-x86_64/swt/swt.jar") { into 'lib/x86_64' }
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/windows/swt/swt.jar") {
+            into 'lib/x86'
+            notice "$rootProject.projectDir.parentFile/prebuilts/tools/windows/swt/NOTICE"
+        }
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/windows-x86_64/swt/swt.jar") {
+            into 'lib/x86_64'
+            notice "$rootProject.projectDir.parentFile/prebuilts/tools/windows-x86_64/swt/NOTICE"
+        }
     }
 }

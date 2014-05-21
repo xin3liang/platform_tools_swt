@@ -16,6 +16,9 @@
 
 package com.android.sdkuilib.internal.repository.ui;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
+import com.android.sdklib.SystemImage;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.devices.DeviceManager.DeviceFilter;
@@ -28,6 +31,7 @@ import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.repository.ISdkChangeListener;
 import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.icons.ImageFactory;
+import com.android.sdkuilib.internal.repository.icons.ImageFactory.Filter;
 import com.android.sdkuilib.internal.widgets.AvdCreationDialog;
 import com.android.sdkuilib.internal.widgets.AvdSelector;
 import com.android.sdkuilib.internal.widgets.DeviceCreationDialog;
@@ -47,6 +51,8 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.graphics.TextLayout;
@@ -105,11 +111,28 @@ public class DeviceManagerPage extends Composite
     private Button mRefreshButton;
     private ImageFactory mImageFactory;
     private Image mUserImage;
-    private Image mGenericImage;
-    private Image mOtherImage;
+    private Image mDeviceImage;
     private int mImageWidth;
     private boolean mDisableRefresh;
     private IAvdCreatedListener mAvdCreatedListener;
+    private final Filter mUserColorFilter = new Filter() {
+        @Override
+        public Image filter(Image source) {
+            ImageData srcData = source.getImageData();
+
+            // swap green and blue
+            PaletteData p = srcData.palette;
+            int b = p.blueMask;
+            p.blueMask = p.greenMask;
+            p.greenMask = b;
+
+            b = p.blueShift;
+            p.blueShift = p.greenShift;
+            p.greenShift = b;
+
+            return new Image(source.getDevice(), srcData);
+        }
+    };
 
     /**
      * Create the composite.
@@ -140,12 +163,11 @@ public class DeviceManagerPage extends Composite
 
         // get some bitmaps.
         mImageFactory = new ImageFactory(parent.getDisplay());
-        mUserImage = mImageFactory.getImageByName("devman_user_16.png");
-        mGenericImage = mImageFactory.getImageByName("devman_generic_16.png");
-        mOtherImage = mImageFactory.getImageByName("devman_manufacturer_16.png");
-        mImageWidth = Math.max(mGenericImage.getImageData().width,
+        mUserImage = getTagImage(null /*tag*/, true /*isUser*/);
+        mDeviceImage = getTagImage(null /*tag*/, false /*isUser*/);
+        mImageWidth = Math.max(mDeviceImage.getImageData().width,
                         Math.max(mUserImage.getImageData().width,
-                                  mOtherImage.getImageData().width));
+                                mDeviceImage.getImageData().width));
 
         // Layout has 2 columns
         GridLayoutBuilder.create(parent).columns(2);
@@ -169,9 +191,23 @@ public class DeviceManagerPage extends Composite
         GridDataBuilder.create(buttons).vFill();
         buttons.setFont(parent.getFont());
 
+        mNewAvdButton = new Button(buttons, SWT.PUSH | SWT.FLAT);
+        mNewAvdButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        mNewAvdButton.setText("Create AVD...");
+        mNewAvdButton.setToolTipText("Creates a new AVD based on this device definition.");
+        mNewAvdButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                onCreateAvd();
+            }
+        });
+
+        @SuppressWarnings("unused")
+        Label spacing = new Label(buttons, SWT.NONE);
+
         mNewButton = new Button(buttons, SWT.PUSH | SWT.FLAT);
         mNewButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        mNewButton.setText("New Device...");
+        mNewButton.setText("Create Device...");
         mNewButton.setToolTipText("Creates a new user device definition.");
         mNewButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -202,20 +238,6 @@ public class DeviceManagerPage extends Composite
             }
         });
 
-        @SuppressWarnings("unused")
-        Label spacing = new Label(buttons, SWT.NONE);
-
-        mNewAvdButton = new Button(buttons, SWT.PUSH | SWT.FLAT);
-        mNewAvdButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        mNewAvdButton.setText("Create AVD...");
-        mNewAvdButton.setToolTipText("Creates a new AVD based on this device definition.");
-        mNewAvdButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent arg0) {
-                onCreateAvd();
-            }
-        });
-
         Composite padding = new Composite(buttons, SWT.NONE);
         padding.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
@@ -239,17 +261,8 @@ public class DeviceManagerPage extends Composite
 
         new Label(legend, SWT.NONE).setImage(mUserImage);
         new Label(legend, SWT.NONE).setText("A user-created device definition.");
-        new Label(legend, SWT.NONE).setImage(mGenericImage);
+        new Label(legend, SWT.NONE).setImage(mDeviceImage);
         new Label(legend, SWT.NONE).setText("A generic device definition.");
-        Label icon = new Label(legend, SWT.NONE);
-        icon.setImage(mOtherImage);
-        Label l = new Label(legend, SWT.NONE);
-        l.setText("A manufacturer-specific device definition.");
-        GridData gd;
-        l.setLayoutData(gd = new GridData(GridData.FILL_HORIZONTAL));
-        gd.horizontalSpan = 3;
-        icon.setVisible(false);
-        l.setVisible(false);
 
         // create the table columns
         final TableColumn column0 = new TableColumn(mTable, SWT.NONE);
@@ -505,17 +518,12 @@ public class DeviceManagerPage extends Composite
             int pos1 = sb.length();
 
             String manufacturer = device.getManufacturer();
-            String manu = manufacturer;
-            if (isUser) {
-                item.setImage(mUserImage);
-            } else if (GENERIC.equals(manu)) {
-                item.setImage(mGenericImage);
-            } else {
-                item.setImage(mOtherImage);
-                if (!manufacturer.contains(NEXUS)) {
-                    sb.append("  by ").append(manufacturer);
-                }
+            if (!manufacturer.contains(NEXUS)) {
+                sb.append("  by ").append(manufacturer);
             }
+
+            Image img = getTagImage(device.getTagId(), isUser);
+            item.setImage(img != null ? img : mDeviceImage);
 
             Hardware hw = device.getDefaultHardware();
             Screen screen = hw.getScreen();
@@ -558,9 +566,19 @@ public class DeviceManagerPage extends Composite
         return disposables;
     }
 
+    @Nullable
+    private Image getTagImage(@NonNull String tagId, boolean isUser) {
+        if (tagId == null) {
+            tagId = SystemImage.DEFAULT_TAG.getId();
+        }
+
+        String fname = String.format("tag_%s_32.png", tagId);
+        String kname = (isUser ? "user_" : "dev_") + fname;
+        return mImageFactory.getImageByName(fname, kname, isUser ? mUserColorFilter : null);
+    }
+
     // Constants extracted from DeviceMenuListerner -- TODO refactor somewhere else.
     private static final String NEXUS   = "Nexus";     //$NON-NLS-1$
-    private static final String GENERIC = "Generic";   //$NON-NLS-1$
     private static Pattern PATTERN = Pattern.compile(
             "(\\d+\\.?\\d*)(?:in|\") (.+?)( \\(.*Nexus.*\\))?"); //$NON-NLS-1$
     /**

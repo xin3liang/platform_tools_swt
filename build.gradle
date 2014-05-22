@@ -6,6 +6,8 @@ subprojects { Project project ->
     apply from: "$rootDir/buildSrc/base/baseJava.gradle"
     apply plugin: 'sdk-java-lib'
 
+    version = rootProject.ext.baseVersion
+
     // configuration for swt dependency since the packaged jar is platform dependent
     // but at compile time we don't care. Also we don't want the artifact in the
     // main repo, so use the provided configuration

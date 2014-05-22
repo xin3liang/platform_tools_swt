@@ -1,5 +1,6 @@
 group = 'com.android.tools'
 archivesBaseName = 'chimpchat'
+version = rootProject.ext.baseVersion
 
 dependencies {
     compile project(':base:sdklib')
@@ -8,5 +9,3 @@ dependencies {
 
     testCompile 'junit:junit:3.8.1'
 }
-
-apply from: "$rootDir/buildSrc/base/baseVersion.gradle"

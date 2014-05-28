@@ -58,7 +58,7 @@ import java.io.File;
  */
 public class AvdManagerWindowImpl1 {
 
-    private static final String APP_NAME = "Android Virtual Device Manager";
+    private static final String APP_NAME = "Android Virtual Device (AVD) Manager";
     private static final String APP_NAME_MAC_MENU = "AVD Manager";
     private static final String SIZE_POS_PREFIX = "avdman1"; //$NON-NLS-1$
 

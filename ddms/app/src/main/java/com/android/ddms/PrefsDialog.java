@@ -21,7 +21,6 @@ import com.android.ddmlib.DdmPreferences;
 import com.android.ddmlib.Log;
 import com.android.ddmlib.Log.LogLevel;
 import com.android.ddmuilib.DdmUiPreferences;
-import com.android.ddmuilib.PortFieldEditor;
 import com.android.ddmuilib.logcat.LogCatMessageList;
 import com.android.ddmuilib.logcat.LogCatPanel;
 import com.android.sdkstats.DdmsPreferenceStore;
@@ -353,12 +352,14 @@ public final class PrefsDialog {
         protected void createFieldEditors() {
             IntegerFieldEditor ife;
 
-            ife = new PortFieldEditor(PREFS_DEBUG_PORT_BASE,
+            ife = new IntegerFieldEditor(PREFS_DEBUG_PORT_BASE,
                 "Starting value for local port:", getFieldEditorParent());
+            ife.setValidRange(1024, 32767);
             addField(ife);
 
-            ife = new PortFieldEditor(PREFS_SELECTED_DEBUG_PORT,
+            ife = new IntegerFieldEditor(PREFS_SELECTED_DEBUG_PORT,
                 "Port of Selected VM:", getFieldEditorParent());
+            ife.setValidRange(1024, 32767);
             addField(ife);
 
             mUseAdbHost = new BooleanFieldEditor(PREFS_USE_ADBHOST,
@@ -378,6 +379,7 @@ public final class PrefsDialog {
             if (event.getSource().equals(mUseAdbHost)) {
                 mAdbHostValue.setEnabled(mUseAdbHost.getBooleanValue(), getFieldEditorParent());
             }
+            super.propertyChange(event);
         }
     }
 

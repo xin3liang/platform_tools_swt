@@ -1471,19 +1471,26 @@ public class PackagesDiffLogicTest extends TestCase {
                 new MockToolPackage(src1, new FullRevision(4, 0, 0, 1), 3),       // Tools 4 rc1
                 new MockPlatformToolPackage(src1, new FullRevision(3, 0, 0)),     // Plat-T 3
                 new MockPlatformToolPackage(src1, new FullRevision(5, 0, 0, 1)),  // Plat-T 5 rc1
+                new MockBuildToolPackage(src1, new FullRevision(6, 0, 0)),
+                new MockBuildToolPackage(src1, new FullRevision(7, 0, 0, 1))
         });
         m.updateEnd(true /*sortByApi*/);
 
         assertEquals(
-                "PkgCategoryApi <API=TOOLS, label=Tools, #items=2>\n" +
+                "PkgCategoryApi <API=TOOLS, label=Tools, #items=3>\n" +
                 "-- <NEW, pkg:Android SDK Tools, revision 2>\n" +
                 "-- <NEW, pkg:Android SDK Platform-tools, revision 3>\n" +
+                "-- <NEW, pkg:Android SDK Build-tools, revision 6>\n" +
+                "PkgCategoryApi <API=TOOLS-PREVIEW, label=Tools (Preview Channel), #items=1>\n" +
+                "-- <NEW, pkg:Android SDK Build-tools, revision 7 rc1>\n" +
                 "PkgCategoryApi <API=EXTRAS, label=Extras, #items=0>\n",
                 getTree(m, true /*displaySortByApi*/));
         assertEquals(
-                "PkgCategorySource <source=repo1 (1.example.com), #items=2>\n" +
+                "PkgCategorySource <source=repo1 (1.example.com), #items=4>\n" +
                 "-- <NEW, pkg:Android SDK Tools, revision 2>\n" +
-                "-- <NEW, pkg:Android SDK Platform-tools, revision 3>\n",
+                "-- <NEW, pkg:Android SDK Platform-tools, revision 3>\n" +
+                "-- <NEW, pkg:Android SDK Build-tools, revision 7 rc1>\n" +
+                "-- <NEW, pkg:Android SDK Build-tools, revision 6>\n",
                 getTree(m, false /*displaySortByApi*/));
     }
 

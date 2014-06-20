@@ -34,10 +34,10 @@ import com.android.sdklib.internal.repository.updater.PkgItem;
 import com.android.sdklib.internal.repository.updater.PkgItem.PkgState;
 import com.android.sdklib.repository.FullRevision;
 import com.android.sdklib.repository.FullRevision.PreviewComparison;
-import com.android.utils.SparseArray;
 import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.ui.PackagesPageIcons;
 import com.android.utils.Pair;
+import com.android.utils.SparseArray;
 import com.google.common.collect.Maps;
 
 import java.util.ArrayList;
@@ -265,7 +265,9 @@ public class PackagesDiffLogic {
                             break;
                         }
                     }
-                    if (p instanceof SystemImagePackage && item.getState() == PkgState.INSTALLED) {
+                    if (p instanceof SystemImagePackage &&
+                            ((SystemImagePackage) p).isPlatform() &&
+                            item.getState() == PkgState.INSTALLED) {
                         hasSysImg = true;
                         break;
                     }
@@ -297,7 +299,9 @@ public class PackagesDiffLogic {
                     // No system image in the platform, try a system image package
                     for (PkgItem item : items) {
                         Package p = item.getMainPackage();
-                        if (p instanceof SystemImagePackage && item.getState() == PkgState.NEW) {
+                        if (p instanceof SystemImagePackage &&
+                                ((SystemImagePackage) p).isPlatform() &&
+                                item.getState() == PkgState.NEW) {
                             item.setChecked(true);
                         }
                     }
@@ -595,7 +599,11 @@ public class PackagesDiffLogic {
 
             if (!enablePreviews && newPkg.getRevision().isPreview()) {
                 // This is a preview and previews are not enabled. Ignore the package.
-                continue nextPkg;
+                // Starting with Tools 23, we explicitly allows Build-Tools RC packages to
+                // always be visible so only RCs for Tools & Platform-Tools will be hidden.
+                if (!(newPkg instanceof BuildToolPackage)) {
+                    continue nextPkg;
+                }
             }
 
             for (PkgCategory cat : cats) {

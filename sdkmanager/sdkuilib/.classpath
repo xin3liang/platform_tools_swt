@@ -5,9 +5,9 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/sdklib"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
-	<classpathentry exported="true" kind="var" path="ANDROID_OUT_FRAMEWORK/swt.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/layoutlib-api"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/common"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/swtmenubar"/>
+	<classpathentry kind="var" path="ANDROID_SRC/prebuilts/tools/linux-x86/swt/swt.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

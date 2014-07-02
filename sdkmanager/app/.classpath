@@ -7,6 +7,6 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/sdkuilib"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/common"/>
-	<classpathentry exported="true" kind="var" path="ANDROID_OUT_FRAMEWORK/swt.jar"/>
+	<classpathentry kind="var" path="ANDROID_SRC/prebuilts/tools/linux-x86/swt/swt.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

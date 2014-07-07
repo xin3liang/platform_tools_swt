@@ -17,6 +17,7 @@
 package com.android.sdkuilib.internal.repository.ui;
 
 import com.android.SdkConstants;
+import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.internal.repository.DownloadCache;
 import com.android.sdklib.internal.repository.DownloadCache.Strategy;
 import com.android.sdklib.internal.repository.IDescription;
@@ -24,8 +25,8 @@ import com.android.sdklib.internal.repository.archives.Archive;
 import com.android.sdklib.internal.repository.packages.Package;
 import com.android.sdklib.internal.repository.sources.SdkSource;
 import com.android.sdklib.internal.repository.updater.PackageLoader;
-import com.android.sdklib.internal.repository.updater.PkgItem;
 import com.android.sdklib.internal.repository.updater.PackageLoader.ISourceLoadedCallback;
+import com.android.sdklib.internal.repository.updater.PkgItem;
 import com.android.sdklib.internal.repository.updater.PkgItem.PkgState;
 import com.android.sdkuilib.internal.repository.SwtUpdaterData;
 import com.android.sdkuilib.internal.repository.core.PackagesDiffLogic;
@@ -352,12 +353,12 @@ abstract class PackagesPageImpl {
                 }
 
             } else if (mColumn == mIColumnApi) {
-                int api = -1;
+                AndroidVersion version = null;
                 if (element instanceof PkgItem) {
-                    api = ((PkgItem) element).getApi();
+                    version = ((PkgItem) element).getAndroidVersion();
                 }
-                if (api >= 1) {
-                    return Integer.toString(api);
+                if (version != null) {
+                    return version.getApiString();
                 }
 
             } else if (mColumn == mIColumnRevision) {

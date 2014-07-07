@@ -59,18 +59,18 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
         // the fake locally-installed SDK.
         String actual = pageImpl.getMockTreeDisplay();
         assertEquals(
-                "[]    Tools                           |  |            |          \n" +
-                " L_[] Android SDK Tools               |  |      1.0.1 | Installed\n" +
-                " L_[] Android SDK Platform-tools      |  |     17.1.2 | Installed\n" +
-                " L_[] Android SDK Build-tools         |  |      3.0.1 | Installed\n" +
-                " L_[] Android SDK Build-tools         |  |          3 | Installed\n" +
-                "[]    Tools (Preview Channel)         |  |            |          \n" +
-                " L_[] Android SDK Build-tools         |  | 18.3.4 rc5 | Installed\n" +
-                "[]    Android 0.0 (API 0)             |  |            |          \n" +
-                " L_[] SDK Platform                    |  |          1 | Installed\n" +
-                " L_[] Sys-Img v0 for (Tag 1, armeabi) |  |          0 | Installed\n" +
-                " L_[] Sources for Android SDK         |  |          0 | Installed\n" +
-                "[]    Extras                          |  |            |          ",
+                "[]    Tools                           |   |            |          \n" +
+                " L_[] Android SDK Tools               |   |      1.0.1 | Installed\n" +
+                " L_[] Android SDK Platform-tools      |   |     17.1.2 | Installed\n" +
+                " L_[] Android SDK Build-tools         |   |      3.0.1 | Installed\n" +
+                " L_[] Android SDK Build-tools         |   |          3 | Installed\n" +
+                "[]    Tools (Preview Channel)         |   |            |          \n" +
+                " L_[] Android SDK Build-tools         |   | 18.3.4 rc5 | Installed\n" +
+                "[]    Android 0.0 (API 0)             |   |            |          \n" +
+                " L_[] SDK Platform                    | 0 |          1 | Installed\n" +
+                " L_[] Sys-Img v0 for (Tag 1, armeabi) | 0 |          0 | Installed\n" +
+                " L_[] Sources for Android SDK         | 0 |          0 | Installed\n" +
+                "[]    Extras                          |   |            |          ",
                 actual);
 
         assertEquals(
@@ -98,20 +98,20 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
 
         actual = pageImpl.getMockTreeDisplay();
         assertEquals(
-                "[]    Tools                           |  |            |                                   \n" +
-                " L_[] Android SDK Tools               |  |      1.0.1 | Update available: rev. 20.0.3     \n" +
-                " L_[] Android SDK Platform-tools      |  |     17.1.2 | Update available: rev. 18         \n" +
-                " L_[] Android SDK Build-tools         |  |         18 | Not installed                     \n" +
-                " L_[] Android SDK Build-tools         |  |      3.0.1 | Installed                         \n" +
-                " L_[] Android SDK Build-tools         |  |          3 | Installed                         \n" +
-                "[]    Tools (Preview Channel)         |  |            |                                   \n" +
+                "[]    Tools                           |   |            |                                   \n" +
+                " L_[] Android SDK Tools               |   |      1.0.1 | Update available: rev. 20.0.3     \n" +
+                " L_[] Android SDK Platform-tools      |   |     17.1.2 | Update available: rev. 18         \n" +
+                " L_[] Android SDK Build-tools         |   |         18 | Not installed                     \n" +
+                " L_[] Android SDK Build-tools         |   |      3.0.1 | Installed                         \n" +
+                " L_[] Android SDK Build-tools         |   |          3 | Installed                         \n" +
+                "[]    Tools (Preview Channel)         |   |            |                                   \n" +
                 // Note: locally installed previews are always shown, even when enable previews is false.
-                " L_[] Android SDK Build-tools         |  | 18.3.4 rc5 | Update available: rev. 18.3.4 rc15\n" +
-                "[]    Android 0.0 (API 0)             |  |            |                                   \n" +
-                " L_[] SDK Platform                    |  |          1 | Installed                         \n" +
-                " L_[] Sys-Img v0 for (Tag 1, armeabi) |  |          0 | Installed                         \n" +
-                " L_[] Sources for Android SDK         |  |          0 | Installed                         \n" +
-                "[]    Extras                          |  |            |                                   ",
+                " L_[] Android SDK Build-tools         |   | 18.3.4 rc5 | Update available: rev. 18.3.4 rc15\n" +
+                "[]    Android 0.0 (API 0)             |   |            |                                   \n" +
+                " L_[] SDK Platform                    | 0 |          1 | Installed                         \n" +
+                " L_[] Sys-Img v0 for (Tag 1, armeabi) | 0 |          0 | Installed                         \n" +
+                " L_[] Sources for Android SDK         | 0 |          0 | Installed                         \n" +
+                "[]    Extras                          |   |            |                                   ",
                 actual);
 
         assertEquals(
@@ -139,19 +139,19 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
 
         actual = pageImpl.getMockTreeDisplay();
         assertEquals(
-                "[]    Tools                           |  |            |                                   \n" +
-                " L_[] Android SDK Tools               |  |      1.0.1 | Update available: rev. 20.0.3     \n" +
-                " L_[] Android SDK Platform-tools      |  |     17.1.2 | Update available: rev. 18         \n" +
-                " L_[] Android SDK Build-tools         |  |         18 | Not installed                     \n" +
-                " L_[] Android SDK Build-tools         |  |      3.0.1 | Installed                         \n" +
-                " L_[] Android SDK Build-tools         |  |          3 | Installed                         \n" +
-                "[]    Tools (Preview Channel)         |  |            |                                   \n" +
-                " L_[] Android SDK Build-tools         |  | 18.3.4 rc5 | Update available: rev. 18.3.4 rc15\n" +
-                "[]    Android 0.0 (API 0)             |  |            |                                   \n" +
-                " L_[] SDK Platform                    |  |          1 | Installed                         \n" +
-                " L_[] Sys-Img v0 for (Tag 1, armeabi) |  |          0 | Installed                         \n" +
-                " L_[] Sources for Android SDK         |  |          0 | Installed                         \n" +
-                "[]    Extras                          |  |            |                                   ",
+                "[]    Tools                           |   |            |                                   \n" +
+                " L_[] Android SDK Tools               |   |      1.0.1 | Update available: rev. 20.0.3     \n" +
+                " L_[] Android SDK Platform-tools      |   |     17.1.2 | Update available: rev. 18         \n" +
+                " L_[] Android SDK Build-tools         |   |         18 | Not installed                     \n" +
+                " L_[] Android SDK Build-tools         |   |      3.0.1 | Installed                         \n" +
+                " L_[] Android SDK Build-tools         |   |          3 | Installed                         \n" +
+                "[]    Tools (Preview Channel)         |   |            |                                   \n" +
+                " L_[] Android SDK Build-tools         |   | 18.3.4 rc5 | Update available: rev. 18.3.4 rc15\n" +
+                "[]    Android 0.0 (API 0)             |   |            |                                   \n" +
+                " L_[] SDK Platform                    | 0 |          1 | Installed                         \n" +
+                " L_[] Sys-Img v0 for (Tag 1, armeabi) | 0 |          0 | Installed                         \n" +
+                " L_[] Sources for Android SDK         | 0 |          0 | Installed                         \n" +
+                "[]    Extras                          |   |            |                                   ",
                 actual);
 
         assertEquals(
@@ -179,19 +179,19 @@ public class SdkManagerUpgradeTest extends SdkManagerTestCase {
 
         actual = pageImpl.getMockTreeDisplay();
         assertEquals(
-                "[]    Tools                           |  |            |                                   \n" +
-                " L_[] Android SDK Tools               |  |      1.0.1 | Update available: rev. 20.0.3     \n" +
-                " L_[] Android SDK Platform-tools      |  |     17.1.2 | Update available: rev. 18         \n" +
-                " L_[] Android SDK Build-tools         |  |         18 | Not installed                     \n" +
-                " L_[] Android SDK Build-tools         |  |      3.0.1 | Installed                         \n" +
-                " L_[] Android SDK Build-tools         |  |          3 | Installed                         \n" +
-                "[]    Tools (Preview Channel)         |  |            |                                   \n" +
-                " L_[] Android SDK Build-tools         |  | 18.3.4 rc5 | Update available: rev. 18.3.4 rc15\n" +
-                "[]    Android 0.0 (API 0)             |  |            |                                   \n" +
-                " L_[] SDK Platform                    |  |          1 | Installed                         \n" +
-                " L_[] Sys-Img v0 for (Tag 1, armeabi) |  |          0 | Installed                         \n" +
-                " L_[] Sources for Android SDK         |  |          0 | Installed                         \n" +
-                "[]    Extras                          |  |            |                                   ",
+                "[]    Tools                           |   |            |                                   \n" +
+                " L_[] Android SDK Tools               |   |      1.0.1 | Update available: rev. 20.0.3     \n" +
+                " L_[] Android SDK Platform-tools      |   |     17.1.2 | Update available: rev. 18         \n" +
+                " L_[] Android SDK Build-tools         |   |         18 | Not installed                     \n" +
+                " L_[] Android SDK Build-tools         |   |      3.0.1 | Installed                         \n" +
+                " L_[] Android SDK Build-tools         |   |          3 | Installed                         \n" +
+                "[]    Tools (Preview Channel)         |   |            |                                   \n" +
+                " L_[] Android SDK Build-tools         |   | 18.3.4 rc5 | Update available: rev. 18.3.4 rc15\n" +
+                "[]    Android 0.0 (API 0)             |   |            |                                   \n" +
+                " L_[] SDK Platform                    | 0 |          1 | Installed                         \n" +
+                " L_[] Sys-Img v0 for (Tag 1, armeabi) | 0 |          0 | Installed                         \n" +
+                " L_[] Sources for Android SDK         | 0 |          0 | Installed                         \n" +
+                "[]    Extras                          |   |            |                                   ",
                 actual);
 
         assertEquals(

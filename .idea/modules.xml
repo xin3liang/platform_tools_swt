@@ -7,6 +7,8 @@
       <module fileurl="file://$PROJECT_DIR$/ddms/app/ddms.iml" filepath="$PROJECT_DIR$/ddms/app/ddms.iml" />
       <module fileurl="file://$PROJECT_DIR$/ddms/ddmuilib/ddmuilib.iml" filepath="$PROJECT_DIR$/ddms/ddmuilib/ddmuilib.iml" />
       <module fileurl="file://$PROJECT_DIR$/../base/device_validator/dvlib/dvlib.iml" filepath="$PROJECT_DIR$/../base/device_validator/dvlib/dvlib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hierarchyviewer2/app/hierarchyviewer2.iml" filepath="$PROJECT_DIR$/hierarchyviewer2/app/hierarchyviewer2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hierarchyviewer2/hierarchyviewer2lib/hierarchyviewer2lib.iml" filepath="$PROJECT_DIR$/hierarchyviewer2/hierarchyviewer2lib/hierarchyviewer2lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/../base/layoutlib-api/layoutlib-api.iml" filepath="$PROJECT_DIR$/../base/layoutlib-api/layoutlib-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/../base/perflib/perflib.iml" filepath="$PROJECT_DIR$/../base/perflib/perflib.iml" />
       <module fileurl="file://$PROJECT_DIR$/../base/sdklib/sdklib.iml" filepath="$PROJECT_DIR$/../base/sdklib/sdklib.iml" />

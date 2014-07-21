@@ -90,6 +90,10 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
     public void testListDevices() throws Exception {
         runCmdLine("list", "device", "--compact");
         assertEquals(
+                "P tv_1080p\n" +
+                "P tv_720p\n" +
+                "P wear_round\n" +
+                "P wear_square\n" +
                 "P Galaxy Nexus\n" +
                 "P MockDevice-tag-1\n" +
                 "P MockDevice-tag-1\n" +
@@ -120,103 +124,123 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
         runCmdLine("list", "devices");
         assertEquals(
                 "P Available devices definitions:\n" +
-                "P id: 0 or \"Galaxy Nexus\"\n" +
+                "P id: 0 or \"tv_1080p\"\n" +
+                "P     Name: Android TV (1080p)\n" +
+                "P     OEM : Google\n" +
+                "P     Tag : android-tv\n" +
+                "P ---------\n" +
+                "P id: 1 or \"tv_720p\"\n" +
+                "P     Name: Android TV (720p)\n" +
+                "P     OEM : Google\n" +
+                "P     Tag : android-tv\n" +
+                "P ---------\n" +
+                "P id: 2 or \"wear_round\"\n" +
+                "P     Name: Android Wear Round\n" +
+                "P     OEM : Google\n" +
+                "P     Tag : android-wear\n" +
+                "P ---------\n" +
+                "P id: 3 or \"wear_square\"\n" +
+                "P     Name: Android Wear Square\n" +
+                "P     OEM : Google\n" +
+                "P     Tag : android-wear\n" +
+                "P ---------\n" +
+                "P id: 4 or \"Galaxy Nexus\"\n" +
                 "P     Name: Galaxy Nexus\n" +
                 "P     OEM : Google\n" +
                 "P ---------\n" +
-                "P id: 1 or \"MockDevice-tag-1\"\n" +
+                "P id: 5 or \"MockDevice-tag-1\"\n" +
                 "P     Name: Mock Tag 1 Device Name\n" +
                 "P     OEM : Mock Tag 1 OEM\n" +
                 "P ---------\n" +
-                "P id: 2 or \"MockDevice-tag-1\"\n" +
+                "P id: 6 or \"MockDevice-tag-1\"\n" +
                 "P     Name: Mock Tag 1 Device Name\n" +
                 "P     OEM : Mock Tag 1 OEM\n" +
                 "P ---------\n" +
-                "P id: 3 or \"Nexus 10\"\n" +
+                "P id: 7 or \"Nexus 10\"\n" +
                 "P     Name: Nexus 10\n" +
                 "P     OEM : Google\n" +
                 "P ---------\n" +
-                "P id: 4 or \"Nexus 4\"\n" +
+                "P id: 8 or \"Nexus 4\"\n" +
                 "P     Name: Nexus 4\n" +
                 "P     OEM : Google\n" +
                 "P ---------\n" +
-                "P id: 5 or \"Nexus 5\"\n" +
+                "P id: 9 or \"Nexus 5\"\n" +
                 "P     Name: Nexus 5\n" +
                 "P     OEM : Google\n" +
                 "P ---------\n" +
-                "P id: 6 or \"Nexus 7 2013\"\n" +
+                "P id: 10 or \"Nexus 7 2013\"\n" +
                 "P     Name: Nexus 7\n" +
                 "P     OEM : Google\n" +
                 "P ---------\n" +
-                "P id: 7 or \"Nexus 7\"\n" +
+                "P id: 11 or \"Nexus 7\"\n" +
                 "P     Name: Nexus 7 (2012)\n" +
                 "P     OEM : Google\n" +
                 "P ---------\n" +
-                "P id: 8 or \"Nexus One\"\n" +
+                "P id: 12 or \"Nexus One\"\n" +
                 "P     Name: Nexus One\n" +
                 "P     OEM : Google\n" +
                 "P ---------\n" +
-                "P id: 9 or \"Nexus S\"\n" +
+                "P id: 13 or \"Nexus S\"\n" +
                 "P     Name: Nexus S\n" +
                 "P     OEM : Google\n" +
                 "P ---------\n" +
-                "P id: 10 or \"2.7in QVGA\"\n" +
+                "P id: 14 or \"2.7in QVGA\"\n" +
                 "P     Name: 2.7\" QVGA\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 11 or \"2.7in QVGA slider\"\n" +
+                "P id: 15 or \"2.7in QVGA slider\"\n" +
                 "P     Name: 2.7\" QVGA slider\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 12 or \"3.2in HVGA slider (ADP1)\"\n" +
+                "P id: 16 or \"3.2in HVGA slider (ADP1)\"\n" +
                 "P     Name: 3.2\" HVGA slider (ADP1)\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 13 or \"3.2in QVGA (ADP2)\"\n" +
+                "P id: 17 or \"3.2in QVGA (ADP2)\"\n" +
                 "P     Name: 3.2\" QVGA (ADP2)\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 14 or \"3.3in WQVGA\"\n" +
+                "P id: 18 or \"3.3in WQVGA\"\n" +
                 "P     Name: 3.3\" WQVGA\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 15 or \"3.4in WQVGA\"\n" +
+                "P id: 19 or \"3.4in WQVGA\"\n" +
                 "P     Name: 3.4\" WQVGA\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 16 or \"3.7 FWVGA slider\"\n" +
+                "P id: 20 or \"3.7 FWVGA slider\"\n" +
                 "P     Name: 3.7\" FWVGA slider\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 17 or \"3.7in WVGA (Nexus One)\"\n" +
+                "P id: 21 or \"3.7in WVGA (Nexus One)\"\n" +
                 "P     Name: 3.7\" WVGA (Nexus One)\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 18 or \"4in WVGA (Nexus S)\"\n" +
+                "P id: 22 or \"4in WVGA (Nexus S)\"\n" +
                 "P     Name: 4\" WVGA (Nexus S)\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 19 or \"4.65in 720p (Galaxy Nexus)\"\n" +
+                "P id: 23 or \"4.65in 720p (Galaxy Nexus)\"\n" +
                 "P     Name: 4.65\" 720p (Galaxy Nexus)\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 20 or \"4.7in WXGA\"\n" +
+                "P id: 24 or \"4.7in WXGA\"\n" +
                 "P     Name: 4.7\" WXGA\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 21 or \"5.1in WVGA\"\n" +
+                "P id: 25 or \"5.1in WVGA\"\n" +
                 "P     Name: 5.1\" WVGA\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 22 or \"5.4in FWVGA\"\n" +
+                "P id: 26 or \"5.4in FWVGA\"\n" +
                 "P     Name: 5.4\" FWVGA\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 23 or \"7in WSVGA (Tablet)\"\n" +
+                "P id: 27 or \"7in WSVGA (Tablet)\"\n" +
                 "P     Name: 7\" WSVGA (Tablet)\n" +
                 "P     OEM : Generic\n" +
                 "P ---------\n" +
-                "P id: 24 or \"10.1in WXGA (Tablet)\"\n" +
+                "P id: 28 or \"10.1in WXGA (Tablet)\"\n" +
                 "P     Name: 10.1\" WXGA (Tablet)\n" +
                 "P     OEM : Generic\n",
                 getLog().toString());
@@ -296,7 +320,7 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
         runCmdLine("create", "avd",
                 "--target", "android-0",
                 "--name",   "gn-avd",
-                "--device", "0",
+                "--device", "Galaxy Nexus",
                 "--abi",    "armeabi");
         assertEquals(
                 "P Created AVD 'gn-avd' based on Android 0.0, ARM (armeabi) processor,\n" +
@@ -321,7 +345,7 @@ public class SdkManagerTest2 extends SdkManagerTestCase {
         runCmdLine("create", "avd",
                 "--target", "android-0",
                 "--name",   "gn-sdcard",
-                "--device", "0",
+                "--device", "Galaxy Nexus",
                 "--abi",    "armeabi",
                 "--sdcard", "1023G");
         assertEquals(

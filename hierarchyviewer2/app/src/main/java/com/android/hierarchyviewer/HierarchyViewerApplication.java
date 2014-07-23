@@ -27,6 +27,7 @@ import com.android.hierarchyviewerlib.HierarchyViewerDirector;
 import com.android.hierarchyviewerlib.actions.CapturePSDAction;
 import com.android.hierarchyviewerlib.actions.DisplayViewAction;
 import com.android.hierarchyviewerlib.actions.DumpDisplayListAction;
+import com.android.hierarchyviewerlib.actions.EvaluateContrastAction;
 import com.android.hierarchyviewerlib.actions.InspectScreenshotAction;
 import com.android.hierarchyviewerlib.actions.InvalidateAction;
 import com.android.hierarchyviewerlib.actions.LoadOverlayAction;
@@ -375,7 +376,7 @@ public class HierarchyViewerApplication extends ApplicationWindow {
 
         Composite innerButtonPanel = new Composite(buttonPanel, SWT.NONE);
         innerButtonPanel.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-        GridLayout innerButtonPanelLayout = new GridLayout(8, true);
+        GridLayout innerButtonPanelLayout = new GridLayout(9, true);
         innerButtonPanelLayout.marginWidth = innerButtonPanelLayout.marginHeight = 2;
         innerButtonPanelLayout.horizontalSpacing = innerButtonPanelLayout.verticalSpacing = 2;
         innerButtonPanel.setLayout(innerButtonPanelLayout);
@@ -391,6 +392,10 @@ public class HierarchyViewerApplication extends ApplicationWindow {
         ActionButton refreshViewAction =
                 new ActionButton(innerButtonPanel, RefreshViewAction.getAction());
         refreshViewAction.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        ActionButton evaluateContrast =
+                new ActionButton(innerButtonPanel, EvaluateContrastAction.getAction(getShell()));
+        evaluateContrast.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         ActionButton displayView =
                 new ActionButton(innerButtonPanel, DisplayViewAction.getAction(getShell()));

@@ -31,6 +31,7 @@ import com.android.hierarchyviewerlib.models.TreeViewModel;
 import com.android.hierarchyviewerlib.models.ViewNode;
 import com.android.hierarchyviewerlib.models.Window;
 import com.android.hierarchyviewerlib.ui.CaptureDisplay;
+import com.android.hierarchyviewerlib.ui.EvaluateContrastDisplay;
 import com.android.hierarchyviewerlib.ui.TreeView;
 import com.android.hierarchyviewerlib.ui.util.DrawableViewNode;
 import com.android.hierarchyviewerlib.ui.util.PsdFile;
@@ -361,6 +362,33 @@ public abstract class HierarchyViewerDirector implements IDeviceChangeListener,
                         @Override
                         public void run() {
                             CaptureDisplay.show(shell, viewNode, image);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public void showEvaluateContrast(final Shell shell) {
+        executeInBackground("Capturing node and evaluating contrast", new Runnable() {
+            @Override
+            public void run() {
+                mFilterText = ""; //$NON-NLS-1$
+                Window window = TreeViewModel.getModel().getWindow();
+                IHvDevice hvDevice = window.getHvDevice();
+                final ViewNode viewNode = hvDevice.loadWindowData(window);
+                if (viewNode != null) {
+                    viewNode.setViewCount();
+                    TreeViewModel.getModel().setData(window, viewNode);
+                }
+
+                final Image image = loadCapture(viewNode);
+                if (image != null && viewNode != null) {
+
+                    Display.getDefault().syncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            EvaluateContrastDisplay.show(shell, viewNode, image);
                         }
                     });
                 }

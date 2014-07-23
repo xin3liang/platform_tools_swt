@@ -6,6 +6,8 @@ dependencies {
     compile project(':swt:ddmuilib')
 
     compile 'com.google.guava:guava:15.0'
+
+    testCompile 'junit:junit:3.8.1'
 }
 
 sourceSets {

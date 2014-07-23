@@ -107,7 +107,7 @@ public class EvaluateContrastModel {
      * </p>
      *
      * @param image Screenshot of the view.
-     * @param textColor Color of the text. If null, we will try and compute the color of the text.
+     * @param textColor Color of the text. If null, we will estimate the color of the text.
      * @param textSize Size of the text. If null, we may have an indeterminate result where it
      *                 passes only one of the tests.
      * @param x Starting x-coordinate of the view in the image.
@@ -317,10 +317,11 @@ public class EvaluateContrastModel {
             return normalTest;
         } else if (mTextSize == null) {
             return ContrastResult.INDETERMINATE;
-        } else if (mTextSize <= NORMAL_TEXT_SZ_PTS) {
-            return normalTest;
-        } else {
+        } else if (mTextSize >= NORMAL_TEXT_BOLD_SZ_PTS && mIsBold ||
+                mTextSize > NORMAL_TEXT_SZ_PTS) {
             return largeTest;
+        } else {
+            return normalTest;
         }
     }
 
@@ -330,7 +331,7 @@ public class EvaluateContrastModel {
     }
 
     public ContrastResult getContrastResultForNormalText() {
-        if (mIsBold && mTextSize >= NORMAL_TEXT_BOLD_SZ_PTS) {
+        if (mIsBold && mTextSize != null && mTextSize >= NORMAL_TEXT_BOLD_SZ_PTS) {
             return getContrastResultForLargeText();
         }
         return mContrastRatio >= CONTRAST_RATIO_NORMAL_TEXT ?

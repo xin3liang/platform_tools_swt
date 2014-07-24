@@ -14,3 +14,10 @@ sourceSets {
     main.resources.srcDir 'src/main/java'
     test.resources.srcDir 'src/test/java'
 }
+
+task runTests(type: Test) << {
+    // The hierarchy viewer tests require loading SWT jar files.
+    // That fails with the error saying "can't load 32 bit library on 64 bit JVM
+    // Disable these tests from running until that is fixed
+    exclude 'com/android/hierarchyviewerlib/**'
+}

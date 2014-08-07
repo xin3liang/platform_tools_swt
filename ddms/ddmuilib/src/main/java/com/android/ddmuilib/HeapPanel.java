@@ -729,22 +729,19 @@ public final class HeapPanel extends BaseHeapPanel {
                 while (iter.hasNext()) {
                     numRows++;
                     Integer id = iter.next();
-                    Map<String, Long> heapInfo = cd.getVmHeapInfo(id);
-                    if (heapInfo == null) {
+                    ClientData.HeapInfo info = cd.getVmHeapInfo(id);
+                    if (info == null) {
                         continue;
                     }
-                    long sizeInBytes = heapInfo.get(ClientData.HEAP_SIZE_BYTES);
-                    long bytesAllocated = heapInfo.get(ClientData.HEAP_BYTES_ALLOCATED);
-                    long objectsAllocated = heapInfo.get(ClientData.HEAP_OBJECTS_ALLOCATED);
 
                     TableItem item = new TableItem(mHeapSummary, SWT.NONE);
                     item.setText(0, id.toString());
 
-                    item.setText(1, prettyByteCount(sizeInBytes));
-                    item.setText(2, prettyByteCount(bytesAllocated));
-                    item.setText(3, prettyByteCount(sizeInBytes - bytesAllocated));
-                    item.setText(4, fractionalPercent(bytesAllocated, sizeInBytes));
-                    item.setText(5, addCommasToNumber(objectsAllocated));
+                    item.setText(1, prettyByteCount(info.sizeInBytes));
+                    item.setText(2, prettyByteCount(info.bytesAllocated));
+                    item.setText(3, prettyByteCount(info.sizeInBytes - info.bytesAllocated));
+                    item.setText(4, fractionalPercent(info.bytesAllocated, info.sizeInBytes));
+                    item.setText(5, addCommasToNumber(info.objectsAllocated));
                 }
             }
         }

@@ -5,6 +5,7 @@ dependencies {
     compile project(':base:sdklib')
     compile project(':swt:swtmenubar')
 
+    testCompile project(':base:testutils')
     testCompile project(':base:sdklib-test')
     testCompile 'junit:junit:3.8.1'
 }

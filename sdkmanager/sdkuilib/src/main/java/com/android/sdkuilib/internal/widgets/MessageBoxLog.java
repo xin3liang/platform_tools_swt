@@ -17,7 +17,6 @@
 package com.android.sdkuilib.internal.widgets;
 
 import com.android.annotations.NonNull;
-import com.android.utils.ILogger;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
@@ -42,7 +41,7 @@ import java.util.ArrayList;
  * When <var>logErrorsOnly</var> is true, if the operation was not successful or errors
  * were generated, this will display the message box.
  */
-public final class MessageBoxLog implements ILogger {
+public final class MessageBoxLog implements IMessageBoxLogger {
 
     final ArrayList<String> logMessages = new ArrayList<String>();
     private final String mMessage;
@@ -102,6 +101,7 @@ public final class MessageBoxLog implements ILogger {
      * In this case the dialog will only be shown either if success if false or some errors
      * where captured.
      */
+    @Override
     public void displayResult(final boolean success) {
         if (logMessages.size() > 0) {
             final StringBuilder sb = new StringBuilder(mMessage + "\n\n");

@@ -57,6 +57,9 @@ public abstract class GridDialog extends Dialog {
      * Creates the content of the dialog. The <var>parent</var> composite is a {@link GridLayout}
      * created with the <var>numColumn</var> and <var>makeColumnsEqualWidth</var> parameters
      * passed to {@link #GridDialog(Shell, int, boolean)}.
+     * <p/>
+     * This is called by the parent's {@link #createContents(Composite)}.
+     *
      * @param parent the parent composite.
      */
     public abstract void createDialogContent(Composite parent);

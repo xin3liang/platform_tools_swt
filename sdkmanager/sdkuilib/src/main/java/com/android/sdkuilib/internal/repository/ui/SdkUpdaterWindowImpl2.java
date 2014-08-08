@@ -273,22 +273,6 @@ public class SdkUpdaterWindowImpl2 implements ISdkUpdaterWindow {
 
         new MenuItem(menuPkgs, SWT.SEPARATOR);
 
-        MenuItem sortByApi = new MenuItem(menuPkgs,
-                MenuAction.SORT_API_LEVEL.getMenuStyle());
-        sortByApi.setText(
-                MenuAction.SORT_API_LEVEL.getMenuTitle());
-        mPkgPage.registerMenuAction(
-                MenuAction.SORT_API_LEVEL, sortByApi);
-
-        MenuItem sortBySource = new MenuItem(menuPkgs,
-                MenuAction.SORT_SOURCE.getMenuStyle());
-        sortBySource.setText(
-                MenuAction.SORT_SOURCE.getMenuTitle());
-        mPkgPage.registerMenuAction(
-                MenuAction.SORT_SOURCE, sortBySource);
-
-        new MenuItem(menuPkgs, SWT.SEPARATOR);
-
         MenuItem reload = new MenuItem(menuPkgs,
                 MenuAction.RELOAD.getMenuStyle());
         reload.setText(

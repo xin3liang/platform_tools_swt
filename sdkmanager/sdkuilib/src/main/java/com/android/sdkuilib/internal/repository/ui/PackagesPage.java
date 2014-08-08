@@ -88,9 +88,7 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
         TOGGLE_SHOW_ARCHIVES        (SWT.CHECK, "Show Archives Details"),
         TOGGLE_SHOW_INSTALLED_PKG   (SWT.CHECK, "Show Installed Packages"),
         TOGGLE_SHOW_OBSOLETE_PKG    (SWT.CHECK, "Show Obsolete Packages"),
-        TOGGLE_SHOW_UPDATE_NEW_PKG  (SWT.CHECK, "Show Updates/New Packages"),
-        SORT_API_LEVEL              (SWT.RADIO, "Sort by API Level"),
-        SORT_SOURCE                 (SWT.RADIO, "Sort by Repository")
+        TOGGLE_SHOW_UPDATE_NEW_PKG  (SWT.CHECK, "Show Updates/New Packages")
         ;
 
         private final int mMenuStyle;
@@ -120,8 +118,6 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
 
     private Composite mGroupPackages;
     private Text mTextSdkOsPath;
-    private Button mCheckSortSource;
-    private Button mCheckSortApi;
     private Button mCheckFilterObsolete;
     private Button mCheckFilterInstalled;
     private Button mCheckFilterNew;
@@ -159,11 +155,6 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
             @Override
             protected void refreshViewerInput() {
                 PackagesPage.this.refreshViewerInput();
-            }
-
-            @Override
-            protected boolean isSortByApi() {
-                return PackagesPage.this.isSortByApi();
             }
 
             @Override
@@ -324,16 +315,7 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
         mCheckFilterInstalled.setSelection(true);
         mCheckFilterInstalled.setText("Installed");
 
-        mCheckFilterObsolete = new Button(mGroupOptions, SWT.CHECK);
-        mCheckFilterObsolete.setText("Obsolete");
-        mCheckFilterObsolete.setToolTipText("Also show obsolete packages");
-        mCheckFilterObsolete.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                refreshViewerInput();
-            }
-        });
-        mCheckFilterObsolete.setSelection(false);
+        new Label(mGroupOptions, SWT.NONE);
 
         Link linkSelectNew = new Link(mGroupOptions, SWT.NONE);
         // Note for i18n: we need to identify which link is used, and this is done by using the
@@ -370,39 +352,21 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
 
         // Options line 2, 7 columns
 
-        Label label2 = new Label(mGroupOptions, SWT.NONE);
-        label2.setText("Sort by:");
+        new Label(mGroupOptions, SWT.NONE);
 
-        mCheckSortApi = new Button(mGroupOptions, SWT.RADIO);
-        mCheckSortApi.setToolTipText("Sort by API level");
-        mCheckSortApi.addSelectionListener(new SelectionAdapter() {
+        mCheckFilterObsolete = new Button(mGroupOptions, SWT.CHECK);
+        mCheckFilterObsolete.setText("Obsolete");
+        mCheckFilterObsolete.setToolTipText("Also show obsolete packages");
+        mCheckFilterObsolete.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (mCheckSortApi.getSelection()) {
-                    refreshViewerInput();
-                    copySelection(true /*toApi*/);
-                    syncViewerSelection();
-                }
+                refreshViewerInput();
             }
         });
-        mCheckSortApi.setText("API level");
-        mCheckSortApi.setSelection(true);
+        mCheckFilterObsolete.setSelection(false);
 
-        mCheckSortSource = new Button(mGroupOptions, SWT.RADIO);
-        mCheckSortSource.setText("Repository");
-        mCheckSortSource.setToolTipText("Sort by Repository");
-        mCheckSortSource.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (mCheckSortSource.getSelection()) {
-                    refreshViewerInput();
-                    copySelection(false /*toApi*/);
-                    syncViewerSelection();
-                }
-            }
-        });
-
-        // placeholder between "repository" and "deselect"
+        // placeholder before "deselect"
+        new Label(mGroupOptions, SWT.NONE);
         new Label(mGroupOptions, SWT.NONE);
 
         Link linkDeselect = new Link(mGroupOptions, SWT.NONE);
@@ -494,12 +458,6 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
                 case TOGGLE_SHOW_UPDATE_NEW_PKG:
                     button = mCheckFilterNew;
                     break;
-                case SORT_API_LEVEL:
-                    button = mCheckSortApi;
-                    break;
-                case SORT_SOURCE:
-                    button = mCheckSortSource;
-                    break;
                 }
 
                 if (button != null && !button.isDisposed()) {
@@ -563,12 +521,6 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
             case TOGGLE_SHOW_UPDATE_NEW_PKG:
                 button = mCheckFilterNew;
                 break;
-            case SORT_API_LEVEL:
-                button = mCheckSortApi;
-                break;
-            case SORT_SOURCE:
-                button = mCheckSortSource;
-                break;
             case RELOAD:
             case SHOW_ADDON_SITES:
                 // No checkmark to update
@@ -622,17 +574,13 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
         // action done after loadPackages must check the UI hasn't been
         // disposed yet. Otherwise hilarity ensues.
 
-        boolean displaySortByApi = isSortByApi();
-
         if (mTreeColumnName.isDisposed()) {
             // If the UI got disposed, don't try to load anything since we won't be
             // able to display it anyway.
             return;
         }
 
-        mTreeColumnName.setImage(getImage(
-                displaySortByApi ? PackagesPageIcons.ICON_SORT_BY_API
-                                 : PackagesPageIcons.ICON_SORT_BY_SOURCE));
+        mTreeColumnName.setImage(getImage(PackagesPageIcons.ICON_SORT_BY_API));
 
         mImpl.loadPackagesImpl(useLocalCache, overrideExisting);
     }
@@ -652,10 +600,6 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
             updateButtonsState();
             updateMenuCheckmarks();
         }
-    }
-
-    private boolean isSortByApi() {
-        return mCheckSortApi != null && !mCheckSortApi.isDisposed() && mCheckSortApi.getSelection();
     }
 
     /**
@@ -903,36 +847,6 @@ public final class PackagesPage extends Composite implements ISdkChangeListener 
         // This does not update the tree itself, syncViewerSelection does it below.
         mImpl.onDeselectAll();
         syncViewerSelection();
-    }
-
-    /**
-     * When switching between the tree-by-api and the tree-by-source, copy the selection
-     * (aka the checked items) from one list to the other.
-     * This does not update the tree itself.
-     */
-    private void copySelection(boolean fromSourceToApi) {
-        List<PkgItem> fromItems =
-            mImpl.mDiffLogic.getAllPkgItems(!fromSourceToApi, fromSourceToApi);
-        List<PkgItem> toItems =
-            mImpl.mDiffLogic.getAllPkgItems(fromSourceToApi, !fromSourceToApi);
-
-        // deselect all targets
-        for (PkgItem item : toItems) {
-            item.setChecked(false);
-        }
-
-        // mark new one from the source
-        for (PkgItem source : fromItems) {
-            if (source.isChecked()) {
-                // There should typically be a corresponding item in the target side
-                for (PkgItem target : toItems) {
-                    if (target.isSameMainPackageAs(source.getMainPackage())) {
-                        target.setChecked(true);
-                        break;
-                    }
-                }
-            }
-        }
     }
 
     /**

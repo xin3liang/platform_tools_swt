@@ -191,8 +191,6 @@ abstract class PackagesPageImpl {
             return;
         }
 
-        final boolean displaySortByApi = isSortByApi();
-
         PackageLoader packageLoader = getPackageLoader(useLocalCache);
         assert packageLoader != null;
 
@@ -201,14 +199,13 @@ abstract class PackagesPageImpl {
             @Override
             public boolean onUpdateSource(SdkSource source, Package[] newPackages) {
                 // This runs in a thread and must not access UI directly.
-                final boolean changed = mDiffLogic.updateSourcePackages(
-                        displaySortByApi, source, newPackages);
+                final boolean changed = mDiffLogic.updateSourcePackages(source, newPackages);
 
                 syncExec(new Runnable() {
                     @Override
                     public void run() {
                         if (changed ||
-                            mITreeViewer.getInput() != mDiffLogic.getCategories(isSortByApi())) {
+                            mITreeViewer.getInput() != mDiffLogic.getCategories()) {
                                 refreshViewerInput();
                         }
                     }
@@ -223,13 +220,13 @@ abstract class PackagesPageImpl {
             @Override
             public void onLoadCompleted() {
                 // This runs in a thread and must not access UI directly.
-                final boolean changed = mDiffLogic.updateEnd(displaySortByApi);
+                final boolean changed = mDiffLogic.updateEnd();
 
                 syncExec(new Runnable() {
                     @Override
                     public void run() {
                         if (changed ||
-                            mITreeViewer.getInput() != mDiffLogic.getCategories(isSortByApi())) {
+                            mITreeViewer.getInput() != mDiffLogic.getCategories()) {
                             try {
                                 refreshViewerInput();
                             } catch (Exception ignore) {}
@@ -288,7 +285,7 @@ abstract class PackagesPageImpl {
      * object.
      */
     protected void setViewerInput() {
-        List<PkgCategory> cats = mDiffLogic.getCategories(isSortByApi());
+        List<PkgCategory> cats = mDiffLogic.getCategories();
         if (mITreeViewer.getInput() != cats) {
             // set initial input
             mITreeViewer.setInput(cats);
@@ -298,12 +295,6 @@ abstract class PackagesPageImpl {
             mITreeViewer.refresh();
         }
     }
-
-    /**
-     * Overridden by the UI to determine if the tree should display packages sorted
-     * by API (returns true) or by repository source (returns false.)
-     */
-    abstract protected boolean isSortByApi();
 
     /**
      * Checks all PkgItems that are either new or have updates or select top platform
@@ -404,27 +395,25 @@ abstract class PackagesPageImpl {
         private String getPkgItemName(PkgItem item) {
             String name = item.getName().trim();
 
-            if (isSortByApi()) {
-                // When sorting by API, the package name might contains the API number
-                // or the platform name at the end. If we find it, cut it out since it's
-                // redundant.
+            // When sorting by API, the package name might contains the API number
+            // or the platform name at the end. If we find it, cut it out since it's
+            // redundant.
 
-                PkgCategoryApi cat = (PkgCategoryApi) findCategoryForItem(item);
-                String apiLabel = cat.getApiLabel();
-                String platLabel = cat.getPlatformName();
+            PkgCategoryApi cat = (PkgCategoryApi) findCategoryForItem(item);
+            String apiLabel = cat.getApiLabel();
+            String platLabel = cat.getPlatformName();
 
-                if (platLabel != null && name.endsWith(platLabel)) {
-                    return name.substring(0, name.length() - platLabel.length());
+            if (platLabel != null && name.endsWith(platLabel)) {
+                return name.substring(0, name.length() - platLabel.length());
 
-                } else if (apiLabel != null && name.endsWith(apiLabel)) {
-                    return name.substring(0, name.length() - apiLabel.length());
+            } else if (apiLabel != null && name.endsWith(apiLabel)) {
+                return name.substring(0, name.length() - apiLabel.length());
 
-                } else if (platLabel != null && item.isObsolete() && name.indexOf(platLabel) > 0) {
-                    // For obsolete items, the format is "<base name> <platform name> (Obsolete)"
-                    // so in this case only accept removing a platform name that is not at
-                    // the end.
-                    name = name.replace(platLabel, ""); //$NON-NLS-1$
-                }
+            } else if (platLabel != null && item.isObsolete() && name.indexOf(platLabel) > 0) {
+                // For obsolete items, the format is "<base name> <platform name> (Obsolete)"
+                // so in this case only accept removing a platform name that is not at
+                // the end.
+                name = name.replace(platLabel, ""); //$NON-NLS-1$
             }
 
             // Collapse potential duplicated spacing
@@ -434,7 +423,7 @@ abstract class PackagesPageImpl {
         }
 
         private PkgCategory findCategoryForItem(PkgItem item) {
-            List<PkgCategory> cats = mDiffLogic.getCategories(isSortByApi());
+            List<PkgCategory> cats = mDiffLogic.getCategories();
             for (PkgCategory cat : cats) {
                 for (PkgItem i : cat.getItems()) {
                     if (i == item) {

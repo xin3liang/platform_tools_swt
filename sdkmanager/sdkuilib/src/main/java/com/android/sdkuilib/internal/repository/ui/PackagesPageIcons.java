@@ -24,7 +24,6 @@ public class PackagesPageIcons {
 
     public static final String ICON_CAT_OTHER      = "pkgcat_other_16.png";    //$NON-NLS-1$
     public static final String ICON_CAT_PLATFORM   = "pkgcat_16.png";          //$NON-NLS-1$
-    public static final String ICON_SORT_BY_SOURCE = "source_icon16.png";      //$NON-NLS-1$
     public static final String ICON_SORT_BY_API    = "platform_pkg_16.png";    //$NON-NLS-1$
     public static final String ICON_PKG_NEW        = "pkg_new_16.png";         //$NON-NLS-1$
     public static final String ICON_PKG_INCOMPAT   = "pkg_incompat_16.png";    //$NON-NLS-1$

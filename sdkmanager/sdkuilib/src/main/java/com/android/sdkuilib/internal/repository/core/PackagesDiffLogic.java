@@ -69,7 +69,6 @@ public class PackagesDiffLogic {
     public void clear() {
         mFirstLoadComplete = true;
         mOpApi.clear();
-        mOpSource.clear();
     }
 
     /** Return mFirstLoadComplete and resets it to false.
@@ -106,7 +105,7 @@ public class PackagesDiffLogic {
         toolsCandidates.put(BuildToolPackage.class,    Pair.of((PkgItem)null, (FullRevision)null));
 
         // sort items in platforms... directly deal with new/update items
-        List<PkgItem> allItems = getAllPkgItems(true /*byApi*/, true /*bySource*/);
+        List<PkgItem> allItems = getAllPkgItems();
         for (PkgItem item : allItems) {
             if (!item.hasCompatibleArchive()) {
                 // Ignore items that have no archive compatible with the current platform.
@@ -310,7 +309,7 @@ public class PackagesDiffLogic {
         }
 
         if (selectTop) {
-            for (PkgItem item : getAllPkgItems(true /*byApi*/, true /*bySource*/)) {
+            for (PkgItem item : getAllPkgItems()) {
                 Package p = item.getMainPackage();
                 if (p instanceof ExtraPackage &&
                         item.getState() == PkgState.NEW &&
@@ -342,7 +341,7 @@ public class PackagesDiffLogic {
      * Mark all PkgItems as not checked.
      */
     public void uncheckAllItems() {
-        for (PkgItem item : getAllPkgItems(true /*byApi*/, true /*bySource*/)) {
+        for (PkgItem item : getAllPkgItems()) {
             item.setChecked(false);
         }
     }
@@ -475,31 +474,19 @@ public class PackagesDiffLogic {
         }
     }
 
-    private final UpdateOpApi    mOpApi    = new UpdateOpApi();
-    private final UpdateOpSource mOpSource = new UpdateOpSource();
+    private final UpdateOpApi mOpApi = new UpdateOpApi();
 
-    public List<PkgCategory> getCategories(boolean displayIsSortByApi) {
-        return displayIsSortByApi ? mOpApi.getCategories() : mOpSource.getCategories();
+    public List<PkgCategory> getCategories() {
+        return mOpApi.getCategories();
     }
 
-    public List<PkgItem> getAllPkgItems(boolean byApi, boolean bySource) {
+    public List<PkgItem> getAllPkgItems() {
         List<PkgItem> items = new ArrayList<PkgItem>();
 
-        if (byApi) {
-            List<PkgCategory> cats = getCategories(true /*displayIsSortByApi*/);
-            synchronized (cats) {
-                for (PkgCategory cat : cats) {
-                    items.addAll(cat.getItems());
-                }
-            }
-        }
-
-        if (bySource) {
-            List<PkgCategory> cats = getCategories(false /*displayIsSortByApi*/);
-            synchronized (cats) {
-                for (PkgCategory cat : cats) {
-                    items.addAll(cat.getItems());
-                }
+        List<PkgCategory> cats = getCategories();
+        synchronized (cats) {
+            for (PkgCategory cat : cats) {
+                items.addAll(cat.getItems());
             }
         }
 
@@ -508,23 +495,15 @@ public class PackagesDiffLogic {
 
     public void updateStart() {
         mOpApi.updateStart();
-        mOpSource.updateStart();
     }
 
-    public boolean updateSourcePackages(
-            boolean displayIsSortByApi,
-            SdkSource source,
-            Package[] newPackages) {
+    public boolean updateSourcePackages(SdkSource source, Package[] newPackages) {
 
-        boolean apiListChanged = mOpApi.updateSourcePackages(source, newPackages);
-        boolean sourceListChanged = mOpSource.updateSourcePackages(source, newPackages);
-        return displayIsSortByApi ? apiListChanged : sourceListChanged;
+        return mOpApi.updateSourcePackages(source, newPackages);
     }
 
-    public boolean updateEnd(boolean displayIsSortByApi) {
-        boolean apiListChanged = mOpApi.updateEnd();
-        boolean sourceListChanged = mOpSource.updateEnd();
-        return displayIsSortByApi ? apiListChanged : sourceListChanged;
+    public boolean updateEnd() {
+        return mOpApi.updateEnd();
     }
 
 
@@ -875,136 +854,6 @@ public class PackagesDiffLogic {
                 }
             }
 
-        }
-    }
-
-    /**
-     * {@link UpdateOp} describing the Sort-by-Source operation.
-     */
-    private class UpdateOpSource extends UpdateOp {
-
-        @Override
-        public boolean updateSourcePackages(SdkSource source, Package[] newPackages) {
-            // When displaying the repo by source, we want to create all the
-            // categories so that they can appear on the UI even if empty.
-            if (source != null) {
-                List<PkgCategory> cats = getCategories();
-                Object catKey = source;
-                PkgCategory cat = findCurrentCategory(cats, catKey);
-
-                if (cat == null) {
-                    // This is a new category. Create it and add it to the list.
-                    cat = createCategory(catKey);
-                    synchronized (cats) {
-                        cats.add(cat);
-                    }
-                    sortCategoryList();
-                }
-
-                keep(cat);
-            }
-
-            return super.updateSourcePackages(source, newPackages);
-        }
-
-        @Override
-        public Object getCategoryKey(Package pkg) {
-            // Sort by source
-            SdkSource source = pkg.getParentSource();
-            if (source == null) {
-                return PkgCategorySource.UNKNOWN_SOURCE;
-            }
-            return source;
-        }
-
-        @Override
-        public void addDefaultCategories() {
-            List<PkgCategory> cats = getCategories();
-            for (PkgCategory cat : cats) {
-                if (cat.getKey().equals(PkgCategorySource.UNKNOWN_SOURCE)) {
-                    // Already present.
-                    return;
-                }
-            }
-
-            // Always add the local categories, even if empty (unlikely anyway)
-            PkgCategorySource cat = new PkgCategorySource(
-                    PkgCategorySource.UNKNOWN_SOURCE,
-                    mUpdaterData);
-            // Mark it so that it can be cleared in updateEnd() if not used.
-            dontKeep(cat);
-            synchronized (cats) {
-                cats.add(cat);
-            }
-        }
-
-        /**
-         * Create a new source category.
-         * <p/>
-         * One issue is that local archives are processed first and we don't have the
-         * full source information on them (e.g. we know the referral URL but not
-         * the referral name of the site).
-         * In this case this will just create {@link PkgCategorySource} where the label isn't
-         * known yet.
-         */
-        @Override
-        public PkgCategory createCategory(Object catKey) {
-            assert catKey instanceof SdkSource;
-            PkgCategory cat = new PkgCategorySource((SdkSource) catKey, mUpdaterData);
-            return cat;
-        }
-
-        /**
-         * Checks whether the category needs to be adjust.
-         * As mentioned in {@link #createCategory(Object)}, local archives are processed
-         * first and result in a {@link PkgCategorySource} where the label isn't known.
-         * Once we process the external source with the actual name, we'll update it.
-         */
-        @Override
-        public void adjustCategory(PkgCategory cat, Object catKey) {
-            assert cat instanceof PkgCategorySource;
-            assert catKey instanceof SdkSource;
-            if (cat instanceof PkgCategorySource) {
-                ((PkgCategorySource) cat).adjustLabel((SdkSource) catKey);
-            }
-        }
-
-        @Override
-        public void sortCategoryList() {
-            // Sort the sources in ascending source name order,
-            // with the local packages always first.
-
-            synchronized (getCategories()) {
-                Collections.sort(getCategories(), new Comparator<PkgCategory>() {
-                    @Override
-                    public int compare(PkgCategory cat1, PkgCategory cat2) {
-                        assert cat1 instanceof PkgCategorySource;
-                        assert cat2 instanceof PkgCategorySource;
-
-                        SdkSource src1 = ((PkgCategorySource) cat1).getSource();
-                        SdkSource src2 = ((PkgCategorySource) cat2).getSource();
-
-                        if (src1 == src2) {
-                            return 0;
-                        } else if (src1 == PkgCategorySource.UNKNOWN_SOURCE) {
-                            return -1;
-                        } else if (src2 == PkgCategorySource.UNKNOWN_SOURCE) {
-                            return 1;
-                        }
-                        assert src1 != null; // true because LOCAL_SOURCE==null
-                        assert src2 != null;
-                        return src1.toString().compareTo(src2.toString());
-                    }
-                });
-            }
-        }
-
-        @Override
-        public void postCategoryItemsChanged() {
-            // Sort the items
-            for (PkgCategory cat : getCategories()) {
-                Collections.sort(cat.getItems());
-            }
         }
     }
 }

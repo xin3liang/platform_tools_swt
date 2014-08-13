@@ -21,7 +21,6 @@ import com.android.annotations.Nullable;
 import com.android.sdklib.internal.repository.archives.Archive;
 import com.android.sdklib.internal.repository.packages.Package;
 import com.android.sdklib.internal.repository.sources.SdkSource;
-import com.android.sdklib.internal.repository.sources.SdkSourceCategory;
 import com.android.sdkuilib.internal.repository.core.PkgContentProvider;
 
 import org.eclipse.swt.SWTException;
@@ -161,13 +160,7 @@ public class ImageFactory {
             return getImageByName(name);
         }
 
-        if (object instanceof SdkSourceCategory) {
-            return getImageByName("source_cat_icon_16.png");                     //$NON-NLS-1$
-
-        } else if (object instanceof SdkSource) {
-            return getImageByName("source_icon_16.png");                         //$NON-NLS-1$
-
-        } else if (object instanceof PkgContentProvider.RepoSourceError) {
+        if (object instanceof PkgContentProvider.RepoSourceError) {
             return getImageByName("error_icon_16.png");                       //$NON-NLS-1$
 
         } else if (object instanceof PkgContentProvider.RepoSourceNotification) {

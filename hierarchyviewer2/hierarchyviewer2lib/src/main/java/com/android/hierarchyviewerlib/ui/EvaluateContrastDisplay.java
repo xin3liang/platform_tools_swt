@@ -240,6 +240,7 @@ public class EvaluateContrastDisplay {
         sResultsTree.setSize(RESULTS_PANEL_WIDTH, DEFAULT_HEIGHT);
 
         sResultsTree.addListener(SWT.PaintItem, new Listener() {
+            @Override
             public void handleEvent(Event event) {
                 TreeItem item = (TreeItem) event.item;
                 Image image = (Image) item.getData();
@@ -254,6 +255,7 @@ public class EvaluateContrastDisplay {
         });
 
         Listener listener = new Listener() {
+            @Override
             public void handleEvent(Event e) {
                 TreeItem treeItem = (TreeItem) e.item;
                 if (treeItem.getItemCount() == 0) {

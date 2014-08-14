@@ -15,6 +15,7 @@
     <orderEntry type="library" name="org-eclipse-jface-3.6.2" level="project" />
     <orderEntry type="library" name="org-eclipse-core-commands-3.6.0" level="project" />
     <orderEntry type="library" name="org-eclipse-equinox-common-3.6.0" level="project" />
+    <orderEntry type="module" module-name="testutils" scope="TEST" />
   </component>
 </module>
 

@@ -16,6 +16,7 @@
       <module fileurl="file://$PROJECT_DIR$/sdkstats/sdkstats.iml" filepath="$PROJECT_DIR$/sdkstats/sdkstats.iml" />
       <module fileurl="file://$PROJECT_DIR$/sdkmanager/sdkuilib/sdkuilib.iml" filepath="$PROJECT_DIR$/sdkmanager/sdkuilib/sdkuilib.iml" />
       <module fileurl="file://$PROJECT_DIR$/swtmenubar/swtmenubar.iml" filepath="$PROJECT_DIR$/swtmenubar/swtmenubar.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../base/testutils/testutils.iml" filepath="$PROJECT_DIR$/../base/testutils/testutils.iml" />
       <module fileurl="file://$PROJECT_DIR$/traceview/traceview.iml" filepath="$PROJECT_DIR$/traceview/traceview.iml" />
     </modules>
   </component>

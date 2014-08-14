@@ -46,6 +46,7 @@ import com.google.common.base.Joiner;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -220,7 +221,7 @@ class AvdCreationPresenter {
         File location = localSdk.getLocation();
         if (location != null) {
             DeviceManager deviceManager = DeviceManager.createInstance(location, mSdkLog);
-            List<Device>  deviceList    = deviceManager.getDevices(DeviceManager.ALL_DEVICES);
+            Collection<Device> deviceList = deviceManager.getDevices(DeviceManager.ALL_DEVICES);
 
             // Sort
             List<Device> nexus = new ArrayList<Device>(deviceList.size());

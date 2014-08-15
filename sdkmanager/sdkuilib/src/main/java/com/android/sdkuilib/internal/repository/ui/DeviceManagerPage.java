@@ -70,6 +70,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -470,7 +471,7 @@ public class DeviceManagerPage extends Composite
             Table table,
             Font boldFont,
             boolean isUser,
-            List<Device> devices) {
+            Collection<Device> devicesCollection) {
         List<Resource> disposables = new ArrayList<Resource>();
         Display display = table.getDisplay();
 
@@ -478,7 +479,7 @@ public class DeviceManagerPage extends Composite
         boldStyle.font = boldFont;
 
         // We need the list to be be modifiable so that we can sort it.
-        devices = new ArrayList<Device>(devices);
+        ArrayList<Device> devices = new ArrayList<Device>(devicesCollection);
         Collections.sort(devices, Device.getDisplayComparator());
 
         // Generate a list of the AVD names using these devices

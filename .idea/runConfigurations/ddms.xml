@@ -1,5 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="ddms" type="Application" factoryName="Application">
+    <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
     <option name="MAIN_CLASS_NAME" value="com.android.ddms.Main" />
     <option name="VM_PARAMETERS" value="-Xmx1024M -XstartOnFirstThread -Dcom.android.ddms.bindir=$ANDROID_SDK$/tools" />
     <option name="PROGRAM_PARAMETERS" value="" />

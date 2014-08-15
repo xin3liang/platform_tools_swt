@@ -67,6 +67,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +77,7 @@ public class DeviceCreationDialog extends GridDialog {
 
     private final ImageFactory mImageFactory;
     private final DeviceManager mManager;
-    private List<Device> mUserDevices;
+    private Collection<Device> mUserDevices;
 
     private Device mDevice;
 

@@ -16,6 +16,8 @@
 
 package com.android.hierarchyviewerlib.ui;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.VisibleForTesting;
 import com.android.ddmuilib.ImageLoader;
 import com.android.hierarchyviewerlib.HierarchyViewerDirector;
 import com.android.hierarchyviewerlib.device.IHvDevice;
@@ -55,6 +57,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class PropertyViewer extends Composite implements ITreeChangeListener {
+    private static final String PROPERTY_GET_PREFIX = "get";
+    private static final String EMPTY_ARGUMENT_LIST = "()";
+
     private TreeViewModel mModel;
 
     private TreeViewer mTreeViewer;
@@ -65,6 +70,35 @@ public class PropertyViewer extends Composite implements ITreeChangeListener {
     private Image mImage;
 
     private DrawableViewNode mSelectedNode;
+
+    @VisibleForTesting
+    static @NonNull String parseColumnTextName(@NonNull String name) {
+        int start = 0;
+        int end = name.length();
+
+        int index = name.indexOf(':');
+        if (index != -1) {
+            start = index + 1;
+        }
+
+        index = name.indexOf(PROPERTY_GET_PREFIX);
+        int prefixOffset = start + PROPERTY_GET_PREFIX.length();
+        if (index == start && prefixOffset < end
+                && Character.isUpperCase(name.charAt(prefixOffset))) {
+            start = prefixOffset;
+        }
+
+        if (name.endsWith(EMPTY_ARGUMENT_LIST)) {
+            end -= EMPTY_ARGUMENT_LIST.length();
+        }
+
+        if (start < end && !Character.isLowerCase(name.charAt(start))) {
+            return Character.toLowerCase(name.charAt(start))
+                    + (start  + 1 < end ? name.substring(start + 1, end) : "");
+        }
+
+        return name.substring(start, end);
+    }
 
     private class ContentProvider implements ITreeContentProvider, ITableLabelProvider {
 
@@ -177,12 +211,7 @@ public class PropertyViewer extends Composite implements ITreeChangeListener {
                         return Character.toUpperCase(category.charAt(0)) + category.substring(1);
                     } else if (element instanceof Property) {
                         if (column == 0) {
-                            String returnValue = ((Property) element).name;
-                            int index = returnValue.indexOf(':');
-                            if (index != -1) {
-                                return returnValue.substring(index + 1);
-                            }
-                            return returnValue;
+                            return parseColumnTextName(((Property) element).name);
                         } else if (column == 1) {
                             return ((Property) element).value;
                         }

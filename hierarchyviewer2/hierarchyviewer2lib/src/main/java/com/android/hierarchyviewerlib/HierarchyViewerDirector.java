@@ -26,11 +26,13 @@ import com.android.hierarchyviewerlib.device.IHvDevice;
 import com.android.hierarchyviewerlib.device.WindowUpdater;
 import com.android.hierarchyviewerlib.device.WindowUpdater.IWindowChangeListener;
 import com.android.hierarchyviewerlib.models.DeviceSelectionModel;
+import com.android.hierarchyviewerlib.models.ThemeModel;
 import com.android.hierarchyviewerlib.models.PixelPerfectModel;
 import com.android.hierarchyviewerlib.models.TreeViewModel;
 import com.android.hierarchyviewerlib.models.ViewNode;
 import com.android.hierarchyviewerlib.models.Window;
 import com.android.hierarchyviewerlib.ui.CaptureDisplay;
+import com.android.hierarchyviewerlib.ui.DumpThemeDisplay;
 import com.android.hierarchyviewerlib.ui.EvaluateContrastDisplay;
 import com.android.hierarchyviewerlib.ui.TreeView;
 import com.android.hierarchyviewerlib.ui.util.DrawableViewNode;
@@ -391,6 +393,36 @@ public abstract class HierarchyViewerDirector implements IDeviceChangeListener,
                             EvaluateContrastDisplay.show(shell, viewNode, image);
                         }
                     });
+                }
+            }
+        });
+    }
+
+    public void showDumpTheme(final Shell shell) {
+        executeInBackground("Capturing node and dumping theme", new Runnable() {
+            @Override
+            public void run() {
+                ViewNode viewNode;
+                Window window = TreeViewModel.getModel().getWindow();
+                IHvDevice hvDevice = window.getHvDevice();
+
+                DrawableViewNode tree = TreeViewModel.getModel().getTree();
+                if (tree == null) {
+                    viewNode = hvDevice.loadWindowData(window);
+                } else {
+                    viewNode = tree.viewNode;
+                }
+
+                final ThemeModel model = hvDevice.dumpTheme(viewNode);
+                if (model != null) {
+                    Display.getDefault().syncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            DumpThemeDisplay.show(shell, model);
+                        }
+                    });
+                } else {
+                    Log.e(TAG, "Unable to dump theme.");
                 }
             }
         });

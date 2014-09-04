@@ -20,6 +20,7 @@ import com.android.ddmlib.IDevice;
 import com.android.ddmlib.Log;
 import com.android.hierarchyviewerlib.device.DeviceBridge.ViewServerInfo;
 import com.android.hierarchyviewerlib.device.WindowUpdater.IWindowChangeListener;
+import com.android.hierarchyviewerlib.models.ThemeModel;
 import com.android.hierarchyviewerlib.models.ViewNode;
 import com.android.hierarchyviewerlib.models.Window;
 import com.android.hierarchyviewerlib.ui.util.PsdFile;
@@ -133,6 +134,11 @@ public class ViewServerDevice extends AbstractHvDevice {
     @Override
     public void outputDisplayList(ViewNode viewNode) {
         DeviceBridge.outputDisplayList(viewNode);
+    }
+
+    @Override
+    public ThemeModel dumpTheme(ViewNode viewNode) {
+        return DeviceBridge.dumpTheme(viewNode);
     }
 
     @Override

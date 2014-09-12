@@ -315,7 +315,7 @@ public final class NativeHeapPanel extends BaseHeapPanel {
 
             if (library != null) {
 
-                Addr2Line process = Addr2Line.getProcess(library);
+                Addr2Line process = Addr2Line.getProcess(library, mClientData.getAbi());
                 if (process != null) {
                     // remove the base of the library address
                     NativeStackCallInfo info = process.getAddress(addr);

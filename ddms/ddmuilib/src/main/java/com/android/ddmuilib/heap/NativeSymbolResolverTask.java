@@ -16,6 +16,8 @@
 
 package com.android.ddmuilib.heap;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ddmlib.NativeAllocationInfo;
 import com.android.ddmlib.NativeLibraryMapInfo;
 import com.android.ddmlib.NativeStackCallInfo;
@@ -50,11 +52,14 @@ import java.util.TreeSet;
  */
 public class NativeSymbolResolverTask implements IRunnableWithProgress {
     private static final String ADDR2LINE;
+    private static final String ADDR2LINE64;
     private static final String DEFAULT_SYMBOLS_FOLDER;
 
     static {
         String addr2lineEnv = System.getenv("ANDROID_ADDR2LINE");
+        String addr2line64Env = System.getenv("ANDROID_ADDR2LINE64");
         ADDR2LINE = addr2lineEnv != null ? addr2lineEnv : DdmUiPreferences.getAddr2Line();
+        ADDR2LINE64 = addr2line64Env != null ? addr2line64Env : DdmUiPreferences.getAddr2Line64();
 
         String symbols = System.getenv("ANDROID_SYMBOLS");
         DEFAULT_SYMBOLS_FOLDER = symbols != null ? symbols : DdmUiPreferences.getSymbolDirectory();
@@ -83,9 +88,13 @@ public class NativeSymbolResolverTask implements IRunnableWithProgress {
     private Set<String> mNotFoundLibraries;
     private String mAddr2LineErrorMessage = null;
 
+    /** The addr2line command to use to resolve addresses. */
+    private String mAddr2LineCmd;
+
     public NativeSymbolResolverTask(List<NativeAllocationInfo> callSites,
                 List<NativeLibraryMapInfo> mappedLibraries,
-                String symbolSearchPath) {
+                @NonNull String symbolSearchPath,
+                @Nullable String abi) {
         mCallSites = callSites;
         mMappedLibraries = mappedLibraries;
         mSymbolSearchFolders = new ArrayList<String>();
@@ -98,6 +107,12 @@ public class NativeSymbolResolverTask implements IRunnableWithProgress {
         mUnmappedAddresses = new HashSet<Long>();
         mAddressResolution = new HashMap<Long, NativeStackCallInfo>();
         mNotFoundLibraries = new HashSet<String>();
+
+        if (abi == null || abi.startsWith("32")) {
+            mAddr2LineCmd = ADDR2LINE;
+        } else {
+            mAddr2LineCmd = ADDR2LINE64;
+        }
     }
 
     @Override
@@ -163,7 +178,7 @@ public class NativeSymbolResolverTask implements IRunnableWithProgress {
             Set<Long> addressesToResolve) {
         Process addr2line;
         try {
-            addr2line = new ProcessBuilder(ADDR2LINE,
+            addr2line = new ProcessBuilder(mAddr2LineCmd,
                     "-C",   // demangle
                     "-f",   // display function names in addition to file:number
                     "-e", libPath).start();

@@ -16,6 +16,8 @@
 
 package com.android.ddmuilib;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ddmlib.Log;
 import com.android.ddmlib.NativeLibraryMapInfo;
 import com.android.ddmlib.NativeStackCallInfo;
@@ -71,6 +73,9 @@ public class Addr2Line {
     /** Path to the library */
     private NativeLibraryMapInfo mLibrary;
 
+    /** addr2line command to execute */
+    private String mAddr2LineCmd;
+
     /** the command line process */
     private Process mProcess;
 
@@ -106,16 +111,18 @@ public class Addr2Line {
     }
 
     /**
-     * Returns the instance of a Addr2Line process for the specified library.
+     * Returns the instance of an Addr2Line process for the specified library
+     * and abi.
      * <br>The library should be in a format that makes<br>
      * <code>$ANDROID_PRODUCT_OUT + "/symbols" + library</code> a valid file.
      *
      * @param library the library in which to look for addresses.
+     * @param abi indicates which underlying addr2line command to use.
      * @return a new Addr2Line object representing a started process, ready to
      *         be queried for addresses. If any error happened when launching a
      *         new process, <code>null</code> will be returned.
      */
-    public static Addr2Line getProcess(final NativeLibraryMapInfo library) {
+    public static Addr2Line getProcess(@NonNull final NativeLibraryMapInfo library, @Nullable String abi) {
         String libName = library.getLibraryName();
 
         // synchronize around the hashmap object
@@ -126,7 +133,7 @@ public class Addr2Line {
 
                 // if we don't find one, we create it
                 if (process == null) {
-                    process = new Addr2Line(library);
+                    process = new Addr2Line(library, abi);
 
                     // then we start it
                     boolean status = process.start();
@@ -148,14 +155,30 @@ public class Addr2Line {
     }
 
     /**
-     * Construct the object with a library name. The library should be present
+     * Construct the object with a library name and abi. The library should be present
      * in the search path as provided by ANDROID_SYMBOLS, ANDROID_OUT/symbols, or in the user
      * provided search path.
      *
      * @param library the library in which to look for address.
+     * @param abi indicates which underlying addr2line command to use.
      */
-    private Addr2Line(final NativeLibraryMapInfo library) {
+    private Addr2Line(@NonNull final NativeLibraryMapInfo library, @Nullable String abi) {
         mLibrary = library;
+
+        // Set the addr2line command based on the abi.
+        if (abi == null || abi.startsWith("32")) {
+            Log.d("ddm-Addr2Line", "Using 32 bit addr2line command");
+            mAddr2LineCmd = System.getenv("ANDROID_ADDR2LINE");
+            if (mAddr2LineCmd == null) {
+                mAddr2LineCmd = DdmUiPreferences.getAddr2Line();
+            }
+        } else {
+            Log.d("ddm-Addr2Line", "Using 64 bit addr2line command");
+            mAddr2LineCmd = System.getenv("ANDROID_ADDR2LINE64");
+            if (mAddr2LineCmd == null) {
+                mAddr2LineCmd = DdmUiPreferences.getAddr2Line64();
+            }
+        }
     }
 
     /**
@@ -197,14 +220,9 @@ public class Addr2Line {
         // because this is only called from getProcess() we know we don't need
         // to synchronize this code.
 
-        String addr2Line = System.getenv("ANDROID_ADDR2LINE");
-        if (addr2Line == null) {
-            addr2Line = DdmUiPreferences.getAddr2Line();
-        }
-
         // build the command line
         String[] command = new String[5];
-        command[0] = addr2Line;
+        command[0] = mAddr2LineCmd;
         command[1] = "-C";
         command[2] = "-f";
         command[3] = "-e";
@@ -248,7 +266,7 @@ public class Addr2Line {
             // log the error
             String msg = String.format(
                     "Error while trying to start %1$s process for library %2$s",
-                    DdmUiPreferences.getAddr2Line(), mLibrary);
+                    mAddr2LineCmd, mLibrary);
             Log.e("ddm-Addr2Line", msg);
 
             // drop the process just in case

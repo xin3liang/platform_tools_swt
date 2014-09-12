@@ -205,7 +205,8 @@ public class NativeHeapPanel extends BaseHeapPanel {
                     NativeSymbolResolverTask resolver = new NativeSymbolResolverTask(
                             nativeAllocations,
                             client.getClientData().getMappedNativeLibraries(),
-                            mSymbolSearchPathText.getText());
+                            mSymbolSearchPathText.getText(),
+                            client.getClientData().getAbi());
 
                     try {
                         d.run(true, true, resolver);
@@ -1106,7 +1107,8 @@ public class NativeHeapPanel extends BaseHeapPanel {
             NativeLibraryMapInfo library = getLibraryFor(addr);
 
             if (library != null) {
-                Addr2Line process = Addr2Line.getProcess(library);
+                Client c = getCurrentClient();
+                Addr2Line process = Addr2Line.getProcess(library, c.getClientData().getAbi());
                 if (process != null) {
                     NativeStackCallInfo info = process.getAddress(addr);
                     if (info != null) {

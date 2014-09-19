@@ -18,6 +18,7 @@ package com.android.hierarchyviewerlib.device;
 
 import com.android.ddmlib.IDevice;
 import com.android.hierarchyviewerlib.device.WindowUpdater.IWindowChangeListener;
+import com.android.hierarchyviewerlib.models.ThemeModel;
 import com.android.hierarchyviewerlib.models.ViewNode;
 import com.android.hierarchyviewerlib.models.Window;
 import com.android.hierarchyviewerlib.ui.util.PsdFile;
@@ -52,6 +53,7 @@ public interface IHvDevice {
     void invalidateView(ViewNode viewNode);
     void requestLayout(ViewNode viewNode);
     void outputDisplayList(ViewNode viewNode);
+    ThemeModel dumpTheme(ViewNode viewNode);
 
     boolean isViewUpdateEnabled();
     void invokeViewMethod(Window window, ViewNode viewNode, String method, List<?> args);

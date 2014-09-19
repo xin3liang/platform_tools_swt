@@ -25,6 +25,7 @@ import com.android.ddmlib.HandleViewDebug.ViewDumpHandler;
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.Log;
 import com.android.hierarchyviewerlib.device.WindowUpdater.IWindowChangeListener;
+import com.android.hierarchyviewerlib.models.ThemeModel;
 import com.android.hierarchyviewerlib.models.ViewNode;
 import com.android.hierarchyviewerlib.models.Window;
 import com.android.hierarchyviewerlib.ui.util.PsdFile;
@@ -346,6 +347,32 @@ public class DdmViewDebugDevice extends AbstractHvDevice implements IDeviceChang
         } catch (IOException e) {
             Log.e(TAG, e);
         }
+    }
+
+    @Override
+    public ThemeModel dumpTheme(ViewNode viewNode) {
+        Window window = viewNode.window;
+        Client c = window.getClient();
+        if (c == null) {
+            return null;
+        }
+
+        String viewRoot = window.getTitle();
+        CaptureByteArrayHandler handler = new CaptureByteArrayHandler(HandleViewDebug.CHUNK_VURT);
+        try {
+            HandleViewDebug.dumpTheme(c, viewRoot, handler);
+        } catch (IOException e) {
+            Log.e(TAG, e);
+            return null;
+        }
+
+        byte[] data = handler.getData(20, TimeUnit.SECONDS);
+        if (data == null) {
+            return null;
+        }
+
+        String themeDump = new String(data, Charset.forName("UTF-8"));
+        return DeviceBridge.parseThemeDump(new BufferedReader(new StringReader(themeDump)));
     }
 
     @Override

@@ -24,6 +24,7 @@ import com.android.ddmlib.MultiLineReceiver;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
 import com.android.ddmlib.TimeoutException;
 import com.android.hierarchyviewerlib.HierarchyViewerDirector;
+import com.android.hierarchyviewerlib.models.ThemeModel;
 import com.android.hierarchyviewerlib.models.ViewNode;
 import com.android.hierarchyviewerlib.models.Window;
 import com.android.hierarchyviewerlib.ui.util.PsdFile;
@@ -692,6 +693,52 @@ public class DeviceBridge {
                 connection.close();
             }
         }
+    }
+
+    public static ThemeModel dumpTheme(ViewNode viewNode) {
+        DeviceConnection connection = null;
+        ThemeModel model = null;
+
+        try {
+            connection = new DeviceConnection(viewNode.window.getDevice());
+            connection.sendCommand("DUMP_THEME " + viewNode.window.encode() +
+                    " " + viewNode); //$NON-NLS-1$
+
+            BufferedReader in = connection.getInputStream();
+            model = parseThemeDump(in);
+        } catch (Exception e) {
+            Log.e(TAG, "Unable to dump theme for node " + viewNode + " in window "
+                    + viewNode.window + " on device " + viewNode.window.getDevice());
+            return null;
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+        return model;
+    }
+
+    public static ThemeModel parseThemeDump(BufferedReader in) {
+        ThemeModel model = new ThemeModel();
+        String resourceName;
+        String resourceValue;
+
+        try {
+            while ((resourceName = in.readLine()) != null) {
+                if ("DONE.".equalsIgnoreCase(resourceName)) {
+                    break;
+                }
+                if ((resourceValue = in.readLine()) == null) {
+                    return null;
+                }
+                model.add(resourceName, resourceValue);
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Error reading theme dump: " + e.getMessage());
+            return null;
+        }
+
+        return model;
     }
 
 }
